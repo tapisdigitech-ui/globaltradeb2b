@@ -1637,18 +1637,109 @@ h1,h2,h3{letter-spacing:-.01em}
  .mgt.cards .mg-act{flex-wrap:wrap;gap:6px}
  .tc:has(.cards),.tc:has(.cards) .tw{border:0;background:transparent;box-shadow:none}
 }
+
+/* ===== v4: simple B2B seller portal ===== */
+.side,.scrim,.burger{display:none!important}
+.shell,.shell.nr{grid-template-columns:minmax(0,1fr);max-width:1240px}
+.main{max-width:none;padding:18px 24px 40px}
+.hd{gap:16px}.hd .sc{display:none}.hd .vr{display:none}
+.pnav{display:flex;gap:4px;margin-left:8px}
+.pnav button{position:relative;display:inline-flex;align-items:center;gap:8px;border:0;background:transparent;font:600 15px var(--font-display);color:var(--fg);padding:10px 16px;border-radius:10px;min-height:44px}
+.pnav button svg{font-size:20px;color:var(--muted)}.pnav button:hover{background:var(--surface-2)}
+.pnav button.on{background:var(--sky-bg);color:var(--blue)}.pnav button.on svg{color:var(--blue)}
+.pnav em{background:var(--red);color:#fff;border-radius:99px;font:700 11px/18px var(--font-display);min-width:18px;padding:0 5px;text-align:center;font-style:normal}
+.sr{max-width:300px;margin-left:auto}
+.hn{margin-left:0}
+.crumb{max-width:none;padding:12px 24px 0}.crumb button{display:inline-flex;align-items:center;gap:6px;border:0;background:transparent;color:var(--blue);font-weight:700;font-size:14.5px;padding:6px 0;min-height:36px}
+.crumb[hidden]{display:none}
+/* home */
+.strip{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+.chip2{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--line);background:#fff;border-radius:99px;padding:8px 14px;font-size:14px;min-height:40px}
+.chip2 svg{font-size:17px;color:var(--blue)}.chip2:hover{border-color:var(--blue)}
+.shortcuts{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.shortcuts button{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--line);background:#fff;border-radius:10px;padding:8px 14px;font-weight:600;font-size:14px;min-height:40px}
+.shortcuts button svg{font-size:17px;color:var(--blue)}.shortcuts button:first-child{background:var(--orange);border-color:var(--orange);color:#fff}.shortcuts button:first-child svg{color:#fff}
+.hm3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin-top:16px;align-items:start}
+.pnl{padding:14px 14px 10px}.pnl h2{margin:0}.pl-s{font-size:12.5px;color:var(--muted);margin:-4px 0 8px}
+.pl-list{display:grid;gap:8px}
+.lc-s{grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:10px;padding:10px 12px;border-radius:10px}
+.lc-s.is-new{border-left:1px solid var(--line)}
+.lc-s .lc-t b{font-size:14.5px}.lc-s .lc-m{margin-top:4px;font-size:12.5px;gap:4px 12px}.lc-s .lc-d{font-size:12.5px;margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lc-s .vr-btn{min-height:38px;padding:8px 12px}
+.pnl .mt{margin:0}
+/* threads */
+.mt{display:grid;grid-template-columns:40px minmax(0,1fr) auto;gap:10px;align-items:center;min-height:64px;padding:10px 12px;border-radius:10px}
+.mt.on{background:var(--sky-bg);border-color:var(--blue);box-shadow:none}
+.mt-b{min-width:0;display:block}.mt .mt-b b{display:flex;align-items:center;gap:6px;font-size:14.5px}.mt .mt-t{color:var(--fg);font-weight:600}.mt-d{align-self:start;white-space:nowrap}
+.mt .fv{display:inline-flex;color:#e0a100;font-style:normal}.mt .fv svg{font-size:14px;fill:currentColor}
+.av{width:40px;height:40px;border-radius:50%;background:var(--sky-bg);color:var(--blue);display:grid;place-items:center;font:700 16px var(--font-display);flex:none}.av.lg{width:46px;height:46px}
+/* messages two panel */
+#vMsgs{padding-top:14px}
+.msg-g{display:grid;grid-template-columns:minmax(300px,380px) minmax(0,1fr);gap:0;margin-top:0;background:#fff;border:1px solid var(--line);border-radius:12px;overflow:hidden;min-height:calc(100vh - 150px);align-items:stretch}
+.msg-l{padding:16px;border-right:1px solid var(--line);display:flex;flex-direction:column;gap:10px;min-width:0;max-height:calc(100vh - 130px);overflow:auto}
+.msg-l h1{font:700 22px var(--font-display)}
+.msg-s{display:flex;align-items:center;gap:8px;border:1px solid var(--line);border-radius:10px;padding:0 12px;background:var(--bg)}.msg-s svg{color:var(--muted);font-size:18px}.msg-s input{border:0;background:transparent;padding:11px 0;width:100%;font-size:15px;outline:0}
+#msgList{display:grid;gap:6px}
+.msg-r{padding:16px 20px;min-width:0;display:flex;flex-direction:column;max-height:calc(100vh - 130px);overflow:auto;border:0;border-radius:0;background:#fff}
+.mr-h{display:flex;align-items:center;gap:12px;flex-wrap:nowrap;border-bottom:1px solid var(--line);padding-bottom:12px;margin-bottom:10px}
+.mr-w{min-width:0;flex:1}.mr-w h3{font:700 17px var(--font-display);margin:0}.mr-w small{display:block;color:var(--muted)}
+.mr-x{display:flex;gap:8px;align-items:center}
+.ic-b{width:40px;height:40px;border:1px solid var(--line);background:#fff;border-radius:10px;display:grid;place-items:center;color:var(--muted)}.ic-b svg{font-size:19px}.ic-b.on{color:#e0a100;border-color:#e0a100;background:#fff8e1}.ic-b.on svg{fill:currentColor}
+.mr-back{display:none}
+.mr-i{display:grid;grid-template-columns:auto minmax(0,1fr) auto minmax(0,1fr);gap:4px 14px;margin:0 0 6px;font-size:13px;background:var(--bg);border-radius:10px;padding:10px 12px}.mr-i dt{color:var(--muted)}.mr-i dd{margin:0;font-weight:600}
+.mr-i2{margin:0 0 6px}
+.mr-hist{flex:1;min-height:80px}
+.mr-f{margin-top:auto;padding-top:10px;border-top:1px solid var(--line)}
+/* buy leads */
+.tabs2{margin-top:16px;gap:0;border-bottom:2px solid var(--line)}
+.tabs2 button{border:0;background:transparent;border-radius:0;padding:12px 18px;font:600 15px var(--font-display);margin-bottom:-2px;border-bottom:3px solid transparent;color:var(--muted);min-height:46px}
+.tabs2 button span{display:inline-block;margin-left:6px;background:var(--surface-2);color:var(--muted);border-radius:99px;font-size:12px;padding:1px 8px}
+.tabs2 button.on{background:transparent;color:var(--blue);border-bottom-color:var(--blue)}.tabs2 button.on span{background:var(--sky-bg);color:var(--blue)}
+.ld-f{grid-template-columns:repeat(4,minmax(0,1fr)) auto;margin-top:12px;align-items:end}
+.ld-f .lnk{align-self:center}
+/* more */
+.mc{display:flex;gap:14px;align-items:center}.mc img{width:64px;height:64px;border-radius:12px;object-fit:cover;border:1px solid var(--line)}.mc h1{font:700 22px var(--font-display)}.mc p{color:var(--muted)}
+.more-g{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin-top:16px;align-items:start}
+.ml{display:grid;gap:2px}
+.ml button{display:grid;grid-template-columns:28px minmax(0,1fr) auto;gap:12px;align-items:center;text-align:left;border:0;background:transparent;border-radius:10px;padding:10px 8px;min-height:56px}
+.ml button:hover{background:var(--surface-2)}.ml button svg{font-size:22px;color:var(--blue)}.ml b{display:block;font-size:15px}.ml small{color:var(--muted);font-size:12.5px}
+.ml em{background:var(--red);color:#fff;border-radius:99px;font:700 11px/18px var(--font-display);padding:0 8px;font-style:normal}.ml em:empty{display:none}
+.more-g .pf{grid-column:1/-1}
+@media (max-width:1100px){.hm3{grid-template-columns:repeat(2,minmax(0,1fr))}.hm3>:first-child{grid-column:1/-1}.sr{max-width:220px}.pnav button{padding:10px 12px}}
+@media (max-width:820px){
+ .pnav{display:none}
+ .bnav{grid-template-columns:repeat(4,1fr)}
+ .hd{flex-wrap:nowrap}.sr{display:none}.hn{margin-left:auto}.hn .it span{display:none}
+ .hd .brand b{font-size:17px}
+ .crumb{padding:10px 14px 0}
+ .main{padding:14px 14px 90px}
+ .hm3{grid-template-columns:minmax(0,1fr)}
+ .msg-g{grid-template-columns:minmax(0,1fr);min-height:0;border-radius:12px}
+ .msg-g .msg-r{display:none;max-height:none;padding:14px}.msg-g.open .msg-l{display:none}.msg-g.open .msg-r{display:flex}
+ .msg-l{border-right:0;max-height:none}
+ .mr-back{display:inline-flex;align-items:center;gap:4px;border:0;background:transparent;color:var(--blue);font-weight:700;padding:6px 4px 6px 0;min-height:40px}.mr-back span{display:none}
+ .mr-i{grid-template-columns:auto minmax(0,1fr)}
+ .mr-x .btn-ol{display:none}
+ .ld-f{grid-template-columns:repeat(2,minmax(0,1fr))}.ld-f label:first-child{grid-column:1/-1}
+ .tabs2{overflow-x:auto;flex-wrap:nowrap}.tabs2 button{flex:none;padding:12px 14px}
+ .more-g{grid-template-columns:minmax(0,1fr)}
+ .lc-s{grid-template-columns:minmax(0,1fr)}.lc-s .vr-btn{width:100%;justify-content:center}
+ .lc-s .lc-d{white-space:normal}
+}
+@media (max-width:560px){.bnav button{font-size:12px}}
+
+@media (max-width:560px){.tabs2 button{padding:12px 9px;font-size:14px}.tabs2 button span{margin-left:4px;padding:1px 6px}}
 </style><div class="sroot">
 
 <header class="hd">
-  <button class="burger" id="burger" type="button" aria-label="Open menu"><svg class="i" viewBox="0 0 24 24"><line x1="4" x2="20" y1="12" y2="12" /> <line x1="4" x2="20" y1="6" y2="6" /> <line x1="4" x2="20" y1="18" y2="18" /></svg></button>
+  <button class="burger" id="burger" type="button" aria-label="Open menu" hidden><svg class="i" viewBox="0 0 24 24"><line x1="4" x2="20" y1="12" y2="12" /> <line x1="4" x2="20" y1="6" y2="6" /> <line x1="4" x2="20" y1="18" y2="18" /></svg></button>
   <a class="brand" href="#home"><svg class="i gl" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c3 3 3 15 0 18M12 3c-3 3-3 15 0 18"/></svg><span><b>GlobalTrade<span>B2B</span>.com</b></span></a>
   <span class="vr"></span><span class="sc">Seller Centre</span>
-  <form class="sr" id="sForm" role="search"><input id="sQ" placeholder="Search enquiries, buyers or products" aria-label="Search enquiries"><span class="ico"><svg class="i" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8" /> <path d="m21 21-4.3-4.3" /></svg></span><button class="sb" type="submit">Search</button></form>
+  <nav class="pnav" id="pnav" aria-label="Seller Centre"></nav>
+  <form class="sr" id="sForm" role="search"><input id="sQ" placeholder="Search enquiries" aria-label="Search enquiries"><span class="ico"><svg class="i" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8" /> <path d="m21 21-4.3-4.3" /></svg></span><button class="sb" type="submit">Search</button></form>
   <nav class="hn">
-    <button class="it" type="button" data-sv="leads"><svg class="i" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8" /> <path d="m21 21-4.3-4.3" /></svg><span>Buy Leads</span></button>
-    <button class="it" type="button" data-sv="msgs"><svg class="i" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" /></svg><span>Messages</span><em class="bd" id="msgBd" style="font-style:normal">0</em></button>
-    <button class="it" type="button" data-sv="notifs"><svg class="i" viewBox="0 0 24 24"><path d="M10.268 21a2 2 0 0 0 3.464 0" /> <path d="M3.262 15.326A1 1 0 0 0 4 17h16a1 1 0 0 0 .74-1.673C19.41 13.956 18 12.499 18 8A6 6 0 0 0 6 8c0 4.499-1.411 5.956-2.738 7.326" /></svg><span>Alerts</span><em class="bd" id="ntBd" style="font-style:normal">0</em></button>
-    <span class="sep"></span>
+    <button class="it" type="button" data-sv="notifs" aria-label="Notifications"><svg class="i" viewBox="0 0 24 24"><path d="M10.268 21a2 2 0 0 0 3.464 0" /> <path d="M3.262 15.326A1 1 0 0 0 4 17h16a1 1 0 0 0 .74-1.673C19.41 13.956 18 12.499 18 8A6 6 0 0 0 6 8c0 4.499-1.411 5.956-2.738 7.326" /></svg><span>Alerts</span><em class="bd" id="ntBd" style="font-style:normal">0</em></button>
+    <em class="bd" id="msgBd" style="font-style:normal;display:none">0</em>
     <div class="acct"><button class="it" type="button" id="acctBtn" aria-haspopup="true" aria-expanded="false"><svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" /> <circle cx="12" cy="10" r="3" /> <path d="M7 20.662V19a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v1.662" /></svg><span>Account</span></button>
       <div class="menu" id="acctMenu" hidden><button type="button" data-sv="profile">Company Profile</button><button type="button" data-sv="settings">Settings</button><button type="button" data-sv="help">Help Centre</button><button type="button" data-home>View marketplace as buyer</button><button type="button" data-signout>Sign out</button></div></div>
   </nav>
@@ -1660,20 +1751,44 @@ h1,h2,h3{letter-spacing:-.01em}
     <div class="co"><img id="coLogo" alt="Tapis Decor Industries logo" src="data:image/jpeg;base64,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"><div><b id="coName">Tapis Decor Industries</b><small id="coType">Manufacturer, Supplier</small><span class="ver"><svg class="i" viewBox="0 0 24 24" style="font-size:18px"><path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/><path d="M9 12l2 2 4-4"/></svg>Demo seller account</span></div></div>
     <div class="nv" id="nv"></div>
   </aside>
-  <main class="main" id="vDash">
-    <div class="top-row"><div><h1 id="welcomeH">Namaste</h1><p>Here is what needs your attention today.</p></div>
-      <label class="range"><svg class="i" viewBox="0 0 24 24"><path d="M8 2v4" /> <path d="M16 2v4" /> <rect width="18" height="18" x="3" y="4" rx="2" /> <path d="M3 10h18" /></svg><select id="range" aria-label="Period for catalogue views"><option value="7">Last 7 days</option><option value="30" selected>Last 30 days</option><option value="90">Last 90 days</option></select></label></div>
-    <div class="hmc-g" id="kpis"></div>
-    <div class="qa2" id="qa"><b>What would you like to do?</b><div class="qa2-b" id="qaBtns"></div></div>
-    <div class="hm-g">
-      <section class="cd hm-enq"><div class="sec-h"><h2>Recent enquiries</h2><button type="button" class="lnk" data-sv="enq">View all enquiries <path d="m9 18 6-6-6-6" /></button></div><div class="lc-list" id="hmEnq"></div></section>
-      <aside class="hm-side">
-        <section class="cd"><h2>Today at a glance</h2><ul class="sum-l" id="hmSum"></ul><p class="calc-note" id="kpiNote"></p></section>
-        <section class="cd"><h2>Complete your profile</h2><div class="pct" id="cpPct">0%<small>Complete</small></div><div class="bar"><i id="cpBar"></i></div>
-          <ul class="ck" id="cpList"></ul>
-          <button class="btn-ol" type="button" id="cpGo">Complete now <svg class="i" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6" /></svg></button></section>
-        <section class="cd hm-help"><h2>Need help?</h2><p>Short answers on adding products, replying to buyers and sharing your catalogue.</p><button class="btn-ol" type="button" data-sv="help">Open Help Centre</button></section>
-      </aside>
+  <div class="crumb" id="crumb" hidden><button type="button" data-sv="more"><svg class="i" viewBox="0 0 24 24"><path d="m12 19-7-7 7-7" /> <path d="M19 12H5" /></svg>Account / More</button></div>
+<main class="main" id="vDash">
+    <div class="top-row"><div><h1 id="welcomeH">Namaste</h1><p>Your latest messages and buy leads. <span class="demo-tag">Demonstration data</span></p></div></div>
+    <div class="strip" id="hmStrip"></div>
+    <div class="shortcuts" id="qaBtns"></div>
+    <div class="hm3">
+      <section class="cd pnl"><div class="sec-h"><h2>Recent messages</h2><button type="button" class="lnk" data-sv="msgs">View all <path d="m9 18 6-6-6-6" /></button></div><div class="pl-list" id="hmMsgs"></div></section>
+      <section class="cd pnl"><div class="sec-h"><h2>Relevant buy leads</h2><button type="button" class="lnk" data-sv="leads">View all <path d="m9 18 6-6-6-6" /></button></div><p class="pl-s">Match your live products</p><div class="pl-list" id="hmRel"></div></section>
+      <section class="cd pnl"><div class="sec-h"><h2>Recent buy leads</h2><button type="button" class="lnk" data-sv="leads">View all <path d="m9 18 6-6-6-6" /></button></div><p class="pl-s">Newest requirements</p><div class="pl-list" id="hmRec"></div></section>
+    </div>
+    <select id="range" hidden aria-hidden="true"><option value="7">7</option><option value="30" selected>30</option><option value="90">90</option></select>
+  </main>
+  <main class="main" id="vMore" hidden>
+    <div class="mc"><img id="mcLogo" alt="" src=""><div><h1 id="mcName">Your company</h1><p id="mcType"></p><span class="ver"><svg class="i" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5" /></svg>Demo seller account</span></div></div>
+    <div class="more-g">
+      <section class="cd"><h2>Enquiries and orders</h2><div class="ml">
+        <button type="button" data-sv="enq"><svg class="i" viewBox="0 0 24 24"><polyline points="22 12 16 12 14 15 10 15 8 12 2 12" /> <path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z" /></svg><span><b>My Enquiries</b><small>Reply, add notes, set follow-ups</small></span><em id="moreEnq"></em></button>
+        <button type="button" data-sv="orders"><svg class="i" viewBox="0 0 24 24"><circle cx="8" cy="21" r="1" /> <circle cx="19" cy="21" r="1" /> <path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12" /></svg><span><b>Orders</b><small>Sample orders and their status</small></span></button></div></section>
+      <section class="cd"><h2>Products</h2><div class="ml">
+        <button type="button" data-sv="add"><svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" /> <path d="M8 12h8" /> <path d="M12 8v8" /></svg><span><b>Add a product</b><small>Photos, price and minimum order</small></span></button>
+        <button type="button" data-sv="manage"><svg class="i" viewBox="0 0 24 24"><path d="M11 21.73a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73z" /> <path d="M12 22V12" /> <path d="m3.3 7 7.703 4.734a2 2 0 0 0 1.994 0L20.7 7" /> <path d="m7.5 4.27 9 5.15" /></svg><span><b>My Products</b><small>Edit, pause or resume listings</small></span></button>
+        <button type="button" data-sv="catalogue"><svg class="i" viewBox="0 0 24 24"><path d="M12 7v14" /> <path d="M3 18a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h5a4 4 0 0 1 4 4 4 4 0 0 1 4-4h5a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1h-6a3 3 0 0 0-3 3 3 3 0 0 0-3-3z" /></svg><span><b>Catalogue</b><small>Print, download or share your catalogue</small></span></button>
+        <button type="button" data-sv="groups"><svg class="i" viewBox="0 0 24 24"><rect width="7" height="7" x="3" y="3" rx="1" /> <rect width="7" height="7" x="3" y="14" rx="1" /> <path d="M14 4h7" /> <path d="M14 9h7" /> <path d="M14 15h7" /> <path d="M14 20h7" /></svg><span><b>Product groups</b><small>Organise products</small></span></button>
+        <button type="button" data-sv="catviews"><svg class="i" viewBox="0 0 24 24"><path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0" /> <circle cx="12" cy="12" r="3" /></svg><span><b>Catalogue Views</b><small>Which products buyers open</small></span></button></div></section>
+      <section class="cd"><h2>Business</h2><div class="ml">
+        <button type="button" data-sv="profile"><svg class="i" viewBox="0 0 24 24"><path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z" /> <path d="M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2" /> <path d="M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2" /> <path d="M10 6h4" /> <path d="M10 10h4" /> <path d="M10 14h4" /> <path d="M10 18h4" /></svg><span><b>Company Profile</b><small>Logo, photos, address, business type</small></span></button>
+        <button type="button" data-sv="reports"><svg class="i" viewBox="0 0 24 24"><path d="M3 3v16a2 2 0 0 0 2 2h16" /> <path d="M18 17V9" /> <path d="M13 17V5" /> <path d="M8 17v-3" /></svg><span><b>Reports</b><small>Enquiries and orders at a glance</small></span></button>
+        <button type="button" data-sv="promote"><svg class="i" viewBox="0 0 24 24"><path d="m3 11 18-5v12L3 14v-3z" /> <path d="M11.6 16.8a3 3 0 1 1-5.8-1.6" /></svg><span><b>Promote Products</b><small>Sponsored placements (demo)</small></span></button>
+        <button type="button" data-sv="team"><svg class="i" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" /> <circle cx="9" cy="7" r="4" /> <path d="M22 21v-2a4 4 0 0 0-3-3.87" /> <path d="M16 3.13a4 4 0 0 1 0 7.75" /></svg><span><b>Team Members</b><small>Colleagues and roles (demo)</small></span></button></div></section>
+      <section class="cd"><h2>Account</h2><div class="ml">
+        <button type="button" data-sv="notifs"><svg class="i" viewBox="0 0 24 24"><path d="M10.268 21a2 2 0 0 0 3.464 0" /> <path d="M3.262 15.326A1 1 0 0 0 4 17h16a1 1 0 0 0 .74-1.673C19.41 13.956 18 12.499 18 8A6 6 0 0 0 6 8c0 4.499-1.411 5.956-2.738 7.326" /></svg><span><b>Notifications</b><small>New enquiries, leads and reminders</small></span><em id="moreNt"></em></button>
+        <button type="button" data-sv="settings"><svg class="i" viewBox="0 0 24 24"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z" /> <circle cx="12" cy="12" r="3" /></svg><span><b>Settings</b><small>Alerts and preferences</small></span></button>
+        <button type="button" data-sv="help"><svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" /> <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" /> <path d="M12 17h.01" /></svg><span><b>Help Centre</b><small>Short answers for sellers</small></span></button>
+        <button type="button" data-home><svg class="i" viewBox="0 0 24 24"><path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8" /> <path d="M3 10a2 2 0 0 1 .709-1.528l7-5.999a2 2 0 0 1 2.582 0l7 5.999A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" /></svg><span><b>View marketplace as buyer</b><small>See what buyers see</small></span></button>
+        <button type="button" data-signout><svg class="i" viewBox="0 0 24 24"><path d="M18 6 6 18" /> <path d="m6 6 12 12" /></svg><span><b>Sign out</b><small>Demonstration sign-out</small></span></button></div></section>
+      <section class="cd pf"><h2>Complete your profile</h2><div class="pct" id="cpPct">0%<small>Complete</small></div><div class="bar"><i id="cpBar"></i></div>
+        <ul class="ck" id="cpList"></ul>
+        <button class="btn-ol" type="button" id="cpGo">Complete now <svg class="i" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6" /></svg></button></section>
     </div>
   </main>
 <main class="main" id="vEnq" hidden>
@@ -1683,14 +1798,16 @@ h1,h2,h3{letter-spacing:-.01em}
  <p class="tf2" id="enqCount"></p>
 </main>
 <main class="main" id="vLeads" hidden>
- <div class="top-row"><div><h1>Buy Leads</h1><p>Requirements posted by buyers. Pick the ones that match what you make and respond. <span class="demo-tag">Demonstration data</span></p></div></div>
+ <div class="top-row"><div><h1>Buy Leads</h1><p>Requirements posted by buyers. Respond to the ones that match what you make. <span class="demo-tag">Demonstration data</span></p></div></div>
+ <div class="fchips tabs2" id="ldTabs" role="tablist"></div>
  <div class="ld-f cd">
-  <label>Product<input id="ldQ" type="search" placeholder="For example: jute rugs" autocomplete="off"></label>
+  <label>Product / category<input id="ldQ" type="search" placeholder="For example: jute rugs" autocomplete="off"></label>
   <label>Location<select id="ldLoc"></select></label>
   <label>Quantity<select id="ldQty"><option value="0">Any quantity</option><option value="1">Up to 500</option><option value="2">500 to 2,000</option><option value="3">Above 2,000</option></select></label>
-  <label>Posted<select id="ldDate"><option value="99">Any time</option><option value="0">Today</option><option value="1">Last 2 days</option><option value="7">Last 7 days</option></select></label>
+  <label>Lead date<select id="ldDate"><option value="99">Any time</option><option value="0">Today</option><option value="1">Last 2 days</option><option value="7">Last 7 days</option></select></label>
+  <button type="button" class="lnk" id="ldClr" hidden>Clear filters</button>
  </div>
- <div class="tools"><div class="fchips" id="ldTabs"></div></div>
+ <p class="tf2" id="ldHint"></p>
  <div class="lc-list" id="ldList"></div>
  <p class="tf2" id="ldCount"></p>
 </main>
@@ -1744,10 +1861,9 @@ h1,h2,h3{letter-spacing:-.01em}
  </div>
 </main>
 <main class="main" id="vMsgs" hidden>
- <div class="top-row"><div><h1>Messages</h1><p>Your conversations with buyers. Unread ones are marked with a dot. Replies are shown to the buyer under My Enquiries. <span class="demo-tag">Demonstration data</span></p></div></div>
  <div class="msg-g" id="msgG">
-  <section class="msg-l cd"><div class="fchips" id="msgTabs"></div><div id="msgList"></div></section>
-  <section class="msg-r cd" id="msgR"></section>
+  <section class="msg-l"><h1>Messages</h1><div class="msg-s"><svg class="i" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8" /> <path d="m21 21-4.3-4.3" /></svg><input id="msgQ" type="search" placeholder="Search by buyer or product" aria-label="Search conversations"></div><div class="fchips" id="msgTabs"></div><div id="msgList"></div><p class="tf2">Demonstration conversations, saved in this browser.</p></section>
+  <section class="msg-r" id="msgR"></section>
  </div>
 </main>
 <main class="main" id="vNotifs" hidden>
@@ -3561,7 +3677,8 @@ truck:'<path d="M14 18V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v11a1 1 0 0 0 1 1h2" /> <p
 leads:'<circle cx="12" cy="12" r="10" /> <circle cx="12" cy="12" r="6" /> <circle cx="12" cy="12" r="2" />',
 up:'<path d="m18 15-6-6-6 6" />',
 back:'<path d="m12 19-7-7 7-7" /> <path d="M19 12H5" />',
-filter:'<line x1="21" x2="14" y1="4" y2="4" /> <line x1="10" x2="3" y1="4" y2="4" /> <line x1="21" x2="12" y1="12" y2="12" /> <line x1="8" x2="3" y1="12" y2="12" /> <line x1="21" x2="16" y1="20" y2="20" /> <line x1="12" x2="3" y1="20" y2="20" /> <line x1="14" x2="14" y1="2" y2="6" /> <line x1="8" x2="8" y1="10" y2="14" /> <line x1="16" x2="16" y1="18" y2="22" />'
+filter:'<line x1="21" x2="14" y1="4" y2="4" /> <line x1="10" x2="3" y1="4" y2="4" /> <line x1="21" x2="12" y1="12" y2="12" /> <line x1="8" x2="3" y1="12" y2="12" /> <line x1="21" x2="16" y1="20" y2="20" /> <line x1="12" x2="3" y1="20" y2="20" /> <line x1="14" x2="14" y1="2" y2="6" /> <line x1="8" x2="8" y1="10" y2="14" /> <line x1="16" x2="16" y1="18" y2="22" />',
+list:'<rect width="7" height="7" x="3" y="3" rx="1" /> <rect width="7" height="7" x="3" y="14" rx="1" /> <path d="M14 4h7" /> <path d="M14 9h7" /> <path d="M14 15h7" /> <path d="M14 20h7" />'
 };
 function ic(n){return '<svg class="i" viewBox="0 0 24 24">'+P[n]+'</svg>'}
 
@@ -3587,27 +3704,16 @@ var SS=Store.seller.get();
 function closeRow(){}
 var view='dash';
 function mine(){return PRODUCTS.filter(function(p){return p.mine})}
-var PV=['manage','add','groups','catalogue'],navOpen=true;
-var NAVS=[['home','Home','dash'],['mail','My Enquiries','enq','enq'],['find','Buy Leads','leads','leads'],['msg','Messages','msgs','msgs'],['box','My Products','*'],['eye','Catalogue Views','catviews'],['bld','Company Profile','profile'],['cart','Orders','orders'],['chart','Reports','reports'],['--','More'],['bell','Notifications','notifs','nt'],['mega','Promote Products','promote','','Demo'],['users','Team Members','team'],['gear','Settings','settings'],['help','Help Centre','help']];
-var PSUB=[['Add a product','add'],['Manage products','manage'],['Product groups','groups'],['My catalogue','catalogue']];
-function navCounts(){var c={enq:0,leads:0,msgs:0,nt:0};try{c.enq=allEnq().filter(function(o){return gstat(o.r.st)==='New'}).length;c.leads=TABS[1].rows.filter(function(r){return gstat(r.st)==='New'}).length;c.msgs=Store.inbox.unread();c.nt=Store.notifs.unread()}catch(x){}return c}
+var PRIM=[['home','Home','dash'],['find','Buy Leads','leads'],['msg','Messages','msgs'],['menu','More','more']];
+function navCounts(){var c={enq:0,leads:0,msgs:0,nt:0,fu:0};try{c.enq=allEnq().filter(function(o){return gstat(o.r.st)==='New'}).length;c.leads=TABS[1].rows.filter(function(r){return gstat(r.st)==='New'}).length;c.msgs=Store.inbox.unread();c.nt=Store.notifs.unread();c.fu=dueRows().length}catch(x){}return c}
 function renderNav(){
- var h='',c=navCounts();
- NAVS.forEach(function(n){
-  if(n[0]==='--'){h+='<div class="nv-h">'+n[1]+'</div>';return}
-  if(n[2]==='*'){var on=PV.indexOf(view)>-1;h+='<button type="button" data-tgl="1" class="'+(on?'on ':'')+(navOpen?'open':'')+'" aria-expanded="'+navOpen+'">'+ic(n[0])+'<span>'+n[1]+' ('+mine().length+')</span><span class="chv">'+ic('down')+'</span></button>';
-   if(navOpen||on)h+='<div class="sub">'+PSUB.map(function(s){return '<button type="button" data-sv="'+s[1]+'" class="'+(view===s[1]?'on':'')+'">'+s[0]+'</button>'}).join('')+'</div>';return}
-  var k=n[3],cnt=k?c[k==='nt'?'nt':k]:0;
-  h+='<button type="button" data-sv="'+n[2]+'" class="'+(view===n[2]?'on':'')+'">'+ic(n[0])+'<span>'+n[1]+'</span>'+(n[4]?'<em class="new" style="font-style:normal">'+n[4]+'</em>':'')+(cnt?'<em class="cnt" style="font-style:normal">'+cnt+'</em>':'')+'</button>';
- });
- $('nv').innerHTML=h;
- var bn=[['home','Home','dash',0],['mail','Enquiries','enq',c.enq],['find','Leads','leads',c.leads],['msg','Messages','msgs',c.msgs]];
- $('bnav').innerHTML=bn.map(function(b){return '<button type="button" data-sv="'+b[2]+'" class="'+(view===b[2]?'on':'')+'">'+ic(b[0])+'<span>'+b[1]+'</span>'+(b[3]?'<em>'+(b[3]>99?'99+':b[3])+'</em>':'')+'</button>'}).join('')+'<button type="button" data-more="1">'+ic('menu')+'<span>More</span></button>';
- var pc=$('pcount');if(pc)pc.textContent=mine().length;
+ var c=navCounts(),cnt={leads:c.leads,msgs:c.msgs,more:0,dash:0},prim=['dash','leads','msgs'];
+ var h=PRIM.map(function(n){var on=view===n[2]||(n[2]==='more'&&prim.indexOf(view)<0);var k=cnt[n[2]];return '<button type="button" data-sv="'+n[2]+'" class="'+(on?'on':'')+'"'+(on?' aria-current="page"':'')+'>'+ic(n[0])+'<span>'+n[1]+'</span>'+(k?'<em>'+(k>99?'99+':k)+'</em>':'')+'</button>'}).join('');
+ $('pnav').innerHTML=h;$('bnav').innerHTML=h;
+ var me=$('moreEnq');if(me)me.textContent=c.enq?c.enq+' new':'';var mn=$('moreNt');if(mn)mn.textContent=c.nt?c.nt+' unread':'';
+ var cr=$('crumb');if(cr)cr.hidden=prim.indexOf(view)>-1||view==='more';
 }
 function goDash(i){closeSide();if(i===1)setView('leads');else if(i===0)setView('enq');else if(i===3)setView('orders');else setView('dash')}
-$('nv').addEventListener('click',function(e){if(e.target.closest('[data-tgl]')){navOpen=!navOpen;renderNav()}});
-$('bnav').addEventListener('click',function(e){if(e.target.closest('[data-more]')){$('side').classList.add('show');$('scrim').classList.add('show')}});
 
 /* table data (kept from the original Seller Centre) */
 var FL={UAE:'linear-gradient(90deg,#c8102e 0 25%,transparent 25%),linear-gradient(#00732f 33.3%,#fff 33.3% 66.6%,#111 66.6%)',
@@ -3673,7 +3779,7 @@ function leadCard(o,mode){
  +(n&&(n.t||n.fu)?'<p class="lc-n">'+ic('note')+(n.t?esc(n.t):'')+(n.fu?'<span class="fu'+(due?' due':'')+'">'+ic('cal')+(due?'Follow up due ':'Follow up ')+esc(n.fu)+'</span>':'')+'</p>':'')
  +'<div class="lc-a">';
  if(mode==='order')h+='<button type="button" class="vr-btn" data-a="order">'+ic('doc')+'View order</button>';
- else if(mode==='lead'){var sv=savedLeads().indexOf(k)>-1;h+='<button type="button" class="vr-btn" data-a="reply">'+ic('send')+'Respond to buyer</button><button type="button" class="btn-ol sm" data-a="view">'+ic('eye')+'View requirement</button><button type="button" class="btn-ol sm'+(sv?' on':'')+'" data-a="save" aria-pressed="'+sv+'">'+ic('save')+(sv?'Saved':'Save')+'</button>'}
+ else if(mode==='lead'){var sv=savedLeads().indexOf(k)>-1;h+='<button type="button" class="vr-btn" data-a="reply">'+ic('send')+'Respond</button><button type="button" class="btn-ol sm" data-a="view">'+ic('eye')+'View requirement</button><button type="button" class="btn-ol sm'+(sv?' on':'')+'" data-a="save" aria-pressed="'+sv+'">'+ic('save')+(sv?'Saved':'Save')+'</button>'}
  else{h+='<button type="button" class="vr-btn" data-a="reply">'+ic('send')+'Reply</button><button type="button" class="btn-ol sm" data-a="call">'+ic('phone')+'Call</button><button type="button" class="btn-ol sm" data-a="msg">'+ic('msg')+'Message</button><button type="button" class="btn-ol sm" data-a="quote">'+ic('quote')+'Quotation</button><button type="button" class="btn-ol sm" data-a="note">'+ic('note')+(n?'Edit note':'Note')+'</button>'
   +'<select class="lc-st" data-a="status" aria-label="Change status for '+esc(r.t)+'">'+SLBL.map(function(s){return '<option'+(s===g?' selected':'')+'>'+s+'</option>'}).join('')+'</select>'}
  h+='</div>';
@@ -3682,30 +3788,41 @@ function leadCard(o,mode){
 }
 function bindImgs(){}
 
+/* ===== lead helpers for Home and Buy Leads ===== */
+function leadRows(){return TABS[1].rows.map(function(r,i){return {r:r,ti:1,i:i}})}
+function relevantRows(){
+ var names=mine().filter(function(p){return !p.paused}).map(function(p){return p.name.toLowerCase()});
+ return leadRows().filter(function(o){var t=o.r.t.toLowerCase();return gstat(o.r.st)==='New'&&names.some(function(n){return n===t||n.indexOf(t)>-1||t.indexOf(n)>-1})}).sort(function(a,b){return parseQty(b.r.qty)-parseQty(a.r.qty)});
+}
+function recentRows(){return leadRows().map(function(o,k){o.k=k;return o}).sort(function(a,b){return dAge(a.r.dt)-dAge(b.r.dt)||a.k-b.k})}
+function leadRow(o){
+ var r=o.r,g=gstat(r.st);
+ return '<article class="lc lc-s" data-t="1" data-i="'+o.i+'"><div class="lc-b"><div class="lc-t"><b>'+esc(r.t)+'</b>'+(g==='New'?'':'<span class="bdg b-con">Replied</span>')+'</div>'
+ +'<div class="lc-m"><span class="m-q">'+ic('box')+esc(r.qty)+'</span><span class="m-l">'+flag(r.co)+esc((r.city?r.city+', ':'')+r.co)+'</span><span class="m-t">'+ic('clock')+esc(r.dt)+'</span></div>'
+ +'<p class="lc-d">'+esc(r.d)+' &middot; '+esc(r.by)+'</p></div><button type="button" class="vr-btn" data-a="reply">'+ic('send')+'Respond</button></article>';
+}
 /* ===== Home ===== */
-var RANGE={7:[9,18,412,6,3],30:[24,48,1362,16,8],90:[61,131,3980,42,21]};
-function renderKpis(){
- var n=+$('range').value,A=null,V=RANGE[n][2];try{A=activity(n);V=A.V}catch(x){}
- var c=navCounts(),fu=dueRows().length;
- var K=[['mail','New enquiries',c.enq,'Waiting for your reply','enq','c1'],['find','New buy leads',c.leads,'Buyers looking for products like yours','leads','c2'],['eye','Catalogue views',V.toLocaleString('en-IN'),'In the last '+n+' days','catviews','c3'],['clock','Follow-ups due',fu,fu?'Call or message these buyers today':'Nothing due. Well done','due','c4']];
- $('kpis').innerHTML=K.map(function(k,i){return '<button type="button" class="hmc '+k[5]+'" data-k="'+k[4]+'"><span class="hmc-i">'+ic(k[0])+'</span><span class="hmc-n">'+k[2]+'</span><span class="hmc-l">'+k[1]+'</span><span class="hmc-s">'+k[3]+'</span></button>'}).join('');
- var kn=$('kpiNote');if(kn)kn.innerHTML='<span class="demo-tag">Demonstration data</span> Catalogue views are calculated for this demo.';
- renderSummary();
+function renderKpis(){renderHome()}
+function threadRow(t,sel){
+ var l=t.msgs[t.msgs.length-1],fav=favs().indexOf(t.id)>-1;
+ return '<button type="button" class="mt'+(sel?' on':'')+(t.unread?' un':'')+'" data-mt="'+esc(t.id)+'"><span class="av" aria-hidden="true">'+esc((t.who.replace(/^Demo buyer:\s*/,'')||'B').charAt(0).toUpperCase())+'</span><span class="mt-b"><b>'+(t.unread?'<span class="dot" aria-label="Unread"></span>':'')+esc(t.who.replace(/^Demo buyer:\s*/,''))+(fav?'<i class="fv">'+ic('save')+'</i>':'')+'</b><small class="mt-t">'+esc(t.title)+'</small><small>'+(l.me?'You: ':'')+esc(l.text)+'</small></span><small class="mt-d">'+esc(ago(t.last))+'</small></button>';
 }
-function renderSummary(){
- var A=null;try{A=activity(7)}catch(x){}
- var all=allEnq(),replied=all.filter(function(o){return gstat(o.r.st)==='Contacted'||gstat(o.r.st)==='Quotation sent'}).length,td=all.filter(function(o){return dAge(o.r.dt)===0}).length,ld=TABS[1].rows.filter(function(r){return dAge(r.dt)===0}).length;
- var L=[['mail',td+' new enquiries today'],['find',ld+' new buy leads today'],['send',replied+' enquiries answered so far'],['eye',A?Math.round(A.V/7).toLocaleString('en-IN')+' catalogue views a day (last 7 days average)':'Catalogue views are not available']];
- $('hmSum').innerHTML=L.map(function(l){return '<li>'+ic(l[0])+'<span>'+l[1]+'</span></li>'}).join('');
+function favs(){if(!Array.isArray(SS.favs))SS.favs=[];return SS.favs}
+function renderHome(){
+ var c=navCounts(),A=null;
+ $('hmStrip').innerHTML=[['mail',c.enq+' new '+(c.enq===1?'enquiry':'enquiries'),'enq','New'],['clock',c.fu+' follow-up'+(c.fu===1?'':'s')+' due','enq','due'],['find',c.leads+' new buy lead'+(c.leads===1?'':'s'),'leads','']].map(function(k){return '<button type="button" class="chip2" data-hs="'+k[2]+'" data-hf="'+k[3]+'">'+ic(k[0])+'<b>'+k[1]+'</b></button>'}).join('');
+ var th=[];try{th=Store.inbox.threads().slice(0,4)}catch(x){}
+ $('hmMsgs').innerHTML=th.length?th.map(function(t){return threadRow(t,false)}).join(''):'<p class="mr-empty">No messages yet. Buyer enquiries appear here as conversations.</p>';
+ var rel=relevantRows().slice(0,4),rec=recentRows().slice(0,4);
+ $('hmRel').innerHTML=rel.length?rel.map(leadRow).join(''):'<p class="mr-empty">No new leads match your products right now.</p>';
+ $('hmRec').innerHTML=rec.length?rec.map(leadRow).join(''):'<p class="mr-empty">No buy leads yet.</p>';
 }
-function renderHomeEnq(){var rows=TABS[0].rows.slice(0,5).map(function(r,i){return {r:r,ti:0,i:i}});$('hmEnq').innerHTML=rows.length?rows.map(function(o){return leadCard(o,'enq')}).join(''):'<p class="mr-empty">No enquiries yet. When buyers ask about your products they appear here.</p>'}
-var QA=[['plus','Add product','add'],['mail','Reply to enquiries','enq'],['find','Find buy leads','leads'],['share','Share catalogue','catalogue'],['bld','Update profile','profile']];
+var QA=[['plus','Add product','add'],['mail','My enquiries','enq'],['share','Share catalogue','catalogue'],['bld','Update profile','profile']];
 $('qaBtns').innerHTML=QA.map(function(q){return '<button type="button" data-qa="'+q[2]+'">'+ic(q[0])+'<span>'+q[1]+'</span></button>'}).join('');
 $('qaBtns').addEventListener('click',function(e){var b=e.target.closest('[data-qa]');if(!b)return;var v=b.getAttribute('data-qa');if(v==='add')startAdd(null);setView(v)});
-$('kpis').addEventListener('click',function(e){var b=e.target.closest('[data-k]');if(!b)return;var v=b.getAttribute('data-k');if(v==='due'){enqF='due';setView('enq');return}if(v==='enq')enqF='New';setView(v)});
-$('range').addEventListener('change',function(){renderKpis()});
+$('hmStrip').addEventListener('click',function(e){var b=e.target.closest('[data-hs]');if(!b)return;var v=b.getAttribute('data-hs'),f=b.getAttribute('data-hf');if(v==='enq')enqF=f||'all';setView(v)});
 function syncCounts(){refreshLists()}
-function refreshLists(){renderKpis();renderHomeEnq();if(view==='enq')renderEnq();if(view==='leads')renderLeads();if(view==='orders')renderOrders();try{renderNav()}catch(x){}}
+function refreshLists(){renderHome();if(view==='enq')renderEnq();if(view==='leads')renderLeads();if(view==='orders')renderOrders();if(view==='msgs')renderMsgs();try{renderNav()}catch(x){}}
 
 /* ===== My Enquiries ===== */
 var enqF='all',enqQ='';
@@ -3726,23 +3843,34 @@ $('sForm').addEventListener('submit',function(e){e.preventDefault();enqQ=$('sQ')
 $('sQ').addEventListener('input',function(){if(!this.value.trim()&&enqQ){enqQ='';if(view==='enq')renderEnq()}});
 
 /* ===== Buy Leads ===== */
-var ldF='all';
-function renderLeads(){
- var rows=TABS[1].rows.map(function(r,i){return {r:r,ti:1,i:i}}),sv=savedLeads();
- var cos=[];rows.forEach(function(o){if(cos.indexOf(o.r.co)<0)cos.push(o.r.co)});
- var cur=$('ldLoc').value;$('ldLoc').innerHTML='<option value="">All locations</option>'+cos.map(function(c){return '<option'+(c===cur?' selected':'')+'>'+esc(c)+'</option>'}).join('');
+var ldF='rel';
+function leadsFor(tab){
+ var sv=savedLeads(),rows;
+ if(tab==='rel')rows=relevantRows();else if(tab==='export')rows=recentRows().filter(function(o){return o.r.co!=='India'});else if(tab==='saved')rows=recentRows().filter(function(o){return sv.indexOf(rkey(o.r,1))>-1});else rows=recentRows();
+ return rows;
+}
+function leadFilters(rows){
  var q=$('ldQ').value.trim().toLowerCase(),loc=$('ldLoc').value,qty=+$('ldQty').value,dd=+$('ldDate').value;
- var list=rows.filter(function(o){var r=o.r,n=parseQty(r.qty);
-  if(ldF==='saved'&&sv.indexOf(rkey(r,1))<0)return false;
+ return rows.filter(function(o){var r=o.r,n=parseQty(r.qty);
   if(q&&(r.t+' '+r.d).toLowerCase().indexOf(q)<0)return false;
   if(loc&&r.co!==loc)return false;
   if(qty===1&&n>500)return false;if(qty===2&&(n<500||n>2000))return false;if(qty===3&&n<=2000)return false;
   if(dd!==99&&dAge(r.dt)>dd)return false;return true});
- $('ldTabs').innerHTML=[['all','All leads ('+rows.length+')'],['saved','Saved ('+rows.filter(function(o){return sv.indexOf(rkey(o.r,1))>-1}).length+')']].map(function(t){return '<button type="button" data-lf="'+t[0]+'" class="'+(ldF===t[0]?'on':'')+'">'+t[1]+'</button>'}).join('');
- $('ldList').innerHTML=list.length?list.map(function(o){return leadCard(o,'lead')}).join(''):'<div class="empty-box2"><b>No leads match</b><p>'+(ldF==='saved'?'You have not saved any leads yet. Use Save on a lead you want to come back to.':'Try a different product, location or date.')+'</p></div>';
- $('ldCount').textContent='Showing '+list.length+' of '+rows.length+' buy leads.';
+}
+function renderLeads(){
+ var all=leadRows(),cos=[];all.forEach(function(o){if(cos.indexOf(o.r.co)<0)cos.push(o.r.co)});
+ var cur=$('ldLoc').value;$('ldLoc').innerHTML='<option value="">All locations</option>'+cos.map(function(c){return '<option'+(c===cur?' selected':'')+'>'+esc(c)+'</option>'}).join('');
+ var T=[['rel','Relevant'],['recent','Recent'],['export','Export'],['saved','Saved']];
+ $('ldTabs').innerHTML=T.map(function(t){return '<button type="button" role="tab" data-lf="'+t[0]+'" class="'+(ldF===t[0]?'on':'')+'" aria-selected="'+(ldF===t[0])+'">'+t[1]+' <span>'+leadsFor(t[0]).length+'</span></button>'}).join('');
+ var base=leadsFor(ldF),list=leadFilters(base);
+ var filt=!!($('ldQ').value.trim()||$('ldLoc').value||+$('ldQty').value||+$('ldDate').value!==99);$('ldClr').hidden=!filt;
+ var hint={rel:'New requirements that match your live products, largest quantity first.',recent:'All buyer requirements, newest first.',export:'Requirements from buyers outside India.',saved:'Leads you saved to come back to.'}[ldF];
+ $('ldHint').textContent=hint;
+ $('ldList').innerHTML=list.length?list.map(function(o){return leadCard(o,'lead')}).join(''):'<div class="empty-box2"><b>No leads here</b><p>'+(ldF==='saved'&&!base.length?'You have not saved any leads yet. Use Save on a lead you want to come back to.':filt?'No lead matches these filters. Clear the filters to see more.':ldF==='rel'?'No new leads match your products right now. Check the Recent tab.':'Nothing to show.')+'</p></div>';
+ $('ldCount').textContent='Showing '+list.length+' of '+base.length+' leads in '+T.filter(function(t){return t[0]===ldF})[0][1]+'. Demonstration data.';
 }
 ['ldQ','ldLoc','ldQty','ldDate'].forEach(function(id){$(id).addEventListener(id==='ldQ'?'input':'change',renderLeads)});
+$('ldClr').addEventListener('click',function(){$('ldQ').value='';$('ldLoc').value='';$('ldQty').value='0';$('ldDate').value='99';renderLeads()});
 $('ldTabs').addEventListener('click',function(e){var b=e.target.closest('[data-lf]');if(b){ldF=b.getAttribute('data-lf');renderLeads()}});
 
 /* ===== Orders ===== */
@@ -3796,7 +3924,7 @@ function cardAct(e){
  else if(a==='msg'){var th=r.eid?findThread(r.eid):null;if(th){msgSel=th.id;Store.inbox.markRead(th.id);setView('msgs')}else openDlg(ti,i,'reply')}
 }
 function cardChange(e){var s=e.target.closest('select[data-a="status"]');if(!s)return;var card=s.closest('.lc');setSt(+card.getAttribute('data-t'),+card.getAttribute('data-i'),s.value)}
-['hmEnq','enqList','ldList','ordList'].forEach(function(id){$(id).addEventListener('click',cardAct);$(id).addEventListener('change',cardChange)});
+['hmRel','hmRec','enqList','ldList','ordList'].forEach(function(id){$(id).addEventListener('click',cardAct);$(id).addEventListener('change',cardChange)});
 
 $('msgR').addEventListener('click',function(e){
  var s=e.target.closest('[data-mshare]'),q=e.target.closest('[data-mquote]');if(!s&&!q)return;var T=$('mrText');if(!T)return;
@@ -3805,14 +3933,22 @@ $('msgR').addEventListener('click',function(e){
  T.value=(T.value?T.value+'\n\n':'')+add;T.focus();
 });
 
+/* ===== Messages: favourites, search ===== */
+$('msgQ').addEventListener('input',function(){msgQ=this.value.trim();renderMsgs()});
+$('msgR').addEventListener('click',function(e){var f=e.target.closest('[data-mfav]');if(!f)return;var id=f.getAttribute('data-mfav'),a=favs(),k=a.indexOf(id);if(k>-1)a.splice(k,1);else a.push(id);sSave();renderMsgs();renderHome()});
+['hmMsgs'].forEach(function(id){$(id).addEventListener('click',function(e){var b=e.target.closest('[data-mt]');if(b){msgSel=b.getAttribute('data-mt');Store.inbox.markRead(msgSel);refreshBadges();setView('msgs')}})});
+/* ===== More (account) ===== */
+function renderMore(){var c=Store.company.get();$('mcName').textContent=c.name;$('mcType').textContent=c.type;$('mcLogo').src=c.logo||DEFLOGO;renderNav()}
+
 /* ===== views: dashboard / manage / add ===== */
-var VIEWS={dash:'vDash',enq:'vEnq',leads:'vLeads',orders:'vOrders',manage:'vManage',add:'vAdd',msgs:'vMsgs',notifs:'vNotifs',profile:'vProfile',catviews:'vCV',groups:'vGroups',catalogue:'vCat',reports:'vReports',promote:'vPromo',team:'vTeam',settings:'vSettings',help:'vHelp'};
+var VIEWS={more:'vMore',dash:'vDash',enq:'vEnq',leads:'vLeads',orders:'vOrders',manage:'vManage',add:'vAdd',msgs:'vMsgs',notifs:'vNotifs',profile:'vProfile',catviews:'vCV',groups:'vGroups',catalogue:'vCat',reports:'vReports',promote:'vPromo',team:'vTeam',settings:'vSettings',help:'vHelp'};
 function setView(v){
  if(!viewAllowed(v))return;
  view=v;
  Object.keys(VIEWS).forEach(function(k){$(VIEWS[k]).hidden=(k!==v)});
  $('shellEl').classList.toggle('nr',v!=='dash');
- if(v==='dash'){renderKpis();renderHomeEnq()}
+ if(v==='dash')renderHome();
+ if(v==='more')renderMore();
  if(v==='enq')renderEnq();
  if(v==='leads')renderLeads();
  if(v==='orders')renderOrders();
@@ -4013,22 +4149,26 @@ function refreshExt(){
  if(view==='notifs')renderNotifs();
 }
 /* --- messages --- */
+var msgQ='';
+function wide(){return window.matchMedia&&window.matchMedia('(min-width:821px)').matches}
 function renderMsgs(){
- var all=Store.inbox.threads(),un=all.filter(function(t){return t.unread}).length;
- $('msgTabs').innerHTML=[['all','All ('+all.length+')'],['unread','Unread ('+un+')']].map(function(t){return '<button type="button" data-mf2="'+t[0]+'" class="'+(msgF===t[0]?'on':'')+'">'+t[1]+'</button>'}).join('');
- var list=all.filter(function(t){return msgF==='all'||t.unread});
- $('msgList').innerHTML=list.length?list.map(function(t){
-  var l=t.msgs[t.msgs.length-1];
-  return '<button type="button" class="mt'+(t.id===msgSel?' on':'')+(t.unread?' un':'')+'" data-mt="'+esc(t.id)+'"><b>'+(t.unread?'<span class="dot" aria-label="Unread"></span>':'')+esc(t.title)+'</b><small>'+esc(t.who)+'</small><small>'+(l.me?'You: ':'')+esc(l.text)+'</small><small>'+ago(t.last)+'</small></button>'}).join('')
-  :'<p class="mr-empty">'+(all.length?'No unread messages.':'No messages yet. Enquiries sent to your company will appear here.')+'</p>';
+ var all,un,fv,q=msgQ.toLowerCase(),list;
+ function calc(){all=Store.inbox.threads();un=all.filter(function(t){return t.unread}).length;fv=all.filter(function(t){return favs().indexOf(t.id)>-1}).length;
+  list=all.filter(function(t){if(msgF==='unread'&&!t.unread)return false;if(msgF==='fav'&&favs().indexOf(t.id)<0)return false;var l=t.msgs[t.msgs.length-1];return !q||(t.title+' '+t.who+' '+l.text).toLowerCase().indexOf(q)>-1})}
+ calc();
+ if(!msgSel&&wide()&&list.length){msgSel=list[0].id;Store.inbox.markRead(msgSel);refreshBadges();try{renderNav()}catch(x){}calc()}
+ $('msgTabs').innerHTML=[['all','All ('+all.length+')'],['unread','Unread ('+un+')'],['fav','Favourites ('+fv+')']].map(function(t){return '<button type="button" data-mf2="'+t[0]+'" class="'+(msgF===t[0]?'on':'')+'">'+t[1]+'</button>'}).join('');
+ $('msgList').innerHTML=list.length?list.map(function(t){return threadRow(t,t.id===msgSel)}).join(''):'<p class="mr-empty">'+(all.length?(q?'No conversation matches that search.':msgF==='fav'?'No favourites yet. Tap the star in a conversation.':'No unread messages.'):'No messages yet. Enquiries sent to your company will appear here.')+'</p>';
  var t=all.filter(function(x){return x.id===msgSel})[0];
  $('msgG').classList.toggle('open',!!t);
  if(!t){$('msgR').innerHTML='<p class="mr-empty">Select a conversation to read and reply.</p>';return}
- var e=t.enq;
- $('msgR').innerHTML='<div class="mr-h"><div><button type="button" class="btn-ol mr-back" data-mback>&larr; All messages</button><h3>'+esc(t.title)+'</h3><small>'+esc(t.who)+(t.kind==='demo'?' (demonstration thread)':'')+'</small>'
-  +(e?'<small>Ref '+esc(e.id)+' &middot; Quantity '+esc((e.qty||'-')+' '+(e.unit||''))+(e.city?' &middot; '+esc(e.city):'')+' &middot; Status '+esc(e.status)+'</small>':'')+'</div><button type="button" class="btn-ol" data-munread="'+esc(t.id)+'">Mark as unread</button></div>'
-  +t.msgs.map(function(m){return '<div class="bub'+(m.me?' me':'')+'">'+esc(m.text)+'<small>'+(m.me?'You':esc(t.who))+' &middot; '+ago(m.at)+'</small></div>'}).join('')
-  +'<form class="mr-f" id="mrForm" data-tid="'+esc(t.id)+'"><div class="mr-q"><button type="button" class="btn-ol sm" data-mshare>'+ic('share')+'Share catalogue</button><button type="button" class="btn-ol sm" data-mquote>'+ic('quote')+'Add quotation</button></div><textarea id="mrText" rows="3" maxlength="1000" placeholder="Write a reply" aria-label="Reply"></textarea><em class="err" id="mrErr" role="alert"></em><button class="vr-btn big go" type="submit">Send reply</button>'
+ var e=t.enq,who=t.who.replace(/^Demo buyer:\s*/,''),fav=favs().indexOf(t.id)>-1;
+ $('msgR').innerHTML='<div class="mr-h"><button type="button" class="mr-back" data-mback aria-label="Back to all messages">'+ic('back')+'<span>Messages</span></button>'
+  +'<span class="av lg" aria-hidden="true">'+esc((who||'B').charAt(0).toUpperCase())+'</span><div class="mr-w"><h3>'+esc(who)+'</h3><small>'+esc(t.title)+(t.kind==='demo'?' <span class="demo-tag">Demonstration thread</span>':'')+'</small></div>'
+  +'<div class="mr-x"><button type="button" class="ic-b'+(fav?' on':'')+'" data-mfav="'+esc(t.id)+'" aria-pressed="'+fav+'" aria-label="'+(fav?'Remove from favourites':'Add to favourites')+'">'+ic('save')+'</button><button type="button" class="btn-ol sm" data-munread="'+esc(t.id)+'">Mark unread</button></div></div>'
+  +(e?'<dl class="mr-i"><dt>Product</dt><dd>'+esc(e.product||t.title)+'</dd><dt>Quantity</dt><dd>'+esc((e.qty||'-')+' '+(e.unit||''))+'</dd>'+(e.city?'<dt>Location</dt><dd>'+esc(e.city)+'</dd>':'')+'<dt>Status</dt><dd>'+esc(e.status)+'</dd><dt>Reference</dt><dd>'+esc(e.id)+'</dd></dl>':'<p class="hint mr-i2">Sample conversation from the demonstration. Nobody receives replies sent here.</p>')
+  +'<div class="mr-hist">'+t.msgs.map(function(m){return '<div class="bub'+(m.me?' me':'')+'">'+esc(m.text)+'<small>'+(m.me?'You':esc(who))+' &middot; '+ago(m.at)+'</small></div>'}).join('')+'</div>'
+  +'<form class="mr-f" id="mrForm" data-tid="'+esc(t.id)+'"><div class="mr-q"><button type="button" class="btn-ol sm" data-mshare>'+ic('share')+'Share catalogue</button><button type="button" class="btn-ol sm" data-mquote>'+ic('quote')+'Add quotation</button></div><textarea id="mrText" rows="3" maxlength="1000" placeholder="Write a reply" aria-label="Reply"></textarea><em class="err" id="mrErr" role="alert"></em><button class="vr-btn big go" type="submit">'+ic('send')+'Send reply</button>'
   +'<small class="hint">'+(e?'The buyer sees this reply under My Enquiries (demonstration, same browser).':'Demonstration thread: nobody receives this message.')+'</small></form>';
 }
 function openThread(id){msgSel=id;Store.inbox.markRead(id);refreshBadges();renderMsgs()}
