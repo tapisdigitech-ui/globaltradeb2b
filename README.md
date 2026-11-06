@@ -4,3 +4,9 @@ Static single-file prototype of a B2B marketplace. All companies, products, pric
 
 - `index.html` is the whole app. Data is stored in the browser's localStorage only.
 - No backend, authentication or payments are connected.
+
+## Redesign branch notes (redesign/homepage-v2)
+- Homepage CSS, copy and icons were redesigned; seller centre, admin console, storage and all marketplace logic are unchanged.
+- Category, product and hero photographs are hotlinked from Unsplash (Unsplash licence, free to use). They illustrate product categories only and are not photographs of any listed supplier's products. The footer states this.
+- Icons: Lucide (ISC licence), inlined as SVG.
+- Typeface: Inter (Google Fonts), Noto Sans Devanagari for Hindi.
