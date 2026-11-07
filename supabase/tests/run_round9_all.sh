@@ -17,6 +17,9 @@ bash tests/run_seed.sh > $LOG/seed.txt 2>&1;                                   c
 bash tests/run_sequence_acl.sh default > $LOG/seq_default.txt 2>&1;            cnt "6  sequence ACL (default platform)" $LOG/seq_default.txt
 bash tests/run_sequence_acl.sh classic > $LOG/seq_classic.txt 2>&1;            cnt "6b sequence ACL (classic-default-ACL platform)" $LOG/seq_classic.txt
 bash tests/run_sequence_acl.sh classic pre0008 > $LOG/seq_pre.txt 2>&1;        cnt "6c CONTROL sequence ACL tests WITHOUT 0008 (must show failures)" $LOG/seq_pre.txt
+bash tests/run_sequence_roles.sh default > $LOG/seqrole_default.txt 2>&1;      echo "6d genuine-role sequence tests (default platform): $(grep 'SEQUENCE ROLE TESTS' $LOG/seqrole_default.txt)"
+bash tests/run_sequence_roles.sh classic > $LOG/seqrole_classic.txt 2>&1;      echo "6e genuine-role sequence tests (classic platform): $(grep 'SEQUENCE ROLE TESTS' $LOG/seqrole_classic.txt)"
+bash tests/run_sequence_mutations.sh > $LOG/seqmut.txt 2>&1;                   echo "6f mutation control: $(grep -c '^DETECTED' $LOG/seqmut.txt) detected / $(grep -c '^MISSED' $LOG/seqmut.txt) missed"
 (cd functions/evidence-link && node --test 2>&1 | grep -E '^# (tests|pass|fail)' | tr '\n' ' ' | sed 's/^/7  Edge Function node tests: /'); echo
 bash tests/dry_run_0008.sh > $LOG/dry8.txt 2>&1;                               echo "8  0008 rollback/re-apply:"; grep -E "APPLY|ROLLBACK|diff|NORMALISED" $LOG/dry8.txt | sed 's/^/     /'
 bash tests/dry_run_0007.sh > $LOG/dry7.txt 2>&1;                               echo "8b 0007 rollback/re-apply:"; grep -E "diff|NORMALISED" $LOG/dry7.txt | sed 's/^/     /'

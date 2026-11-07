@@ -9,7 +9,7 @@ Branch `feature/supplier-intelligence-phase0`, started from `83f7a8c`. **LOCAL O
 | B2 | JWT-realistic harness | **Resolved locally, with documented hosted-only limits.** Real `auth.uid/role/email/jwt` definitions; whole suite now driven by `request.jwt.claims`; PostgREST emulator with signed HS256 tokens (43 claim tests + 22 evidence-link checks). | docs/JWT_TEST_COVERAGE.md |
 | B3 | Category seed | **Resolved locally.** `supabase/seed.sql`, 14 names from the app's own `SECTIONS`; idempotent, collision-guarded; 18 tests. **Equality with staging's categories is unverified** (not read). | docs/CATEGORY_SEED.md |
 | B4 | Edge `verify_jwt` | **Resolved.** Explicit `verify_jwt = true` in `config.toml` (test-pinned); 27 node tests incl. emulated gateway + 22 DB-side checks; enforcement split documented; function checks not weakened (one 401-mapping added). | docs/EDGE_FUNCTION_JWT.md |
-| B5 | Sequence ACLs | **Resolved locally** by new migration 0008 (revoke all 13 from PUBLIC/anon/authenticated/service_role, USAGE on `categories_id_seq` for authenticated only, default privileges closed). 16 ACL/attempt/legit-insert tests on two platform simulations; 404 suite passes with it. Staging's real sequence ACLs still need a hosted check. | docs/SEQUENCE_ACL_AUDIT.md |
+| B5 | Sequence ACLs | **Resolved locally** by new migration 0008 (revoke all 13 from PUBLIC/anon/authenticated/service_role, USAGE on `categories_id_seq` for authenticated only, default privileges closed). 16 ACL/attempt/legit-insert tests on two platform simulations; 404 suite passes with it. **Round 9.1 re-review (service_role focus): 0008 confirmed minimal; no 0009 needed.** Staging's six serial-sequence ACLs, owners and default ACLs were confirmed by one read-only catalogue SELECT (identical to the local pre-0008 state). | docs/SEQUENCE_ACL_AUDIT.md (Round 9.1 section) |
 | B6 | Organisation plan unconfirmed | **OPEN – cannot be resolved locally.** Branching requires a plan that supports it; the plan was not assumed or inspected. | docs/BRANCH_LIFECYCLE_COST_ASSESSMENT.md |
 
 ## 2. Migration commands and layout
@@ -28,6 +28,9 @@ Names/hue/order from `index.html` `SECTIONS` (14 entries); slugs from `make_slug
 
 ## 6. Sequence ACL audit
 13 sequences. Before: six serial sequences gave `authenticated` SELECT+USAGE; classic defaults would give all three roles ALL on any new sequence. After 0008: only `authenticated` USAGE on `categories_id_seq`. Rollback restores the original six; does not re-open default privileges; identity-sequence ACLs return as explicit owner-only (equivalent, fingerprint differs).
+
+## 6b. Round 9.1 – final sequence privilege review
+Findings: service_role has **no INSERT/UPDATE on any of the 13 sequence-backed tables** (local replica and staging catalogue), so 0008's revoke cannot break a service-role insert; its writes go through owner-run SECURITY DEFINER RPCs (verified: `record_product_view` works for a genuine service_role; admin-only RPCs correctly refuse a bare service key). Authenticated needs exactly one sequence (`categories_id_seq`, admin category insert); anon none. PostgreSQL does not check sequence privileges for identity columns, so the identity-sequence revokes only block direct `nextval/setval`. All definer functions are owned by postgres with pinned `public, pg_temp`. **Test gap found and closed:** the 404 suite would not notice a missing authenticated USAGE on `categories_id_seq` or a wrong owner on `record_product_view`; new genuine-role tests (28 checks) plus a 9-mutation control (9/9 detected) now cover both. Rule recorded: grant USAGE together with INSERT on any serial table (invariant test I1). Decision: **no migration 0009**; 0008 unchanged.
 
 ## 7. Privacy review proposals (not implemented)
 docs/PRIVACY_REVIEW_PROPOSAL.md: P1 admin `profiles.phone`, P2 admin orders, P3 `staff_open_enquiry_comms` purpose codes + references + per-enquiry cap, P4 denied-access logging (RPC pattern, flood caps; RLS cannot self-log). Plus the existing admin message-audit prototype. All outside the migration chain.
@@ -53,9 +56,11 @@ Reviewed in docs/INVITATION_TRANSITION_PROPOSAL.md (Round 9 section): affects on
 | 8b | 0007 rollback & re-apply | pg_dump 0, fingerprint 0, re-apply 0 |
 | 8c | Roll back all (0008…0001) vs untouched baseline | raw diff 25 lines (whitespace in function bodies); **normalised statement comparison: 0 differences, order-insensitive equal = True** |
 | 9 | Supabase CLI chain | 9 migrations + seed applied; re-push up to date; fingerprint identical (13 kinds) |
+| 6d | Genuine-role sequence tests (non-owner anon/authenticated/service_role, JWT claims), default and classic platform | 28 / 28 pass |
+| 6f | Mutation control (9 deliberate privilege/ownership breakages) | 9 detected, 0 missed (the 404 suite alone misses 2) |
 | 10–12 | Proposals: admin-audit 30 (+2 control), invitation 14 (+2), URL validation 9 (+2) | all pass |
 
-Reproduce everything: `SUPABASE_BIN=… bash supabase/tests/run_round9_all.sh`.
+Total of the Round 9.1 additions is included above; a second regression after the last test edit re-ran 6d/6e/6f (all green). Reproduce everything: `SUPABASE_BIN=… bash supabase/tests/run_round9_all.sh`.
 
 ## 10. Remaining hosted-only verification
 1. Confirm organisation plan supports branching and cost acceptance (B6) – before any branch.
