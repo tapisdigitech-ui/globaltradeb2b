@@ -842,6 +842,62 @@ input,select,textarea{font-size:16px}
 .bv-done .row{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
 @media (max-width:1000px){.bv-g{grid-template-columns:minmax(0,1fr)}.bv-cart{position:static;max-height:none}}
 @media (max-width:640px){#buyView h1{font-size:26px}.bv-steps{grid-template-columns:1fr}.bv-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.bv-det{grid-template-columns:1fr}#bkBar{gap:8px;padding:10px 12px}#bkBar b{font-size:15px;width:100%;text-align:center}}
+/* ===== Admin Lead Desk & Claim Management (DEMO ONLY) ===== */
+#deskView{background:var(--bg);min-height:100vh;color:var(--fg)}
+.dk-top{background:var(--navy);color:#fff;display:flex;align-items:center;gap:14px;padding:12px 20px;flex-wrap:wrap}
+.dk-top b{font-size:18px}.dk-top a{color:#fff;opacity:.85;font-size:14px}
+.dk-top .sp{flex:1}
+.dk-top label{display:flex;align-items:center;gap:8px;font-size:14px}
+.dk-top select{padding:8px 10px;border-radius:7px;border:0;font:700 14px var(--font-body);min-width:0}
+.dk-top button{background:transparent;color:#fff;border:1px solid rgba(255,255,255,.45);border-radius:7px;padding:8px 12px;font:700 13px var(--font-body);cursor:pointer}
+.dk-demo{background:#fff4d6;color:#5b3a00;border-bottom:2px solid #e5b43a;padding:10px 20px;font-size:14px;font-weight:600}
+.dk-wrap{max-width:1500px;margin:0 auto;padding:18px 20px 60px}
+.dk-nav{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px;border-bottom:1px solid var(--line)}
+.dk-nav button{background:transparent;border:0;border-bottom:3px solid transparent;padding:10px 14px;font:800 15px var(--font-body);color:var(--muted);cursor:pointer}
+.dk-nav button.on{color:var(--navy);border-bottom-color:var(--orange)}
+.dk-nav .n{display:inline-block;background:var(--orange);color:#fff;border-radius:10px;padding:1px 7px;font-size:12px;margin-left:6px}
+.dk-kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px;margin-bottom:18px}
+.dk-kpi{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:12px 14px;cursor:pointer;text-align:left;font-family:var(--font-body);color:var(--fg)}
+.dk-kpi b{display:block;font-size:26px;color:var(--navy)}.dk-kpi span{font-size:13.5px;color:var(--muted);font-weight:600}
+.dk-g{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,1.4fr);gap:16px;align-items:start}
+.dk-card{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:16px;min-width:0}
+.dk-card h2{font-size:18px;margin:0 0 10px}.dk-card h3{font-size:15px;margin:16px 0 8px;color:var(--navy)}
+.dk-chips{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}
+.dk-chips button{border:1px solid var(--line);background:var(--surface);border-radius:16px;padding:5px 11px;font:700 13px var(--font-body);cursor:pointer;color:var(--fg)}
+.dk-chips button.on{background:var(--navy);color:#fff;border-color:var(--navy)}
+.dk-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:6px 10px;padding:11px 10px;border:1px solid var(--line);border-radius:9px;margin-bottom:8px;cursor:pointer;background:var(--surface);text-align:left;width:100%;font-family:var(--font-body);color:var(--fg)}
+.dk-row.on{border-color:var(--orange);box-shadow:0 0 0 2px rgba(194,65,12,.18)}
+.dk-row b{font-size:15px}.dk-row small{color:var(--muted);font-size:13px;display:block}
+.dk-tag{display:inline-block;border-radius:5px;padding:2px 8px;font-size:12px;font-weight:800;margin:2px 4px 2px 0;white-space:nowrap}
+.t-demo{background:#fff4d6;color:#5b3a00;border:1px solid #e5b43a}
+.t-pending{background:#e8ecf1;color:#334}.t-assigned{background:#dbe8fb;color:#12407a}.t-contacted{background:#fdebd2;color:#8a4a00}
+.t-converted{background:#dff3e6;color:#145a3b}.t-rejected{background:#f8dcdc;color:#8a1c1c}.t-unmatched{background:#ececec;color:#444;border:1px dashed #999}
+.t-direct{background:#dff3e6;color:#145a3b}.t-admin{background:#fdebd2;color:#8a4a00}
+.t-ok{background:#dff3e6;color:#145a3b}.t-no{background:#f8dcdc;color:#8a1c1c}.t-wait{background:#fff4d6;color:#5b3a00}.t-na{background:#ececec;color:#555}
+.dk-tbl{width:100%;border-collapse:collapse;font-size:14px}
+.dk-tbl th{text-align:left;font-size:12.5px;color:var(--muted);padding:6px 8px;border-bottom:2px solid var(--line)}
+.dk-tbl td{overflow-wrap:anywhere;padding:8px;border-bottom:1px solid var(--line);vertical-align:top}
+.dk-scroll{overflow-x:auto}
+.dk-tbl.fx{table-layout:fixed}.dk-tbl.fx th:nth-child(1){width:34%}.dk-tbl.fx th:nth-child(2){width:14%}
+.dk-f{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px;align-items:end}
+.dk-f label{display:flex;flex-direction:column;gap:4px;font-size:13px;font-weight:700;color:var(--muted)}
+.dk-f input,.dk-f select,.dk-f textarea{padding:9px 10px;border:1px solid var(--line);border-radius:7px;font:600 14.5px var(--font-body);min-width:0;width:100%;box-sizing:border-box;background:var(--surface);color:var(--fg)}
+.dk-btn{border:0;border-radius:8px;padding:10px 16px;font:800 14px var(--font-body);cursor:pointer;color:#fff;background:var(--navy)}
+.dk-btn.ok{background:var(--green)}.dk-btn.no{background:#b42318}.dk-btn.alt{background:#fff;color:var(--navy);border:1px solid var(--navy)}
+.dk-btn[disabled]{opacity:.45;cursor:not-allowed}
+.dk-hist{list-style:none;padding:0;margin:0}.dk-hist li{padding:7px 0;border-bottom:1px solid var(--line);font-size:13.5px}
+.dk-hist small{color:var(--muted)}
+.dk-note,#deskView small,#deskView td,#deskView th{white-space:normal}
+.dk-note{font-size:13px;color:var(--muted);margin:6px 0}
+.dk-warn{background:#fff4d6;border:1px solid #e5b43a;border-radius:8px;padding:9px 12px;font-size:13.5px;color:#5b3a00;margin:8px 0}
+.dk-chk{list-style:none;padding:0;margin:6px 0;font-size:14px}.dk-chk li{padding:3px 0}
+.dk-sep{border:0;border-top:2px solid var(--line);margin:16px 0}
+.dk-act{border:1px solid var(--line);border-radius:10px;padding:12px;margin-top:10px}
+.dk-act.appr{border-color:#7bc6a0;background:#f3fbf6}.dk-act.rej{border-color:#e2a0a0;background:#fdf5f5}
+.dk-empty{color:var(--muted);padding:22px;text-align:center;border:2px dashed var(--line);border-radius:10px}
+@media (max-width:1000px){.dk-g{grid-template-columns:minmax(0,1fr)}.dk-wrap{padding:14px 12px 50px}.dk-top{padding:10px 12px}}
+@media (max-width:560px){.dk-nav button{padding:9px 10px;font-size:14px}.dk-top .sp{display:none}.dk-top select{max-width:170px}}
+
 </style>
 
 <header>
@@ -1030,6 +1086,7 @@ input,select,textarea{font-size:16px}
 <div class="bv-g"><div><div class="bv-tools"><input id="bvQ" type="search" placeholder="Search products or suppliers" aria-label="Search products"><select id="bvCat" aria-label="Category"></select><label><input type="checkbox" id="bvSelOnly"> Selected only</label></div><div class="bv-grid" id="bvGrid"></div><button type="button" class="bv-more" id="bvMore" hidden>Show more products</button></div>
 <aside class="bv-cart" id="bvCart" aria-live="polite"></aside></div>
 <p class="demo-note" style="margin-top:18px">Demonstration: products, prices and suppliers are sample data. Your enquiries are saved in this browser only and nothing is sent to a real company.</p></div></section>
+<section id="deskView" hidden aria-label="Admin Lead Desk (demo)"></section>
 <section id="signinView" hidden><div class="wrap"><div class="si-card"><h1>Seller Centre sign-in <span class="demo">Demonstration</span></h1><p>You have signed out of the demonstration seller account. There are no real accounts, passwords or verification in this prototype.</p><button type="button" class="pp-btn" id="siGo">Continue as the demo seller</button> <a class="btn-o" href="#home">Back to marketplace</a><p class="pp-note">Real sign-in will be added in the backend phase.</p></div></div></section>
 <section id="pageView" hidden><div class="wrap" id="pgInner"></div></section>
 <div id="sellerView" hidden></div>
@@ -1042,7 +1099,7 @@ input,select,textarea{font-size:16px}
         <p class="about">A B2B platform connecting buyers with manufacturers, suppliers and exporters in India and abroad. This prototype uses demonstration data only.</p>
         <div class="soc"><a href="#" aria-label="LinkedIn"><svg class="i" viewBox="0 0 24 24"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/> <rect width="4" height="12" x="2" y="9"/> <circle cx="4" cy="4" r="2"/></svg></a><a href="#" aria-label="Facebook"><svg class="i" viewBox="0 0 24 24"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg></a><a href="#" aria-label="X"><svg class="i" viewBox="0 0 24 24"><path d="M22 4s-.7 2.1-2 3.4c1.6 10-9.4 17.3-18 11.6 2.2.1 4.4-.6 6-2C3 15.5.5 9.6 3 5c2.2 2.6 5.6 4.1 9 4-.9-4.2 4-6.6 7-3.8 1.1 0 3-1.2 3-1.2z"/></svg></a><a href="#" aria-label="YouTube"><svg class="i" viewBox="0 0 24 24"><path d="M2.5 17a24.12 24.12 0 0 1 0-10 2 2 0 0 1 1.4-1.4 49.56 49.56 0 0 1 16.2 0A2 2 0 0 1 21.5 7a24.12 24.12 0 0 1 0 10 2 2 0 0 1-1.4 1.4 49.55 49.55 0 0 1-16.2 0A2 2 0 0 1 2.5 17"/> <path d="m10 15 5-3-5-3z"/></svg></a><a href="#" aria-label="Instagram"><svg class="i" viewBox="0 0 24 24"><rect width="20" height="20" x="2" y="2" rx="5" ry="5"/> <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/> <line x1="17.5" x2="17.51" y1="6.5" y2="6.5"/></svg></a></div></div>
       <div><h4>For Buyers</h4><ul><li><a href="#">Search Products</a></li><li><a href="#req">Post Requirement</a></li><li><a href="#suppliers">Find Suppliers</a></li><li><a href="#leads">Buy Leads</a></li><li><a href="#enquiries">My Enquiries</a></li><li><a href="#">Buyer Guide</a></li></ul></div>
-      <div><h4>For Suppliers</h4><ul><li><a href="#list">List Your Business</a></li><li><a href="#">Claim Your Company</a></li><li><a href="#">Promote Products</a></li><li><a href="#seller">Seller Dashboard</a></li><li><a href="#admin">Admin Console (prototype)</a></li><li><a href="#">Seller Guide</a></li></ul></div>
+      <div><h4>For Suppliers</h4><ul><li><a href="#list">List Your Business</a></li><li><a href="#">Claim Your Company</a></li><li><a href="#">Promote Products</a></li><li><a href="#seller">Seller Dashboard</a></li><li><a href="#admin">Admin Console (prototype)</a></li><li><a href="#desk">Lead Desk (demo)</a></li><li><a href="#">Seller Guide</a></li></ul></div>
       <div><h4>Explore Categories</h4><ul><li><a href="#categories">Industrial Machinery</a></li><li><a href="#categories">Electrical &amp; Electronics</a></li><li><a href="#categories">Textiles &amp; Garments</a></li><li><a href="#categories">Building &amp; Construction</a></li><li><a href="#categories">Food &amp; Beverages</a></li><li><a href="#categories">View All Categories</a></li></ul></div>
       <div><h4>Company</h4><ul><li><a href="#">About Us</a></li><li><a href="#">Contact Us</a></li><li><a href="#">Careers</a></li><li><a href="#">Press &amp; Media</a></li><li><a href="#">Partner With Us</a></li></ul></div>
       <div><h4>Help &amp; Support</h4><ul><li><a href="#">Help Center</a></li><li><a href="#faq">FAQs</a></li><li><a href="#">Report an Issue</a></li><li><a href="#">Business Support</a></li><li><a href="#">Sitemap</a></li></ul></div>
@@ -3292,14 +3349,199 @@ function refreshBuyer(){renderSections();renderTrending();if(typeof renderCatDlg
 
 /* router */
 var CUR=null,FROMSEL=false;
-var VIEWIDS={buy:'buyView',list:'listView',home:'top',product:'productView',seller:'sellerView',admin:'adminView',supplier:'supplierView',enquiries:'enquiriesView',page:'pageView',signin:'signinView'};
+var VIEWIDS={buy:'buyView',list:'listView',home:'top',product:'productView',seller:'sellerView',admin:'adminView',supplier:'supplierView',enquiries:'enquiriesView',page:'pageView',signin:'signinView',desk:'deskView'};
+/* ===== Admin Lead Desk & Claim Management — DEMO ONLY =====
+   All records are fictional. No network calls, no email/SMS, no verification codes.
+   Every action below only edits localStorage key gtb2b-desk-demo. */
+var DESK=(function(){
+ var KEY='gtb2b-desk-demo',S=null,UI={role:'admin',tab:'overview',sel:null,filt:'all',csel:null};
+ var STAFF={admin:{n:'Demo Admin',r:'admin'},vikram:{n:'Vikram (demo reviewer)',r:'staff'},neha:{n:'Neha (demo reviewer)',r:'staff'}};
+ var GROUPS=['pending','assigned','contacted','converted','rejected','unmatched'];
+ function seed(){return{
+  cos:{
+   D1:{n:'Demo Verified Textiles Pvt Ltd',city:'Surat',cat:'Textiles',claim:'approved',ver:'verified',em:'verified',ph:'verified',blk:false},
+   D2:{n:'Demo Claimed Garments Co',city:'Tiruppur',cat:'Textiles',claim:'approved',ver:'unverified',em:'verified',ph:'pending',blk:false},
+   D3:{n:'Demo Unclaimed Fabrics Works',city:'Ludhiana',cat:'Textiles',claim:'none',ver:'unverified',em:'none',ph:'none',blk:false},
+   D4:{n:'Demo Unclaimed Spice Traders',city:'Kochi',cat:'Food & Agro',claim:'none',ver:'unverified',em:'none',ph:'none',blk:false},
+   D5:{n:'Demo Contested Machinery Ltd',city:'Rajkot',cat:'Machinery',claim:'under_review',ver:'unverified',em:'verified',ph:'verified',blk:false},
+   D6:{n:'Demo New-Claim Packaging',city:'Pune',cat:'Packaging',claim:'submitted',ver:'unverified',em:'pending',ph:'none',blk:false},
+   D7:{n:'Demo Verified Spices Exports',city:'Kochi',cat:'Food & Agro',claim:'approved',ver:'verified',em:'verified',ph:'pending',blk:false}},
+  reqs:{
+   'R-101':{t:'Cotton shirting fabric, 5,000 m',cat:'Textiles',dest:'Dubai',city:'Surat',qty:'5,000 m',st:'pending',as:null,fu:'',
+    m:[['D1',85,['Category match (Textiles) +40','Product keyword match +30','Destination served +15']],['D2',55,['Category match (Textiles) +40','Destination served +15']],['D3',50,['Category match (Textiles) +40','City match (Ludhiana region) +10']]]},
+   'R-102':{t:'Black pepper, 2 tonnes',cat:'Food & Agro',dest:'Hamburg',city:'Kochi',qty:'2 t',st:'assigned',as:'vikram',fu:'2026-11-12',
+    m:[['D7',75,['Category match (Food & Agro) +40','City match (Kochi) +10','Product keyword match +30']],['D4',55,['Category match (Food & Agro) +40','City match (Kochi) +10','Manufacturer flag +5']]]},
+   'R-103':{t:'Corrugated export cartons, 20,000 pcs',cat:'Packaging',dest:'Rotterdam',city:'Pune',qty:'20,000 pcs',st:'contacted',as:'neha',fu:'2026-11-10',
+    m:[['D6',70,['Category match (Packaging) +40','City match (Pune) +10','Product keyword match +30']]]},
+   'R-104':{t:'CNC lathe spares',cat:'Machinery',dest:'Lagos',city:'Rajkot',qty:'1 lot',st:'converted',as:'vikram',fu:'',
+    m:[['D5',80,['Category match (Machinery) +40','Product keyword match +30','City match (Rajkot) +10']]]},
+   'R-105':{t:'Hand-knotted carpets, 300 sq m',cat:'Home & Decor',dest:'London',city:'',qty:'300 sq m',st:'rejected',as:'neha',fu:'',
+    m:[]},
+   'R-106':{t:'Quantum Widgets (demo, no category)',cat:'',dest:'Singapore',city:'',qty:'10',st:'unmatched',as:null,fu:'',m:[]}},
+  hist:{'R-101':[['pending','System (demo)','Requirement created (demo record)']],'R-102':[['pending','System (demo)','Requirement created (demo record)'],['assigned','Demo Admin','Assigned to Vikram (demo)']],'R-103':[['pending','System (demo)','Created'],['assigned','Demo Admin','Assigned to Neha (demo)'],['contacted','Neha (demo reviewer)','First call logged (demo)']],'R-104':[['pending','System (demo)','Created'],['assigned','Demo Admin','Assigned to Vikram (demo)'],['converted','Vikram (demo reviewer)','Supplier engaged (demo)']],'R-105':[['pending','System (demo)','Created'],['assigned','Demo Admin','Assigned to Neha (demo)'],['rejected','Neha (demo reviewer)','Buyer withdrew (demo)']],'R-106':[['unmatched','System (demo)','No category / no supplier matched; kept in desk']]},
+  calls:{'R-103':[['2026-11-04','Reached (demo)','Discussed carton specs; follow-up set']]},
+  claims:{
+   'C-1':{co:'D5',by:'Demo Claimant A',doc:['demo-gst-certificate.pdf','demo-letterhead.png'],st:'under_review',rev:'vikram',note:''},
+   'C-2':{co:'D5',by:'Demo Claimant B',doc:['demo-visiting-card.jpg'],st:'under_review',rev:'vikram',note:''},
+   'C-3':{co:'D6',by:'Demo Claimant C',doc:['demo-incorporation.pdf'],st:'submitted',rev:null,note:''},
+   'C-4':{co:'D2',by:'Demo Claimant D',doc:['demo-iec-certificate.pdf'],st:'approved',rev:'neha',note:'Approved earlier (demo). Verification still pending.'}},
+  inv:{
+   'I-1':{co:'D3',by:'vikram',st:'pending_approval',note:'Invite unclaimed textile unit (demo)'},
+   'I-2':{co:'D4',by:'neha',st:'approved',note:'Spice trader (demo)'},
+   'I-3':{co:'D3',by:'neha',st:'rejected',note:'Duplicate request (demo)'}},
+  log:[]}}
+ function load(){try{var j=localStorage.getItem(KEY);if(j){S=JSON.parse(j);return}}catch(e){}S=seed()}
+ function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
+ function who(){return STAFF[UI.role].n}
+ function isA(){return UI.role==='admin'}
+ function today(){return '2026-11-07'}
+ function route(c){var o=S.cos[c];
+  if(o.claim==='approved'&&o.ver==='verified'&&o.em==='verified'&&o.ph==='verified'&&!o.blk)return'direct';
+  if(o.claim==='none')return'admin_unclaimed';
+  return'admin_claimed';}
+ function why(c){var o=S.cos[c],w=[];
+  if(o.claim!=='approved')w.push('claim not approved ('+o.claim.replace('_',' ')+')');
+  if(o.ver!=='verified')w.push('company not verified');
+  if(o.em!=='verified')w.push('email not verified');
+  if(o.ph!=='verified')w.push('phone not verified');
+  if(o.blk)w.push('lead delivery blocked');
+  return w.length?'Not eligible for direct delivery: '+w.join(', '):'All direct-delivery conditions met (demo)';}
+ function addH(id,st,msg){S.hist[id]=S.hist[id]||[];S.hist[id].push([st,who(),msg]);S.log.push(who()+' · '+id+' · '+msg+' · SIMULATED')}
+ function tag(cls,t){return'<span class="dk-tag '+cls+'">'+esc(t)+'</span>'}
+ function stTag(s){return tag('t-'+s,s)}
+ function routeTag(r){return r==='direct'?tag('t-direct','Direct (eligible)'):r==='admin_claimed'?tag('t-admin','Admin desk · claimed, not verified'):tag('t-admin','Admin desk · unclaimed')}
+ function vTag(v){return tag(v==='verified'||v==='approved'?'t-ok':v==='pending'||v==='submitted'||v==='under_review'?'t-wait':v==='rejected'?'t-no':'t-na',v.replace('_',' '))}
+ function mine(id){var r=S.reqs[id];return isA()||r.as===UI.role}
+ function visibleReqs(){return Object.keys(S.reqs).filter(function(id){return mine(id)})}
+ function leadReqs(){return visibleReqs().filter(function(id){var r=S.reqs[id];return r.m.length===0||r.m.some(function(x){return route(x[0])!=='direct'})})}
+ function directRows(){var o=[];visibleReqs().forEach(function(id){S.reqs[id].m.forEach(function(x){if(route(x[0])==='direct')o.push([id,x])})});return o}
+ function visibleClaims(){return Object.keys(S.claims).filter(function(id){var c=S.claims[id];return isA()||c.rev===UI.role})}
+ function competing(id){var c=S.claims[id];return Object.keys(S.claims).filter(function(k){var o=S.claims[k];return k!==id&&o.co===c.co&&(o.st==='submitted'||o.st==='under_review')})}
+ function R(){return $('deskView')}
+ function render(){
+  var v=R();if(!S)load();
+  var cnt={leads:leadReqs().length,direct:directRows().length,inv:Object.keys(S.inv).filter(function(k){return S.inv[k].st==='pending_approval'}).length,claims:visibleClaims().filter(function(k){var s=S.claims[k].st;return s==='submitted'||s==='under_review'}).length};
+  var tabs=[['overview','Overview'],['leads','Leads <span class="n">'+cnt.leads+'</span>'],['direct','Direct deliveries <span class="n">'+cnt.direct+'</span>'],['inv','Invitations <span class="n">'+cnt.inv+'</span>'],['claims','Claims <span class="n">'+cnt.claims+'</span>'],['biz','Businesses']];
+  var h='<div class="dk-top"><b>Lead Desk</b><a href="#home">← Marketplace</a><span class="sp"></span><label>Viewing as <select id="dkRole">';
+  Object.keys(STAFF).forEach(function(k){h+='<option value="'+k+'"'+(k===UI.role?' selected':'')+'>'+esc(STAFF[k].n)+'</option>'});
+  h+='</select></label><button type="button" id="dkReset">Reset demo data</button></div>';
+  h+='<div class="dk-demo">DEMO ONLY — all companies, buyers and claims on this screen are fictional. Actions are <b>simulated</b>: nothing is saved to a server, and no email, SMS, invitation or verification code is ever sent. Contact details are never shown (availability only).</div>';
+  h+='<div class="dk-wrap"><div class="dk-nav" role="tablist">';
+  tabs.forEach(function(t){h+='<button type="button" role="tab" data-tab="'+t[0]+'" class="'+(UI.tab===t[0]?'on':'')+'">'+t[1]+'</button>'});
+  h+='</div>';
+  if(!isA())h+='<div class="dk-warn">Reviewer view: you only see leads and claims assigned to you. Unassigned records and other reviewers’ work are hidden (mirrors assignment-scoped access in the planned backend).</div>';
+  h+=({overview:vOverview,leads:vLeads,direct:vDirect,inv:vInv,claims:vClaims,biz:vBiz})[UI.tab]();
+  h+='</div>';v.innerHTML=h;
+ }
+ function vOverview(){
+  var ids=visibleReqs(),c={};GROUPS.forEach(function(g){c[g]=0});ids.forEach(function(id){c[S.reqs[id].st]++});
+  var h='<div class="dk-kpis">';
+  GROUPS.forEach(function(g){h+='<button type="button" class="dk-kpi" data-go="leads" data-f="'+g+'"><b>'+c[g]+'</b><span>'+g[0].toUpperCase()+g.slice(1)+'</span></button>'});
+  h+='</div><div class="dk-card"><h2>How routing works (demo)</h2><ul class="dk-chk"><li>✔ <b>Direct</b>: claim approved + company verified + email & phone verified + not blocked.</li><li>➜ <b>Admin desk</b>: claimed-but-unverified and unclaimed suppliers always go to staff first.</li><li>○ <b>Unmatched</b>: nothing scored ≥ 40; staff decide next step.</li></ul><p class="dk-note">Statuses: pending = not yet assigned · assigned = with a staff member · contacted = call logged · converted = outcome achieved · rejected = closed without result · unmatched = no supplier found.</p></div>';
+  if(isA())h+='<div class="dk-card" style="margin-top:14px"><h2>Simulated action log</h2>'+(S.log.length?'<ul class="dk-hist">'+S.log.slice(-8).reverse().map(function(l){return'<li>'+esc(l)+'</li>'}).join('')+'</ul>':'<p class="dk-note">No simulated actions yet.</p>')+'</div>';
+  return h}
+ function vLeads(){
+  var ids=leadReqs().filter(function(id){return UI.filt==='all'||S.reqs[id].st===UI.filt});
+  var h='<div class="dk-g"><div class="dk-card"><h2>Buyer requirements <span class="dk-tag t-demo">DEMO</span></h2><div class="dk-chips">';
+  ['all'].concat(GROUPS).forEach(function(g){h+='<button type="button" data-f="'+g+'" class="'+(UI.filt===g?'on':'')+'">'+g+'</button>'});
+  h+='</div>';
+  if(!ids.length)h+='<div class="dk-empty">No leads in this view.</div>';
+  ids.forEach(function(id){var r=S.reqs[id];h+='<button type="button" class="dk-row'+(UI.sel===id?' on':'')+'" data-dsel="'+id+'"><span><b>'+esc(id)+' · '+esc(r.t)+'</b><small>To '+esc(r.dest)+' · '+esc(r.qty)+' · '+(r.as?'Assigned: '+esc(STAFF[r.as].n):'Unassigned')+'</small></span><span>'+stTag(r.st)+'</span></button>'});
+  h+='</div><div class="dk-card">'+leadDetail()+'</div></div>';return h}
+ function leadDetail(){
+  var id=UI.sel;if(!id||!S.reqs[id]||!mine(id))return'<div class="dk-empty">Select a requirement to see match reasons, status history and actions.</div>';
+  var r=S.reqs[id],h='<h2>'+esc(id)+' · '+esc(r.t)+' '+stTag(r.st)+'</h2><p class="dk-note">Buyer: <i>Demo Buyer (contact hidden — demo)</i> · Category: '+esc(r.cat||'none')+' · Follow-up: '+(r.fu?esc(r.fu):'not set')+'</p>';
+  h+='<h3>Matched suppliers & reasons</h3>';
+  if(!r.m.length)h+='<div class="dk-empty">Unmatched — no supplier scored above the minimum of 40.</div>';
+  else{h+='<div class="dk-scroll"><table class="dk-tbl fx"><tr><th>Supplier & route</th><th>Score</th><th>Why</th></tr>';
+   r.m.forEach(function(x){h+='<tr><td>'+esc(S.cos[x[0]].n)+'<br>'+routeTag(route(x[0]))+'</td><td><b>'+x[1]+'</b>/100</td><td><ul class="dk-chk">'+x[2].map(function(t){return'<li>• '+esc(t)+'</li>'}).join('')+'</ul><small class="dk-note">'+esc(why(x[0]))+'</small></td></tr>'});
+   h+='</table></div>'}
+  if(isA()){
+   h+='<div class="dk-act"><b>Assign to staff (simulated)</b><div class="dk-f" style="margin-top:8px"><label>Staff member<select id="dkAs"><option value="vikram">Vikram (demo reviewer)</option><option value="neha">Neha (demo reviewer)</option></select></label><button type="button" class="dk-btn" id="dkAssign">Assign</button></div><div style="margin-top:8px"><button type="button" class="dk-btn alt" id="dkRematch">Re-run matching (simulated)</button></div></div>';
+  }else if(r.as===UI.role){
+   h+='<div class="dk-act"><b>Update status (simulated)</b><div class="dk-f" style="margin-top:8px"><label>New status<select id="dkSt"><option value="contacted">contacted</option><option value="converted">converted</option><option value="rejected">rejected</option></select></label><label>Note<input id="dkStN" placeholder="Short note (demo)"></label><button type="button" class="dk-btn" id="dkSetSt">Save status</button></div></div>';
+  }
+  if(isA()||r.as===UI.role){
+   h+='<div class="dk-act"><b>Log a call (manual record only — no call is placed)</b><div class="dk-f" style="margin-top:8px"><label>Outcome<select id="dkCo"><option>Reached (demo)</option><option>No answer (demo)</option><option>Call back later (demo)</option></select></label><label>Note<input id="dkCn" placeholder="What was discussed"></label><label>Follow-up date<input type="date" id="dkCf" value="'+esc(r.fu)+'"></label><button type="button" class="dk-btn" id="dkCall">Log call</button></div></div>';
+  }
+  var cl=S.calls[id]||[];h+='<h3>Call log</h3>'+(cl.length?'<ul class="dk-hist">'+cl.map(function(c){return'<li><b>'+esc(c[0])+'</b> · '+esc(c[1])+'<br><small>'+esc(c[2])+'</small></li>'}).join('')+'</ul>':'<p class="dk-note">No calls logged.</p>');
+  h+='<h3>Status history</h3><ul class="dk-hist">'+(S.hist[id]||[]).map(function(x){return'<li>'+stTag(x[0])+' <small>'+esc(x[1])+' — '+esc(x[2])+'</small></li>'}).join('')+'</ul>';
+  return h}
+ function vDirect(){
+  var rows=directRows(),h='<div class="dk-card"><h2>Eligible verified-supplier deliveries <span class="dk-tag t-demo">DEMO</span></h2><p class="dk-note">Read-only. Only claim-approved, verified suppliers with verified email and phone appear here. Staff do not act on these; the supplier replies in their own Seller Centre (not simulated).</p>';
+  if(!rows.length)h+='<div class="dk-empty">No direct deliveries visible to you.</div>';
+  else{h+='<div class="dk-scroll"><table class="dk-tbl"><tr><th>Requirement</th><th>Supplier</th><th>Score</th><th>Delivery</th></tr>';
+   rows.forEach(function(x){h+='<tr><td>'+esc(x[0])+' · '+esc(S.reqs[x[0]].t)+'</td><td>'+esc(S.cos[x[1][0]].n)+'</td><td>'+x[1][1]+'</td><td>'+tag('t-direct','Delivered to seller inbox (simulated)')+'</td></tr>'});
+   h+='</table></div>'}
+  return h+'</div>'}
+ function vInv(){
+  var ks=Object.keys(S.inv),h='<div class="dk-g"><div class="dk-card"><h2>Supplier invitation approval queue <span class="dk-tag t-demo">DEMO</span></h2><p class="dk-note">Invitations are created by staff, approved by an admin, then marked “sent” manually. Nothing is ever emailed or texted from this screen.</p>';
+  ks.forEach(function(k){var i=S.inv[k];h+='<div class="dk-row" style="cursor:default"><span><b>'+esc(k)+' · '+esc(S.cos[i.co].n)+'</b><small>By '+esc(STAFF[i.by].n)+' — '+esc(i.note)+'</small></span><span>'+tag(i.st==='approved'||i.st==='sent_manually'?'t-ok':i.st==='rejected'?'t-no':'t-wait',i.st.replace('_',' '))+'</span>';
+   if(isA()&&i.st==='pending_approval')h+='<span style="grid-column:1/-1"><button type="button" class="dk-btn ok" data-inv="'+k+'" data-a="approved">Approve (simulated)</button> <button type="button" class="dk-btn no" data-inv="'+k+'" data-a="rejected">Reject (simulated)</button></span>';
+   if(i.st==='approved'&&(isA()||i.by===UI.role))h+='<span style="grid-column:1/-1"><button type="button" class="dk-btn alt" data-inv="'+k+'" data-a="sent_manually">Mark as sent manually (nothing is sent)</button></span>';
+   h+='</div>'});
+  h+='</div><div class="dk-card"><h2>Request an invitation (simulated)</h2><div class="dk-f"><label>Unclaimed business<select id="dkIc">';
+  Object.keys(S.cos).filter(function(c){return S.cos[c].claim==='none'}).forEach(function(c){h+='<option value="'+c+'">'+esc(S.cos[c].n)+'</option>'});
+  h+='</select></label><label>Reason<input id="dkIn" placeholder="Why invite this business"></label><button type="button" class="dk-btn" id="dkIadd">Submit for approval</button></div><p class="dk-note">Real flow (planned): staff_create_invitation → admin_approve_invitation → staff_mark_invitation_sent. Contact details stay in the private vault.</p></div></div>';
+  return h}
+ function vBiz(){
+  var h='<div class="dk-card"><h2>Businesses <span class="dk-tag t-demo">DEMO</span></h2><p class="dk-note">Claim status and verification status are separate. Email/phone states are read-only demo values; no codes are sent here.</p><div class="dk-scroll"><table class="dk-tbl"><tr><th>Business</th><th>Claimed?</th><th>Claim status</th><th>Verification</th><th>Email</th><th>Phone</th><th>Route</th></tr>';
+  Object.keys(S.cos).forEach(function(k){var o=S.cos[k];h+='<tr><td>'+esc(o.n)+'<br><small class="dk-note">'+esc(o.city)+' · '+esc(o.cat)+'</small></td><td>'+(o.claim==='approved'?'Claimed':o.claim==='none'?'Unclaimed':'Claim pending')+'</td><td>'+vTag(o.claim==='none'?'none':o.claim)+'</td><td>'+vTag(o.ver)+'</td><td>'+vTag(o.em)+'</td><td>'+vTag(o.ph)+'</td><td>'+routeTag(route(k))+'</td></tr>'});
+  return h+'</table></div></div>'}
+ function vClaims(){
+  var ks=visibleClaims(),h='<div class="dk-g"><div class="dk-card"><h2>Claim review queue <span class="dk-tag t-demo">DEMO</span></h2>';
+  if(!ks.length)h+='<div class="dk-empty">No claims assigned to you.</div>';
+  ks.forEach(function(k){var c=S.claims[k],cp=competing(k);h+='<button type="button" class="dk-row'+(UI.csel===k?' on':'')+'" data-csel="'+k+'"><span><b>'+esc(k)+' · '+esc(S.cos[c.co].n)+'</b><small>Claimant: '+esc(c.by)+' · Reviewer: '+(c.rev?esc(STAFF[c.rev].n):'unassigned')+(cp.length?' · <b>'+cp.length+' competing open claim(s)</b>':'')+'</small></span><span>'+vTag(c.st)+'</span></button>'});
+  return h+'</div><div class="dk-card">'+claimDetail()+'</div></div>'}
+ function claimDetail(){
+  var k=UI.csel;if(!k||!S.claims[k]||visibleClaims().indexOf(k)<0)return'<div class="dk-empty">Select a claim to inspect evidence and decide.</div>';
+  var c=S.claims[k],o=S.cos[c.co],cp=competing(k),open=(c.st==='submitted'||c.st==='under_review');
+  var h='<h2>'+esc(k)+' · '+esc(o.n)+' '+vTag(c.st)+'</h2>';
+  h+='<h3>Status (kept separate)</h3><p>Claim: '+vTag(c.st)+' Verification: '+vTag(o.ver)+' Email: '+vTag(o.em)+' Phone: '+vTag(o.ph)+'</p><p class="dk-note">Approving a claim does <b>not</b> verify the business. Verification is a separate review. Codes are never sent from this demo.</p>';
+  h+='<h3>Competing open claims</h3>'+(cp.length?'<div class="dk-warn">'+cp.map(function(x){return esc(x)+' by '+esc(S.claims[x].by)+' ('+S.claims[x].st.replace('_',' ')+')'}).join('<br>')+'<br><b>Approval is blocked until competing claims are resolved.</b></div>':'<p class="dk-note">None.</p>');
+  h+='<h3>Evidence (demo placeholders — no real files)</h3><ul class="dk-chk">'+c.doc.map(function(d){return'<li>📄 '+esc(d)+' <small class="dk-note">(demo file — viewing would be audit-logged)</small></li>'}).join('')+'</ul>';
+  if(c.note)h+='<p class="dk-note">Note: '+esc(c.note)+'</p>';
+  if(isA()){h+='<div class="dk-act"><b>Assign reviewer (simulated)</b><div class="dk-f" style="margin-top:8px"><label>Reviewer<select id="dkRv"><option value="vikram">Vikram (demo reviewer)</option><option value="neha">Neha (demo reviewer)</option></select></label><button type="button" class="dk-btn alt" id="dkRvGo">Assign reviewer</button></div></div>'}
+  if(open&&(isA()||c.rev===UI.role)){
+   var can=o.em==='verified'&&!cp.length;
+   h+='<hr class="dk-sep"><div class="dk-act appr"><b>Approve claim</b><p class="dk-note">Requires verified email and no competing open claim.'+(can?'':' <b>Currently blocked: '+(o.em!=='verified'?'email not verified. ':'')+(cp.length?'competing open claim.':'')+'</b>')+'</p><button type="button" class="dk-btn ok" id="dkAppr"'+(can?'':' disabled')+'>Approve claim (simulated)</button></div>';
+   h+='<div class="dk-act rej"><b>Reject claim</b><div class="dk-f" style="margin-top:8px"><label>Reason (required)<input id="dkRj" placeholder="Reason for rejection"></label><button type="button" class="dk-btn no" id="dkRej">Reject claim (simulated)</button></div></div>';
+  }
+  return h}
+ function bind(){
+  var v=R();
+  v.onchange=function(e){if(e.target.id==='dkRole'){UI.role=e.target.value;UI.sel=null;UI.csel=null;render()}};
+  v.onclick=function(e){
+   var t=e.target.closest('button');if(!t)return;
+   if(t.id==='dkReset'){S=seed();save();render();return}
+   if(t.dataset.tab){UI.tab=t.dataset.tab;render();return}
+   if(t.dataset.go){UI.tab=t.dataset.go;UI.filt=t.dataset.f||'all';render();return}
+   if(t.dataset.f!==undefined&&t.parentNode.className==='dk-chips'){UI.filt=t.dataset.f;render();return}
+   if(t.dataset.dsel){UI.sel=t.dataset.dsel;render();return}
+   if(t.dataset.csel){UI.csel=t.dataset.csel;render();return}
+   var id=UI.sel,r=id&&S.reqs[id],val=function(x){var el=$(x);return el?el.value.trim():''};
+   if(t.id==='dkAssign'&&isA()&&r){var s=val('dkAs');r.as=s;r.st='assigned';addH(id,'assigned','Assigned to '+STAFF[s].n+' (demo)');save();render();return}
+   if(t.id==='dkRematch'&&isA()&&r){addH(id,r.st,'Re-run matching requested (simulated; scores unchanged)');save();render();return}
+   if(t.id==='dkSetSt'&&r&&r.as===UI.role){var n=val('dkSt');r.st=n;addH(id,n,val('dkStN')||'Status changed (demo)');save();render();return}
+   if(t.id==='dkCall'&&r&&(isA()||r.as===UI.role)){S.calls[id]=S.calls[id]||[];S.calls[id].push([today(),val('dkCo'),val('dkCn')||'(no note)']);r.fu=val('dkCf');if(r.st==='assigned')r.st='contacted';addH(id,r.st,'Call logged manually'+(r.fu?'; follow-up '+r.fu:'')+' (demo)');save();render();return}
+   if(t.dataset.inv){var i=S.inv[t.dataset.inv],a=t.dataset.a;if((a==='approved'||a==='rejected')&&!isA())return;i.st=a;S.log.push(who()+' · '+t.dataset.inv+' · invitation '+a+' · SIMULATED, nothing sent');save();render();return}
+   if(t.id==='dkIadd'){var co=val('dkIc');if(!co)return;var nk='I-'+(Object.keys(S.inv).length+1);S.inv[nk]={co:co,by:isA()?'vikram':UI.role,st:'pending_approval',note:val('dkIn')||'(no reason)'};S.log.push(who()+' · '+nk+' · invitation requested · SIMULATED');save();render();return}
+   var cid=UI.csel,c=cid&&S.claims[cid];
+   if(t.id==='dkRvGo'&&isA()&&c){c.rev=val('dkRv');if(c.st==='submitted')c.st='under_review';S.log.push(who()+' · '+cid+' · reviewer assigned · SIMULATED');save();render();return}
+   if(t.id==='dkAppr'&&c&&(isA()||c.rev===UI.role)){var o=S.cos[c.co];if(o.em!=='verified'||competing(cid).length)return;c.st='approved';o.claim='approved';S.log.push(who()+' · '+cid+' · claim approved (verification unchanged) · SIMULATED');save();render();return}
+   if(t.id==='dkRej'&&c&&(isA()||c.rev===UI.role)){var rs=val('dkRj');if(!rs){$('dkRj').focus();return}c.st='rejected';c.note='Rejected: '+rs;S.log.push(who()+' · '+cid+' · claim rejected · SIMULATED');save();render();return}
+  };
+ }
+ return{open:function(){load();bind();render()},_state:function(){return S}};
+})();
+
 function stKey(s){return s?(s.v+'|'+(s.id||s.name||s.key||'')):''}
 function go(v,nohash,extra){
  if(v==='seller'&&Store.seller.session.signedOut())v='signin';
  try{Store.reload()}catch(e){}
  document.querySelectorAll('.ov').forEach(function(o){if(!o.hidden)closeOv(o)});
  Object.keys(VIEWIDS).forEach(function(k){var el=$(VIEWIDS[k]);if(el)el.hidden=(k!==v)});
- var chrome=(v!=='seller'&&v!=='admin');
+ var chrome=(v!=='seller'&&v!=='admin'&&v!=='desk');
  document.querySelector('header').hidden=document.querySelector('footer').hidden=!chrome;
  if(!nohash){var st=extra||{};st.v=v;if(stKey(history.state)!==stKey(st)){try{history.pushState(st,'','#'+v)}catch(e){try{history.replaceState(st,'','#'+v)}catch(e2){}}}}
  if(v==='seller'&&window.SELLER)SELLER.sync();
@@ -3307,6 +3549,7 @@ function go(v,nohash,extra){
  if(v==='enquiries')renderEnquiries();
  if(v==='list')lwOpen();
  if(v==='buy')bvOpen();
+ if(v==='desk')DESK.open();
  if(window.bkSync&&v!=='buy')bkSync();
  window.scrollTo(0,0);
  if(v==='home'&&!$('results').hidden)runSearch(false);
@@ -3320,7 +3563,7 @@ function openProduct(id,nopush){
 }
 window.addEventListener('popstate',function(ev){
  var s=ev.state;
- if(!s||!s.v){var h=location.hash.slice(1);go(h==='seller'||h==='admin'||h==='enquiries'||h==='list'||h==='buy'?h:'home',true);return}
+ if(!s||!s.v){var h=location.hash.slice(1);go(h==='seller'||h==='admin'||h==='enquiries'||h==='list'||h==='buy'||h==='desk'?h:'home',true);return}
  if(s.v==='product'&&s.id&&getP(s.id))openProduct(s.id,true);
  else if(s.v==='supplier'&&s.name)openSupplier(s.name,true);
  else if(s.v==='page'&&s.key)openPage(s.key,true);
@@ -3329,7 +3572,7 @@ window.addEventListener('popstate',function(ev){
 window.addEventListener('hashchange',function(){
  var n=location.hash.slice(1);
  if(n==='product'||n==='supplier'||n==='page')return;
- if(n==='seller'||n==='admin'||n==='enquiries'||n==='list'||n==='buy'||n==='home'||n===''){go(n||'home',true);return}
+ if(n==='seller'||n==='admin'||n==='enquiries'||n==='list'||n==='buy'||n==='desk'||n==='home'||n===''){go(n||'home',true);return}
  if(n==='product'&&CUR){go('product',true);return}
  if(n&&$('top').hidden){go('home',true);setTimeout(function(){var el=document.getElementById(n);if(el)el.scrollIntoView()},40)}
 });
@@ -3405,7 +3648,7 @@ function resetFilters(){F.ver=false;F.type='All';F.sort='near';F.min=0;F.max=0;F
 var LEADS=[['Hand Tufted Rugs','Custom design, wool material','prod0','500 Pieces','UAE','05 Nov 2026','View Requirement'],['Packing Boxes (Corrugated)','5 ply, printed logo','prod3','10,000 Pieces','Mumbai, India','04 Nov 2026','View Requirement'],['Textile Fabric (Cotton)','Dyed, 150 GSM','prod2','5,000 Meters','USA','03 Nov 2026','View Requirement'],['Industrial Water Pumps','Cast iron, 5 HP','prod1','20 Units','Delhi, India','02 Nov 2026','Contact Supplier']];
 $('leadRows').innerHTML=LEADS.map(function(l,i){return '<tr><td><div class="lead-p"><b>'+(i+1)+'</b><img alt="" loading="lazy" decoding="async" width="44" height="44" src="'+IMG[l[2]]+'"><span><strong>'+l[0]+'</strong><small>'+l[1]+'</small></span></div></td><td>'+l[3]+'</td><td>'+l[4]+'</td><td>'+l[5]+'</td><td>'+(i==3?'<a class="cs" href="#req" data-prod="'+l[0]+'">':'<a class="vb" href="#" data-lead="1">')+l[6]+'</a></td></tr>'}).join('');
 
-function initProducts(){loadMine();renderSections();renderTrending();var h0=location.hash.slice(1);try{history.replaceState({v:(h0==='seller'||h0==='admin'||h0==='enquiries'||h0==='list'||h0==='buy')?h0:'home'},'')}catch(e){}if(h0==='seller'||h0==='admin'||h0==='enquiries'||h0==='list'||h0==='buy')go(h0,true)}
+function initProducts(){loadMine();renderSections();renderTrending();var h0=location.hash.slice(1);try{history.replaceState({v:(h0==='seller'||h0==='admin'||h0==='enquiries'||h0==='list'||h0==='buy'||h0==='desk')?h0:'home'},'')}catch(e){}if(h0==='seller'||h0==='admin'||h0==='enquiries'||h0==='list'||h0==='buy'||h0==='desk')go(h0,true)}
 
 
 /* ===== company profile -> shared listing record (TAPIS) ===== */
@@ -3894,7 +4137,7 @@ document.addEventListener('click',function(e){
  if(!a||e.defaultPrevented)return;
  var n=a.getAttribute('href').slice(1);
  if(!n||n==='req')return;
- if(n==='home'||n==='seller'||n==='admin'||n==='enquiries'||n==='buy'){e.preventDefault();go(n);return}
+ if(n==='home'||n==='seller'||n==='admin'||n==='enquiries'||n==='buy'||n==='desk'){e.preventDefault();go(n);return}
  if(n==='top'||document.getElementById(n)){
   if($('top').hidden){e.preventDefault();go('home');setTimeout(function(){var t=n==='top'?null:document.getElementById(n);if(t)t.scrollIntoView();else window.scrollTo(0,0)},30)}
  }
