@@ -1786,15 +1786,22 @@ h1,h2,h3{letter-spacing:-.01em}
     <label>Street address<input id="pfAddr" maxlength="140" autocomplete="off"></label>
     <div class="row3"><label>City *<select id="pfCity"></select><em class="err" id="pfeCity"></em></label><label>State<input id="pfState" readonly tabindex="-1"></label><label>PIN code<input id="pfPin" inputmode="numeric" maxlength="6" autocomplete="off"><em class="err" id="pfePin"></em></label></div>
     <div class="row3"><label>Contact person<input id="pfPerson" maxlength="60" autocomplete="off"></label><label>Phone<input id="pfPhone" type="tel" inputmode="tel" autocomplete="off"><em class="err" id="pfePhone"></em></label><label>Email<input id="pfMail" type="email" autocomplete="off"><em class="err" id="pfeMail"></em></label></div>
-    <label>Website<input id="pfWeb" maxlength="120" autocomplete="off" placeholder="www.example.com"><em class="err" id="pfeWeb"></em></label>
+    <div class="row3"><label>Alternate phone<input id="pfPhone2" type="tel" inputmode="tel" autocomplete="off"><em class="err" id="pfePhone2"></em></label><label>Alternate email<input id="pfMail2" type="email" autocomplete="off"><em class="err" id="pfeMail2"></em></label><label>Website<input id="pfWeb" maxlength="120" autocomplete="off" placeholder="www.example.com"><em class="err" id="pfeWeb"></em></label></div>
     <p class="hint">Contact details you enter here are shown on your public company page in this prototype. Use sample details if you prefer.</p>
    </section>
+   <section class="cd"><h3>Registration &amp; business size <small>All optional</small></h3>
+    <div class="row3"><label>GST number<input id="pfGst" maxlength="15" autocomplete="off" placeholder="15-character GSTIN"><em class="err" id="pfeGst"></em></label><label>Import Export Code (IEC)<input id="pfIec" maxlength="10" autocomplete="off" placeholder="10 characters"><em class="err" id="pfeIec"></em></label><label>Bank account number<input id="pfAcc" inputmode="numeric" maxlength="18" autocomplete="off" placeholder="Enter to update"><em class="err" id="pfeAcc"></em></label></div>
+    <p class="hint" id="pfAccHint">For privacy, only the last 4 digits of an account number are kept in this demonstration.</p>
+    <div class="row3"><label>Number of employees<select id="pfEmp"></select></label><label>Annual turnover<select id="pfTurn"></select></label><label>Year established<input id="pfYear" inputmode="numeric" maxlength="4" placeholder="For example 2005"><em class="err" id="pfeYear"></em></label></div>
+    <p class="hint">Registration numbers you enter are shown on your public company page as entered by you, not verified.</p>
+   </section>
    <section class="cd"><h3>3. Categories <small>Choose 1 to 5</small></h3><div class="pf-checks" id="pfCats"></div><em class="err" id="pfeCats"></em></section>
-   <section class="cd"><h3>4. Company images <small>Logo and up to 4 photos</small></h3>
+   <section class="cd"><h3>4. Company images and videos <small>Logo, up to 5 photos and 2 video links</small></h3>
     <div class="pf-logo"><div class="pf-lb" id="pfLogoBox"></div><div><label class="btn-ol pf-up">Upload logo<input type="file" id="pfLogoFile" accept="image/jpeg,image/png,image/webp" hidden></label> <button type="button" class="btn-ol" id="pfLogoRm">Use default logo</button></div></div>
     <div class="ph" id="pfGal"></div>
     <label class="btn-ol pf-up">Add company photos<input type="file" id="pfFile" accept="image/jpeg,image/png,image/webp" multiple hidden></label>
-    <p class="hint">JPG, PNG or WebP. Photos are resized and stored in this browser only. Only upload images you own or have permission to use.</p>
+    <div class="row3"><label>Company video link<input id="pfV1" placeholder="https://www.youtube.com/watch?v=..."><em class="err" id="pfeV1"></em></label><label>Second video link<input id="pfV2" placeholder="Optional"><em class="err" id="pfeV2"></em></label></div>
+    <p class="hint">Paste YouTube or Vimeo links. Large video files are not stored in this demonstration. JPG, PNG or WebP. Photos are resized and stored in this browser only. Only upload images you own or have permission to use.</p>
    </section>
    <div class="ad-btns"><button class="vr-btn big" type="submit">Save profile</button><button type="button" class="btn-ol" id="pfDiscard">Discard changes</button><button type="button" class="btn-ol" id="pfDefault">Reset to demo defaults</button></div>
   </form>
@@ -3646,15 +3653,16 @@ function openSupplier(name,nopush){
  var web=mine&&c.website?/^https?:\/\//i.test(c.website)?c.website:'https://'+c.website:'';
  var about=mine?esc(c.about):esc(s.n)+' is a demonstration listing used to show how a company profile will look. The details below are sample values, not facts about a real business.';
  var addr=mine?[c.address,s.c,CS[s.c],c.pin].filter(Boolean).map(esc).join(', '):'';
+ var vids=mine&&c.videos&&c.videos.length?'<div class="pp-sec"><h2>Company videos</h2><ul class="pg-list">'+c.videos.map(function(u,i){var h=/^https?:\/\//i.test(u)?u:'';return h?'<li><a href="'+esc(h)+'" target="_blank" rel="noopener noreferrer">Watch company video '+(i+1)+'</a></li>':''}).join('')+'</ul></div>':'';
  var gal=mine&&c.images.length?'<div class="pp-sec"><h2>Company images</h2><div class="sp-gal">'+c.images.map(function(u,i){return '<img alt="Company image '+(i+1)+'" src="'+u+'">'}).join('')+'</div></div>':'';
  $('spInner').innerHTML='<nav class="pp-bc"><a href="#home">Home</a><span>&rsaquo;</span>Companies<span>&rsaquo;</span>'+esc(s.n)+'</nav>'
  +'<div class="sp-hero"><img class="sp-cv" alt="" src="'+(mine&&c.images[0]||artURL('factory',hsh(s.n)%360,2))+'"><div class="sp-in">'+(mine&&c.logo?'<img class="sp-logo" alt="" src="'+c.logo+'">':'')+'<div><h1>'+esc(s.n)+' <span class="demo">'+(mine?'Demo seller account':'Demo company')+'</span></h1>'
  +'<div class="sp-m">'+PINI+' '+esc(s.c)+', '+esc(CS[s.c])+' &middot; '+esc(s.ty)+'</div></div><button type="button" class="pp-btn" id="spEnq">Send enquiry</button></div></div>'
  +'<div class="sp-g"><div class="pp-sec"><h2>About this company</h2><p>'+about+'</p>'
- +'<div class="pp-kv" style="margin-top:12px">'+kvRow('Business type',esc(s.ty))+kvRow('Location',esc(s.c)+', '+esc(CS[s.c]))+kvRow('Address',addr)+(mine?kvRow('Contact person',esc(c.contactPerson))+kvRow('Phone',esc(c.phone))+kvRow('Email',esc(c.email))+kvRow('Website',web?'<a href="'+esc(web)+'" target="_blank" rel="noopener noreferrer">'+esc(c.website)+'</a>':''):'')+kvRow('Established (sample)',m.since)+kvRow('Team size (sample)',m.people)+kvRow('Main category',esc(s.cat))+'</div>'
+ +'<div class="pp-kv" style="margin-top:12px">'+kvRow('Business type',esc(s.ty))+kvRow('Location',esc(s.c)+', '+esc(CS[s.c]))+kvRow('Address',addr)+(mine?kvRow('Contact person',esc(c.contactPerson))+kvRow('Phone',esc(c.phone))+kvRow('Email',esc(c.email))+kvRow('Alternate phone',esc(c.altPhone||''))+kvRow('Alternate email',esc(c.altEmail||''))+kvRow('Website',web?'<a href="'+esc(web)+'" target="_blank" rel="noopener noreferrer">'+esc(c.website)+'</a>':'')+kvRow('GST number (entered by seller, not verified)',esc(c.gst||''))+kvRow('Import Export Code (entered by seller, not verified)',esc(c.iec||'')):'')+(mine?kvRow('Established',esc(c.established||''))+kvRow('Employees',esc(c.employees||''))+kvRow('Annual turnover',esc(c.turnover||'')):kvRow('Established (sample)',m.since)+kvRow('Team size (sample)',m.people))+kvRow('Main category',esc(s.cat))+'</div>'
  +(mine?'<p class="pp-note">Edited in the Seller Centre of this browser. <a href="#seller">Open Seller Centre</a></p>':'')+'</div>'
  +'<div class="pp-sec"><h2>'+(mine?'Categories':'Product range')+'</h2><p>'+(mine?c.cats.map(esc).join(', '):esc(s.p.split(', ').join(', ')))+'.</p><p class="pp-note">Registration, GST and verification details are not shown because this is not a real company.</p></div></div>'
- +gal
+ +gal+vids
  +'<div class="pp-sec"><h2>Products ('+prods.length+')</h2>'+(prods.length?'<div class="pgrid6">'+prods.map(function(p){return pcard(p,'')}).join('')+'</div>':'<p class="en-wait">This demonstration company has no product listings in the catalogue yet. You can still send a general enquiry.</p>')+'</div>';
  $('spEnq').addEventListener('click',function(){openEnquiry(null,s)});
  go('supplier',nopush,{name:name});
@@ -4266,11 +4274,16 @@ $('pfTypes').innerHTML=BTYPES.map(function(t){return '<label><input type="checkb
 $('pfCats').innerHTML=SECTIONS.map(function(s){return '<label><input type="checkbox" value="'+esc(s.n)+'"> '+esc(s.n)+'</label>'}).join('');
 $('pfCity').innerHTML='<option value="">Select city</option>'+Object.keys(CS).sort().map(function(c){return '<option>'+esc(c)+'</option>'}).join('');
 function pfRead(){
- return {name:$('pfName').value.trim(),type:Array.prototype.map.call(root.querySelectorAll('#pfTypes input:checked'),function(i){return i.value}).join(', '),about:$('pfAbout').value.trim(),address:$('pfAddr').value.trim(),city:$('pfCity').value,pin:$('pfPin').value.trim(),contactPerson:$('pfPerson').value.trim(),phone:$('pfPhone').value.trim(),email:$('pfMail').value.trim(),website:$('pfWeb').value.trim(),cats:Array.prototype.map.call(root.querySelectorAll('#pfCats input:checked'),function(i){return i.value}),logo:pfLogo,images:pfImgs.slice()};
+ return {name:$('pfName').value.trim(),type:Array.prototype.map.call(root.querySelectorAll('#pfTypes input:checked'),function(i){return i.value}).join(', '),about:$('pfAbout').value.trim(),address:$('pfAddr').value.trim(),city:$('pfCity').value,pin:$('pfPin').value.trim(),contactPerson:$('pfPerson').value.trim(),phone:$('pfPhone').value.trim(),email:$('pfMail').value.trim(),website:$('pfWeb').value.trim(),cats:Array.prototype.map.call(root.querySelectorAll('#pfCats input:checked'),function(i){return i.value}),logo:pfLogo,images:pfImgs.slice(),altPhone:$('pfPhone2').value.trim(),altEmail:$('pfMail2').value.trim(),gst:$('pfGst').value.trim().toUpperCase(),iec:$('pfIec').value.trim().toUpperCase(),employees:$('pfEmp').value,turnover:$('pfTurn').value,established:$('pfYear').value.trim(),videos:[$('pfV1').value.trim(),$('pfV2').value.trim()].filter(Boolean),accNew:$('pfAcc').value.trim()};
 }
 function pfFill(){
  var c=Store.company.get(),ty=c.type.split(', ');
  $('pfName').value=c.name;$('pfAbout').value=c.about;$('pfCnt').textContent=c.about.length+'/1000';$('pfAddr').value=c.address;$('pfCity').value=c.city;$('pfState').value=CS[c.city]||'';$('pfPin').value=c.pin;$('pfPerson').value=c.contactPerson;$('pfPhone').value=c.phone;$('pfMail').value=c.email;$('pfWeb').value=c.website;
+ $('pfPhone2').value=c.altPhone||'';$('pfMail2').value=c.altEmail||'';$('pfGst').value=c.gst||'';$('pfIec').value=c.iec||'';$('pfAcc').value='';$('pfYear').value=c.established||'';
+ var EO=function(a,v){return '<option value="">Choose a range</option>'+a.map(function(x){return '<option'+(x===v?' selected':'')+'>'+x+'</option>'}).join('')};
+ $('pfEmp').innerHTML=EO(['1 to 10','11 to 50','51 to 200','201 to 500','501 to 1,000','More than 1,000'],c.employees);$('pfTurn').innerHTML=EO(['Up to \u20b940 lakh','\u20b940 lakh to \u20b91.5 crore','\u20b91.5 to \u20b95 crore','\u20b95 to \u20b925 crore','\u20b925 to \u20b9100 crore','\u20b9100 to \u20b9500 crore','More than \u20b9500 crore'],c.turnover);
+ var vd=c.videos||[];$('pfV1').value=vd[0]||'';$('pfV2').value=vd[1]||'';
+ $('pfAccHint').textContent=c.accLast4?'Account saved ending '+c.accLast4+'. Enter a new number to replace it. Only the last 4 digits are kept in this demonstration.':'For privacy, only the last 4 digits of an account number are kept in this demonstration.';
  root.querySelectorAll('#pfTypes input').forEach(function(i){i.checked=ty.indexOf(i.value)>-1});
  root.querySelectorAll('#pfCats input').forEach(function(i){i.checked=c.cats.indexOf(i.value)>-1});
  pfLogo=c.logo;pfImgs=c.images.slice();pfMedia();pfClear();pfPrev();
@@ -4300,6 +4313,13 @@ function pfValidate(d){
  if(d.phone&&!/^[0-9+\-\s()]{7,16}$/.test(d.phone))bad('pfPhone','pfePhone','Enter a valid phone number.');
  if(d.email&&!/^\S+@\S+\.\S+$/.test(d.email))bad('pfMail','pfeMail','That email address does not look right.');
  if(d.website&&!/^(https?:\/\/)?[^\s\/.]+(\.[^\s\/.]+)+(\/\S*)?$/i.test(d.website))bad('pfWeb','pfeWeb','Enter a website like www.example.com.');
+ if(d.altPhone&&!/^[0-9+\-\s()]{7,16}$/.test(d.altPhone))bad('pfPhone2','pfePhone2','Enter a valid phone number.');
+ if(d.altEmail&&!/^\S+@\S+\.\S+$/.test(d.altEmail))bad('pfMail2','pfeMail2','That email address does not look right.');
+ if(d.gst&&!/^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z][A-Z0-9]Z[A-Z0-9]$/.test(d.gst))bad('pfGst','pfeGst','A GST number has 15 characters, for example 09ABCDE1234F1Z5.');
+ if(d.iec&&!/^[A-Z0-9]{10}$/.test(d.iec))bad('pfIec','pfeIec','An IEC has 10 letters or digits.');
+ if(d.accNew&&!/^[0-9]{9,18}$/.test(d.accNew))bad('pfAcc','pfeAcc','Account numbers have 9 to 18 digits.');
+ if(d.established&&!(/^\d{4}$/.test(d.established)&&+d.established>=1900&&+d.established<=new Date().getFullYear()))bad('pfYear','pfeYear','Enter a 4-digit year.');
+ d.videos.forEach(function(u,i){if(!/^https?:\/\/\S+\.\S+/i.test(u))bad('pfV'+(i+1),'pfeV'+(i+1),'Paste a full link starting with https://')});
  if(!d.cats.length)bad('pfCats','pfeCats','Choose at least one category.');
  else if(d.cats.length>5)bad('pfCats','pfeCats','Choose at most 5 categories.');
  if(first){if(first.focus)first.focus();return false}
@@ -4310,8 +4330,8 @@ $('pfForm').addEventListener('change',function(e){
  if(e.target.id==='pfCity')$('pfState').value=CS[e.target.value]||'';
  if(e.target.id==='pfLogoFile'){var f=e.target.files[0];e.target.value='';if(!f)return;compress(f,function(u){if(u){pfLogo=u;pfMedia();pfPrev()}else toast('That file was skipped. Use a JPG, PNG or WebP under 10 MB.')});return}
  if(e.target.id==='pfFile'){
-  var files=Array.prototype.slice.call(e.target.files).slice(0,4-pfImgs.length),bad=0,left=files.length;e.target.value='';
-  if(!left){toast('You can add up to 4 company photos.');return}
+  var files=Array.prototype.slice.call(e.target.files).slice(0,5-pfImgs.length),bad=0,left=files.length;e.target.value='';
+  if(!left){toast('You can add up to 5 company photos.');return}
   files.forEach(function(f){compress(f,function(u){if(u)pfImgs.push(u);else bad++;if(--left===0){pfMedia();pfPrev();if(bad)toast(bad+' file'+(bad>1?'s were':' was')+' skipped. Use JPG, PNG or WebP under 10 MB.')}})});
   return}
  pfPrev();
@@ -4329,6 +4349,7 @@ $('pfDefault').addEventListener('click',function(){
 $('pfView').addEventListener('click',function(){openSupplier(TAPIS.n)});
 $('pfForm').addEventListener('submit',function(e){
  e.preventDefault();var d=pfRead();if(!pfValidate(d))return;
+ if(d.accNew)d.accLast4=d.accNew.slice(-4);delete d.accNew;
  var old=TAPIS.n,ok=Store.company.set(d);applyCompany(old);
  Store.notifs.add('profile','Company profile updated','Your changes are now visible on your public company page.','profile');
  refreshBuyer();refreshExt();pfPrev();
@@ -4653,7 +4674,7 @@ root.addEventListener('click',function(e){if(e.target.closest('[data-signout]'))
 /* --- profile completeness (dashboard) --- */
 function renderCompl(){
  var c=Store.company.get(),D=Store.company.DEFAULTS,svg=function(d){return '<svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/>'+(d?'<path d="M8 12l3 3 5-6"/>':'')+'</svg>'};
- var items=[['Add company details',!!(c.address&&(c.phone||c.email)&&c.about!==D.about),'profile'],['Upload logo',!!c.logo,'profile'],['Add company photos',c.images.length>0,'profile'],['Add products ('+mine().length+')',mine().length>0,'add'],['Add catalogue / brochure',!!Store.seller.brochure.get(),'catalogue']];
+ var items=[['Add company details',!!(c.address&&(c.phone||c.email)&&c.about!==D.about),'profile'],['Upload logo',!!c.logo,'profile'],['Add company photos',c.images.length>0,'profile'],['Add products ('+mine().length+')',mine().length>0,'add'],['Add GST / IEC details',!!(c.gst||c.iec),'profile'],['Add a company video',!!(c.videos&&c.videos.length),'profile'],['Add catalogue / brochure',!!Store.seller.brochure.get(),'catalogue']];
  var done=items.filter(function(i){return i[1]}).length,p=Math.round(done/items.length*100);
  $('cpPct').innerHTML=p+'%<small>Complete</small>';$('cpBar').style.width=p+'%';
  $('cpList').innerHTML=items.map(function(i){return '<li'+(i[1]?'':' class="todo"')+'>'+svg(i[1])+i[0]+'</li>'}).join('');
