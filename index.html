@@ -785,6 +785,63 @@ input,select,textarea{font-size:16px}
 @media (max-width:640px){.lw-hero{padding:30px 0 64px}.lw-hero p{font-size:16px}.lw-main{padding:20px 16px 24px;border-radius:14px}.lw-row,.lw-rv,.lw-next-steps{grid-template-columns:1fr}.lw-act{flex-direction:column-reverse;align-items:stretch}.lw-act .lw-r{flex-direction:column-reverse;align-items:stretch}.lw-next,.lw-alt{width:100%;text-align:center}.lw-act>span:empty{display:none}#lwBody h2{font-size:24px}.lw-pi{flex-wrap:wrap}}
 .bar .cta.lb{background:#fff;color:var(--navy,#0f2a47);border:2px solid #fff}
 .bar .cta.lb:hover{background:#ffe9d9}
+/* ===== Buyer selection & requirement list ===== */
+.pc-sel{position:absolute;top:8px;left:8px;z-index:3;display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,.96);color:var(--navy);border:1.5px solid var(--line);border-radius:8px;padding:6px 10px 6px 7px;font:800 13px var(--font-body);cursor:pointer;box-shadow:0 2px 6px rgba(0,0,0,.15)}
+.pc-sel i{width:18px;height:18px;border:2px solid #8a94a6;border-radius:5px;display:inline-grid;place-items:center;background:#fff;color:#fff;font-style:normal;font-size:13px;line-height:1}
+.pc-sel.on{background:var(--green);border-color:var(--green);color:#fff}
+.pc-sel.on i{background:#fff;border-color:#fff;color:var(--green)}
+.pc.sel{outline:3px solid var(--green);outline-offset:-3px}
+.pc-new,.pc-promo{left:auto!important;right:8px}
+.pp-act .c{background:var(--green);border:1px solid var(--green);color:#fff}
+.pp-act .c.on{background:#fff;color:var(--green)}
+#bkBar{position:fixed;left:0;right:0;bottom:0;z-index:70;background:var(--navy);color:#fff;display:flex;align-items:center;justify-content:center;gap:16px;padding:12px 16px;box-shadow:0 -6px 24px rgba(0,0,0,.25);flex-wrap:wrap}
+#bkBar[hidden]{display:none}
+#bkBar b{font-size:17px}
+#bkBar button{background:var(--orange);color:#fff;border:0;border-radius:8px;padding:11px 20px;font:800 16px var(--font-body);cursor:pointer}
+#bkBar .bk-clear{background:transparent;border:1px solid rgba(255,255,255,.5);font-size:14px;padding:9px 14px}
+.bk-toast{position:fixed;left:50%;bottom:84px;transform:translateX(-50%);background:#14213a;color:#fff;padding:11px 18px;border-radius:10px;font-weight:600;z-index:90;max-width:92vw}
+#buyView .wrap{padding-bottom:90px}
+#buyView h1{font-family:var(--font-display);font-size:34px;margin:6px 0}
+.bv-lead{color:var(--muted);font-size:17px;max-width:760px}
+.bv-steps{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:18px 0}
+.bv-steps div{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:14px 16px;display:flex;gap:12px;align-items:flex-start}
+.bv-steps span{flex:none;width:34px;height:34px;border-radius:50%;background:var(--orange);color:#fff;font-weight:800;display:grid;place-items:center;font-size:16px}
+.bv-steps b{display:block;font-size:16px}.bv-steps small{color:var(--muted);font-size:14px}
+.bv-g{display:grid;grid-template-columns:minmax(0,1fr) 400px;gap:22px;align-items:start}
+.bv-tools{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+.bv-tools input,.bv-tools select{flex:1 1 200px;min-width:0;padding:12px 14px;border:1px solid var(--line);border-radius:8px;font:600 16px var(--font-body);background:var(--surface);color:var(--fg)}
+.bv-tools label{display:flex;align-items:center;gap:8px;font-weight:700;font-size:15px;padding:0 6px}
+.bv-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:14px}
+.bv-more{display:block;margin:18px auto 0;background:var(--surface);border:1px solid var(--blue);color:var(--blue);border-radius:8px;padding:11px 24px;font:800 15px var(--font-body);cursor:pointer}
+.bv-cart{position:sticky;top:12px;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:18px;max-height:calc(100vh - 24px);overflow:auto}
+.bv-cart h2{margin:0 0 4px;font-size:22px}
+.bv-cart .bv-sub{color:var(--muted);font-size:14px;margin:0 0 12px}
+.bv-empty{border:2px dashed var(--line);border-radius:10px;padding:22px 14px;text-align:center;color:var(--muted);font-size:15px}
+.bv-it{display:grid;grid-template-columns:64px minmax(0,1fr) 28px;gap:10px;padding:12px 0;border-top:1px solid var(--line)}
+.bv-it img{width:64px;height:64px;object-fit:cover;border-radius:8px;background:var(--surface-2)}
+.bv-it b{font-size:15px;display:block;line-height:1.25}.bv-it small{display:block;color:var(--muted);font-size:13px}
+.bv-it .pr{color:var(--orange);font-weight:800;font-size:15px}
+.bv-it .rm{border:0;background:transparent;font-size:18px;color:var(--muted);cursor:pointer;align-self:start}
+.bv-f{grid-column:1/-1;display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:2px}
+.bv-f label{display:flex;flex-direction:column;gap:3px;font-size:12.5px;font-weight:700;color:var(--muted)}
+.bv-f label.full{grid-column:1/-1}
+.bv-f input{padding:9px 10px;border:1px solid var(--line);border-radius:7px;font:600 15px var(--font-body);min-width:0;background:var(--surface);color:var(--fg)}
+.bv-f label,.bv-det label{min-width:0}.bv-f input,.bv-det input,.bv-det textarea{width:100%;box-sizing:border-box}
+.bv-est{grid-column:1/-1;font-size:13.5px;color:var(--green);font-weight:700}
+.bv-det{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px;border-top:2px solid var(--line);padding-top:14px}
+.bv-det h3{grid-column:1/-1;margin:0;font-size:17px}
+.bv-det label{display:flex;flex-direction:column;gap:4px;font-size:13.5px;font-weight:700;color:var(--muted)}
+.bv-det label.full{grid-column:1/-1}
+.bv-det input,.bv-det textarea{padding:11px 12px;border:1px solid var(--line);border-radius:8px;font:600 16px var(--font-body);min-width:0;background:var(--surface);color:var(--fg)}
+.bv-err{grid-column:1/-1;color:#b42318;font-weight:700;font-size:14px;min-height:0}
+.bv-go{grid-column:1/-1;background:var(--orange);color:#fff;border:0;border-radius:9px;padding:14px;font:800 17px var(--font-body);cursor:pointer}
+.bv-note{grid-column:1/-1;color:var(--muted);font-size:12.5px;margin:0}
+.bv-done h2{color:var(--green)}
+.bv-done ul{list-style:none;padding:0;margin:12px 0}
+.bv-done li{display:flex;justify-content:space-between;gap:10px;padding:8px 0;border-top:1px solid var(--line);font-size:15px}
+.bv-done .row{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
+@media (max-width:1000px){.bv-g{grid-template-columns:minmax(0,1fr)}.bv-cart{position:static;max-height:none}}
+@media (max-width:640px){#buyView h1{font-size:26px}.bv-steps{grid-template-columns:1fr}.bv-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.bv-det{grid-template-columns:1fr}#bkBar{gap:8px;padding:10px 12px}#bkBar b{font-size:15px;width:100%;text-align:center}}
 </style>
 
 <header>
@@ -792,7 +849,7 @@ input,select,textarea{font-size:16px}
   <div class="top"><div class="wrap">
     <a class="logo" href="#top"><span class="logo-mark"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10"/> <path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/> <path d="M2 12h20"/></svg></span><span><b>GlobalTrade<span>B2B</span>.com</b><small>B2B sourcing for India and global trade</small></span></a>
     <button class="locbtn" id="locBtn1" type="button" aria-haspopup="dialog" title="Choose location"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0"/> <circle cx="12" cy="10" r="3"/></svg><span id="locLbl1">All India</span><svg class="i chev" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button>
-    <nav><a href="#buyers">For Buyers <svg class="i chev" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></a><a href="#suppliers">For Suppliers <svg class="i chev" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></a><a href="#enquiries">My Enquiries</a><a href="#faq">Help &amp; Support <svg class="i chev" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></a></nav>
+    <nav><a href="#buy">For Buyers <svg class="i chev" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></a><a href="#suppliers">For Suppliers <svg class="i chev" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></a><a href="#enquiries">My Enquiries</a><a href="#faq">Help &amp; Support <svg class="i chev" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></a></nav>
   </div></div>
   <div class="bar"><div class="wrap">
     <a class="all" href="#categories"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><line x1="4" x2="20" y1="12" y2="12"/> <line x1="4" x2="20" y1="6" y2="6"/> <line x1="4" x2="20" y1="18" y2="18"/></svg>All Categories <svg class="i chev" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></a>
@@ -966,6 +1023,13 @@ input,select,textarea{font-size:16px}
   </div>
   <div class="lw-toast" id="lwToast" hidden role="status"></div>
 </section>
+<section id="buyView" hidden><div class="wrap"><nav class="pp-bc"><a href="#home">Home</a><span>&rsaquo;</span>For Buyers</nav>
+<h1>Select products &amp; send your requirement</h1>
+<p class="bv-lead">Tick the product pictures you want to buy. The price shown on each picture comes with it. Set the quantity and your requirements, add your details and send one enquiry to every supplier.</p>
+<div class="bv-steps"><div><span>1</span><p style="margin:0"><b>Select pictures</b><small>Tick every product you are interested in.</small></p></div><div><span>2</span><p style="margin:0"><b>Quantity &amp; requirements</b><small>Enter how much you need and any specification.</small></p></div><div><span>3</span><p style="margin:0"><b>Send enquiry</b><small>Your details go to each supplier. Track replies in My Enquiries.</small></p></div></div>
+<div class="bv-g"><div><div class="bv-tools"><input id="bvQ" type="search" placeholder="Search products or suppliers" aria-label="Search products"><select id="bvCat" aria-label="Category"></select><label><input type="checkbox" id="bvSelOnly"> Selected only</label></div><div class="bv-grid" id="bvGrid"></div><button type="button" class="bv-more" id="bvMore" hidden>Show more products</button></div>
+<aside class="bv-cart" id="bvCart" aria-live="polite"></aside></div>
+<p class="demo-note" style="margin-top:18px">Demonstration: products, prices and suppliers are sample data. Your enquiries are saved in this browser only and nothing is sent to a real company.</p></div></section>
 <section id="signinView" hidden><div class="wrap"><div class="si-card"><h1>Seller Centre sign-in <span class="demo">Demonstration</span></h1><p>You have signed out of the demonstration seller account. There are no real accounts, passwords or verification in this prototype.</p><button type="button" class="pp-btn" id="siGo">Continue as the demo seller</button> <a class="btn-o" href="#home">Back to marketplace</a><p class="pp-note">Real sign-in will be added in the backend phase.</p></div></div></section>
 <section id="pageView" hidden><div class="wrap" id="pgInner"></div></section>
 <div id="sellerView" hidden></div>
@@ -2585,8 +2649,8 @@ $('heroMosaic').innerHTML=['cat0','cat3','hp','cat7','man1'].map(function(k,i){r
 $('subForm').addEventListener('submit',function(e){e.preventDefault();var i=$('subEmail'),b=e.target.querySelector('button');if(!/^\S+@\S+\.\S+$/.test(i.value.trim())){i.setCustomValidity('x');i.placeholder='Enter a valid email address';i.value='';i.focus();return}b.textContent='Subscribed (demo)';b.disabled=true;i.disabled=true});
 
 $('buyers').innerHTML='<div class="lbl">Quick<br>Discovery</div>'+[
- ['cube','Products','Browse &amp; Buy'],['users','Suppliers','Find Companies'],['fact','Manufacturers','Factory &amp; Production'],['doc','Buy Leads','Latest Requirements'],['hand','Services','Business Services']
-].slice(0,5).map(function(a){return '<a href="#">'+ic(a[0])+'<span><b>'+a[1]+'</b><small>'+a[2]+'</small></span></a>'}).join('');
+ ['cube','Products','Select &amp; Buy'],['users','Suppliers','Find Companies'],['fact','Manufacturers','Factory &amp; Production'],['doc','Buy Leads','Latest Requirements'],['hand','Services','Business Services']
+].slice(0,5).map(function(a){return '<a href="'+(a[1]==='Products'?'#buy':'#')+'">'+ic(a[0])+'<span><b>'+a[1]+'</b><small>'+a[2]+'</small></span></a>'}).join('');
 $('buyers').style.gridTemplateColumns='';
 
 var cats=[['Industrial Machinery','gear','#1f4f9f'],['Electrical & Electronics','bolt','#1a8a4a'],['Building & Construction','build','#c4562c'],['Textiles & Garments','tex','#a63a78'],['Packaging & Printing','box','#b07a3c'],['Chemicals','flask','#2a7fb8'],['Agriculture','leaf','#2f8a2f'],['Food & Beverages','food','#d17a1c'],['Furniture & Home Decor','sofa','#6b5b4b'],['Medical & Healthcare','med','#1f8f9f'],['Automotive','car','#4a4f5a'],['Renewable Energy','sun','#d4a017'],['Office Supplies','clip','#5b5fc7'],['Safety Products','helm','#d98a0b'],['Beauty & Personal Care','bottle','#c24a6a'],['Handicrafts & Gifts','vase','#9a5a2a']];
@@ -3193,7 +3257,7 @@ function prank(p){return rankOf({c:p.seller.c})}
 function priceLine(p){return p.price?'₹ '+fmtNum(p.price)+' <small>/ '+esc(p.unit)+'</small>':'Price on request'}
 function pcard(p,tag){
  var s=p.seller,nw=p.user&&p.created&&(Date.now()-p.created)<6048e5;
- return '<article class="pc" data-pid="'+p.id+'" tabindex="0" role="link" aria-label="'+esc(p.name)+'"><div class="pc-im"><img alt="" loading="lazy" src="'+pimg(p)+'">'+(nw?'<span class="pc-new">New</span>':'')+(tag?'<span class="pc-near">'+tag+'</span>':'')+(isPromo(p)?'<span class="pc-promo">Sponsored (demo)</span>':'')+'</div>'
+ return '<article class="pc" data-pid="'+p.id+'" tabindex="0" role="link" aria-label="'+esc(p.name)+'"><div class="pc-im"><img alt="" loading="lazy" src="'+pimg(p)+'">'+(p.id==='preview'?'':'<button type="button" class="pc-sel'+(bkHas(p.id)?' on':'')+'" data-sel="'+p.id+'" aria-pressed="'+(bkHas(p.id)?'true':'false')+'"><i>&#10003;</i><span>'+(bkHas(p.id)?'Selected':'Select')+'</span></button>')+(nw?'<span class="pc-new">New</span>':'')+(tag?'<span class="pc-near">'+tag+'</span>':'')+(isPromo(p)?'<span class="pc-promo">Sponsored (demo)</span>':'')+'</div>'
  +'<div class="pc-b"><h4>'+esc(p.name)+'</h4><div class="pc-pr">'+priceLine(p)+'</div><div class="pc-m">Min. order: '+fmtNum(p.moq)+' '+esc(p.unit)+'</div>'
  +'<div class="pc-s"><b>'+esc(s.n)+'</b>'+CHK+'</div><div class="pc-l">'+PINI+' '+esc(s.c)+', '+esc(CS[s.c])+'</div>'
  +'<button type="button" class="pc-btn" data-enq="'+p.id+'">Get Best Price</button></div></article>';
@@ -3211,7 +3275,7 @@ function ppHTML(p,prev){
  return (prev?'':'<nav class="pp-bc"><a href="#home">Home</a><span>&rsaquo;</span><a href="#" data-cat="'+esc(p.cat)+'">'+esc(p.cat)+'</a><span>&rsaquo;</span>'+esc(p.name)+'</nav>')
  +'<div class="pp"><div class="pp-g"><div class="pp-main"><img class="ppmain" alt="" src="'+imgs[0]+'"></div><div class="pp-th">'+imgs.map(function(u,i){return '<button type="button" class="'+(i?'':'on')+'" data-th="'+i+'" aria-label="Photo '+(i+1)+'"><img alt="" src="'+u+'"></button>'}).join('')+'</div></div>'
  +'<div class="pp-i"><div class="pp-cat">'+esc(p.cat)+'</div><h1>'+esc(p.name)+'</h1><div class="pp-price">'+priceH+'</div>'+kv(key)
- +'<div class="pp-act"><button type="button" class="a" data-enq="'+p.id+'">Get Best Price</button><button type="button" class="b" data-enq="'+p.id+'">Contact Supplier</button></div>'
+ +'<div class="pp-act"><button type="button" class="a" data-enq="'+p.id+'">Get Best Price</button><button type="button" class="b" data-enq="'+p.id+'">Contact Supplier</button>'+(prev?'':'<button type="button" class="c'+(bkHas(p.id)?' on':'')+'" data-sel="'+p.id+'">'+(bkHas(p.id)?'\u2713 Added to requirement list':'+ Add to requirement list')+'</button>')+'</div>'
  +'<div class="pp-sup"><img alt="" src="'+supImg(s,0)+'"><div><b>'+esc(s.n)+' '+CHK+'</b><small>'+PINI+' '+esc(s.c)+', '+esc(CS[s.c])+'</small><small>'+esc(s.ty)+' &middot; Since '+m.since+' &middot; '+m.people+'</small></div>'+(prev?'':'<button type="button" class="pc-btn" data-sup="'+esc(s.n)+'" style="margin-left:auto">View supplier</button>')+'</div><p class="pp-note">Demonstration listing: this is a sample product from a sample company. It is not a registered or verified supplier.</p></div></div>'
  +'<div class="pp-sec"><h2>Product details</h2>'+kv(all)+'</div>'
  +'<div class="pp-sec"><h2>Description</h2><p>'+esc(p.desc)+'</p></div>'+sim;
@@ -3221,14 +3285,14 @@ function sectionHTML(sec){
  list.sort(function(a,b){return (isPromo(b)?1:0)-(isPromo(a)?1:0)||prank(a)-prank(b)||(b.created||0)-(a.created||0)});
  return '<div class="cs"><div class="cs-h"><h3>'+esc(sec.n)+'</h3><a class="link" href="#" data-cat="'+esc(sec.n)+'">View all &rarr;</a></div><div class="cs-grid">'+list.slice(0,6).map(function(p){return pcard(p,LOC.t!=='all'&&prank(p)<2?'Near you':'')}).join('')+'</div></div>';
 }
-function renderSections(){var h=SECTIONS.filter(function(s){return !Store.admin.has('hiddenCats',s.n)}).map(sectionHTML);$('catsA').innerHTML=h.slice(0,4).join('');$('catsB').innerHTML=h.slice(4).join('')}
+function renderSections(){var h=SECTIONS.filter(function(s){return !Store.admin.has('hiddenCats',s.n)}).map(sectionHTML);$('catsA').innerHTML=h.slice(0,4).join('');$('catsB').innerHTML=h.slice(4).join('');if(window.bkSync)bkSync()}
 var TRN=['Hand Tufted Rugs','Cotton Fabric','Basmati Rice','TMT Bars','Solar Panels','Electric Scooters','Brass Idols','Ceramic Tiles','Corrugated Boxes','Silk Sarees','Spices','CCTV Cameras'];
 function renderTrending(){$('trGrid').innerHTML=TRN.map(function(n){var p=PRODUCTS.filter(function(x){return x.name===n&&isLive(x)})[0];if(!p)return '';return '<button type="button" class="tr" data-pid="'+p.id+'"><img alt="" src="'+pimg(p)+'"><span>'+esc(n)+'</span><small>'+(p.price?'From ₹ '+fmtNum(p.price)+' / '+esc(p.unit):'Price on request')+'</small></button>'}).join('')}
 function refreshBuyer(){renderSections();renderTrending();if(typeof renderCatDlg==='function')renderCatDlg();if(!$('results').hidden&&!$('top').hidden)runSearch(false)}
 
 /* router */
 var CUR=null,FROMSEL=false;
-var VIEWIDS={list:'listView',home:'top',product:'productView',seller:'sellerView',admin:'adminView',supplier:'supplierView',enquiries:'enquiriesView',page:'pageView',signin:'signinView'};
+var VIEWIDS={buy:'buyView',list:'listView',home:'top',product:'productView',seller:'sellerView',admin:'adminView',supplier:'supplierView',enquiries:'enquiriesView',page:'pageView',signin:'signinView'};
 function stKey(s){return s?(s.v+'|'+(s.id||s.name||s.key||'')):''}
 function go(v,nohash,extra){
  if(v==='seller'&&Store.seller.session.signedOut())v='signin';
@@ -3242,6 +3306,8 @@ function go(v,nohash,extra){
  if(v==='admin'&&window.ADMIN)ADMIN.refresh();
  if(v==='enquiries')renderEnquiries();
  if(v==='list')lwOpen();
+ if(v==='buy')bvOpen();
+ if(window.bkSync&&v!=='buy')bkSync();
  window.scrollTo(0,0);
  if(v==='home'&&!$('results').hidden)runSearch(false);
 }
@@ -3254,7 +3320,7 @@ function openProduct(id,nopush){
 }
 window.addEventListener('popstate',function(ev){
  var s=ev.state;
- if(!s||!s.v){var h=location.hash.slice(1);go(h==='seller'||h==='admin'||h==='enquiries'||h==='list'?h:'home',true);return}
+ if(!s||!s.v){var h=location.hash.slice(1);go(h==='seller'||h==='admin'||h==='enquiries'||h==='list'||h==='buy'?h:'home',true);return}
  if(s.v==='product'&&s.id&&getP(s.id))openProduct(s.id,true);
  else if(s.v==='supplier'&&s.name)openSupplier(s.name,true);
  else if(s.v==='page'&&s.key)openPage(s.key,true);
@@ -3263,7 +3329,7 @@ window.addEventListener('popstate',function(ev){
 window.addEventListener('hashchange',function(){
  var n=location.hash.slice(1);
  if(n==='product'||n==='supplier'||n==='page')return;
- if(n==='seller'||n==='admin'||n==='enquiries'||n==='list'||n==='home'||n===''){go(n||'home',true);return}
+ if(n==='seller'||n==='admin'||n==='enquiries'||n==='list'||n==='buy'||n==='home'||n===''){go(n||'home',true);return}
  if(n==='product'&&CUR){go('product',true);return}
  if(n&&$('top').hidden){go('home',true);setTimeout(function(){var el=document.getElementById(n);if(el)el.scrollIntoView()},40)}
 });
@@ -3339,7 +3405,7 @@ function resetFilters(){F.ver=false;F.type='All';F.sort='near';F.min=0;F.max=0;F
 var LEADS=[['Hand Tufted Rugs','Custom design, wool material','prod0','500 Pieces','UAE','05 Nov 2026','View Requirement'],['Packing Boxes (Corrugated)','5 ply, printed logo','prod3','10,000 Pieces','Mumbai, India','04 Nov 2026','View Requirement'],['Textile Fabric (Cotton)','Dyed, 150 GSM','prod2','5,000 Meters','USA','03 Nov 2026','View Requirement'],['Industrial Water Pumps','Cast iron, 5 HP','prod1','20 Units','Delhi, India','02 Nov 2026','Contact Supplier']];
 $('leadRows').innerHTML=LEADS.map(function(l,i){return '<tr><td><div class="lead-p"><b>'+(i+1)+'</b><img alt="" loading="lazy" decoding="async" width="44" height="44" src="'+IMG[l[2]]+'"><span><strong>'+l[0]+'</strong><small>'+l[1]+'</small></span></div></td><td>'+l[3]+'</td><td>'+l[4]+'</td><td>'+l[5]+'</td><td>'+(i==3?'<a class="cs" href="#req" data-prod="'+l[0]+'">':'<a class="vb" href="#" data-lead="1">')+l[6]+'</a></td></tr>'}).join('');
 
-function initProducts(){loadMine();renderSections();renderTrending();var h0=location.hash.slice(1);try{history.replaceState({v:(h0==='seller'||h0==='admin'||h0==='enquiries'||h0==='list')?h0:'home'},'')}catch(e){}if(h0==='seller'||h0==='admin'||h0==='enquiries'||h0==='list')go(h0,true)}
+function initProducts(){loadMine();renderSections();renderTrending();var h0=location.hash.slice(1);try{history.replaceState({v:(h0==='seller'||h0==='admin'||h0==='enquiries'||h0==='list'||h0==='buy')?h0:'home'},'')}catch(e){}if(h0==='seller'||h0==='admin'||h0==='enquiries'||h0==='list'||h0==='buy')go(h0,true)}
 
 
 /* ===== company profile -> shared listing record (TAPIS) ===== */
@@ -3630,6 +3696,83 @@ document.addEventListener('click',function(e){
  if(c){document.querySelectorAll('.ov').forEach(function(o){o.hidden=true})}
 });
 
+/* ===== Buyer selection & requirement list ===== */
+var BK_KEY='gtb2b-basket',BKL=[],BVN=24,BVDONE=null;
+function bkLoad(){try{var a=JSON.parse(localStorage.getItem(BK_KEY)||'[]');BKL=Array.isArray(a)?a.filter(function(x){return x&&x.pid}):[]}catch(e){BKL=[]}}
+function bkSave(){try{localStorage.setItem(BK_KEY,JSON.stringify(BKL))}catch(e){}}
+function bkHas(id){return !!BKL&&BKL.some(function(x){return x.pid===id})}
+function bkItem(id){return BKL.filter(function(x){return x.pid===id})[0]}
+var bkTT;function bkToast(m){var t=$('bkToast');if(!t){t=document.createElement('div');t.id='bkToast';t.className='bk-toast';t.setAttribute('role','status');document.body.appendChild(t)}t.textContent=m;t.hidden=false;clearTimeout(bkTT);bkTT=setTimeout(function(){t.hidden=true},2600)}
+function bkToggle(id){var p=getP(id);if(!p)return;if(bkHas(id)){BKL=BKL.filter(function(x){return x.pid!==id});bkToast('Removed from your requirement list')}else{BKL.push({pid:id,qty:String(p.moq||''),unit:p.unit||'',note:''});bkToast('Added to your requirement list')}bkSave();bkSync()}
+function bkSync(){
+ bkLoad();
+ document.querySelectorAll('[data-sel]').forEach(function(b){var on=bkHas(b.getAttribute('data-sel'));b.classList.toggle('on',on);b.setAttribute('aria-pressed',on?'true':'false');var pc=b.closest('.pc');if(pc)pc.classList.toggle('sel',on);if(b.classList.contains('pc-sel'))b.querySelector('span').textContent=on?'Selected':'Select';else b.textContent=on?'✓ Added to requirement list':'+ Add to requirement list'});
+ var bar=$('bkBar'),n=BKL.length,vis=n>0&&['top','productView','supplierView','pageView'].some(function(i){var e=$(i);return e&&!e.hidden});
+ if(bar){bar.hidden=!vis;$('bkN').textContent=n+(n===1?' product':' products')+' selected'}
+ if(!$('buyView').hidden)bvCart();
+}
+function bvOpen(){bkLoad();var sel=$('bvCat');if(!sel.options.length){sel.innerHTML='<option value="">All categories</option>'+SECTIONS.map(function(s){return '<option>'+esc(s.n)+'</option>'}).join('')}BVN=24;BVDONE=null;bvGrid();bkSync();
+ var h=location.hash;}
+function bvGrid(){
+ var q=$('bvQ').value.trim().toLowerCase(),c=$('bvCat').value,so=$('bvSelOnly').checked;
+ var l=liveProducts().filter(function(p){return (!c||p.cat===c)&&(!so||bkHas(p.id))&&(!q||(p.name+' '+p.cat+' '+p.seller.n).toLowerCase().indexOf(q)>-1)});
+ l.sort(function(a,b){return (bkHas(b.id)?1:0)-(bkHas(a.id)?1:0)||prank(a)-prank(b)||(b.created||0)-(a.created||0)});
+ $('bvGrid').innerHTML=l.slice(0,BVN).map(function(p){return pcard(p,'')}).join('')||'<div class="bv-empty" style="grid-column:1/-1">No products match. Try another search or category.</div>';
+ $('bvMore').hidden=l.length<=BVN;bkSync();
+}
+function bvCart(){
+ var el=$('bvCart');BKL=BKL.filter(function(x){return getP(x.pid)});
+ if(BVDONE){el.innerHTML='<div class="bv-done"><h2>✓ Requirement sent</h2><p class="bv-sub">'+BVDONE.length+' enquir'+(BVDONE.length===1?'y was':'ies were')+' saved, one for each supplier product.</p><ul>'+BVDONE.map(function(r){return '<li><span>'+esc(r.product)+'</span><b>'+esc(r.id)+'</b></li>'}).join('')+'</ul><p class="bv-note">In this demonstration they appear under My Enquiries and in the Seller Centre of the demo seller. Nothing was sent to a real company.'+(Store.lastOk===false?' <b>Warning:</b> browser storage is unavailable, so these will be lost on refresh.':'')+'</p><div class="row"><a class="btn-s" href="#enquiries">View my enquiries</a><button type="button" class="btn-o" id="bvAgain">Select more products</button></div></div>';return}
+ if(!BKL.length){el.innerHTML='<h2>Your requirement list</h2><p class="bv-sub">Nothing selected yet.</p><div class="bv-empty">Tick the <b>Select</b> button on any product picture. It will appear here with its price so you can set the quantity.</div>';return}
+ var tot=0,anyEst=false;
+ var items=BKL.map(function(it){var p=getP(it.pid),q=parseFloat(String(it.qty).replace(/,/g,'')),est=p.price&&q>0?p.price*q:0;if(est){tot+=est;anyEst=true}
+  return '<div class="bv-it" data-it="'+p.id+'"><img alt="" src="'+pimg(p)+'"><div><b>'+esc(p.name)+'</b><small>'+esc(p.seller.n)+' &middot; '+esc(p.seller.c)+'</small><span class="pr">'+priceLine(p)+'</span><small>Min. order '+fmtNum(p.moq)+' '+esc(p.unit)+'</small></div><button type="button" class="rm" data-rm="'+p.id+'" aria-label="Remove '+esc(p.name)+'">&#10005;</button>'
+  +'<div class="bv-f"><label>Quantity *<input data-k="qty" inputmode="decimal" value="'+esc(it.qty)+'"></label><label>Unit<input data-k="unit" value="'+esc(it.unit)+'"></label><label class="full">Your requirement (size, colour, quality, packing)<input data-k="note" value="'+esc(it.note)+'" placeholder="Optional"></label>'+(est?'<span class="bv-est" data-est>Approx. value: ₹ '+fmtNum(Math.round(est))+' at the price shown</span>':'<span class="bv-est" data-est></span>')+'</div></div>'}).join('');
+ var b=Store.buyer.get();
+ var keep=el.querySelector('#bvName')?null:1;
+ el.innerHTML='<h2>Your requirement list ('+BKL.length+')</h2><p class="bv-sub">Set the quantity for each product.</p>'+items
+  +(anyEst?'<p class="bv-est" id="bvTot" style="margin:8px 0 0">Total approx. value: ₹ '+fmtNum(Math.round(tot))+' (indicative, final price is agreed with each supplier)</p>':'<p class="bv-est" id="bvTot" style="margin:8px 0 0"></p>')
+  +'<form class="bv-det" id="bvF" novalidate><h3>Your details</h3><label>Your name *<input id="bvName" autocomplete="name" value="'+esc(b.name||'')+'"></label><label>Company<input id="bvCo" autocomplete="organization" value="'+esc(b.company||'')+'"></label><label>Mobile number *<input id="bvTel" type="tel" inputmode="tel" autocomplete="tel" value="'+esc(b.tel||'')+'"></label><label>Email<input id="bvMail" type="email" autocomplete="email" value="'+esc(b.mail||'')+'"></label><label>City / delivery location *<input id="bvCity" value="'+esc(b.city||'')+'"></label><label>Needed by<input id="bvDate" type="date"></label><label class="full">Message for the suppliers<textarea id="bvMsg" rows="3" placeholder="Delivery terms, payment terms, certificates needed..."></textarea></label><em class="bv-err" id="bvErr" role="alert"></em><button class="bv-go" type="submit">Send requirement to '+BKL.length+(BKL.length===1?' supplier':' suppliers')+'</button><p class="bv-note">Demonstration: saved in this browser only.</p></form>';
+}
+function bvKeepForm(){var o={};['bvName','bvCo','bvTel','bvMail','bvCity','bvDate','bvMsg'].forEach(function(i){var e=$(i);if(e)o[i]=e.value});return o}
+document.addEventListener('click',function(e){
+ var s=e.target.closest('[data-sel]');
+ if(s){e.preventDefault();e.stopPropagation();var f=bvKeepForm();bkToggle(s.getAttribute('data-sel'));if(!$('buyView').hidden){Object.keys(f).forEach(function(i){var x=$(i);if(x)x.value=f[i]})}return}
+ var r=e.target.closest('[data-rm]');
+ if(r){var f2=bvKeepForm();bkToggle(r.getAttribute('data-rm'));Object.keys(f2).forEach(function(i){var x=$(i);if(x)x.value=f2[i]});if($('bvSelOnly').checked)bvGrid();return}
+ if(e.target.closest('#bkGo')){go('buy');setTimeout(function(){$('bvCart').scrollIntoView({behavior:'smooth',block:'start'})},60);return}
+ if(e.target.closest('#bkClear')){BKL=[];bkSave();bkSync();if(!$('buyView').hidden)bvGrid();return}
+ if(e.target.closest('#bvMore')){BVN+=24;bvGrid();return}
+ if(e.target.closest('#bvAgain')){BVDONE=null;bkSync();bvGrid();return}
+ var a=e.target.closest('a[href="#buy"]');
+ if(a){e.preventDefault();go('buy');return}
+},true);
+document.addEventListener('input',function(e){
+ var t=e.target;
+ if(t.id==='bvQ'){BVN=24;bvGrid();return}
+ if(t.getAttribute&&t.getAttribute('data-k')&&t.closest('.bv-it')){var it=bkItem(t.closest('.bv-it').getAttribute('data-it'));if(it){it[t.getAttribute('data-k')]=t.value;bkSave();
+  if(t.getAttribute('data-k')==='qty'){var tot=0,any=false;BKL.forEach(function(x){var p=getP(x.pid),q=parseFloat(String(x.qty).replace(/,/g,''));var est=p.price&&q>0?p.price*q:0;if(est){tot+=est;any=true}if(x.pid===it.pid){var se=t.closest('.bv-it').querySelector('[data-est]');se.textContent=est?'Approx. value: ₹ '+fmtNum(Math.round(est))+' at the price shown':''}});$('bvTot').textContent=any?'Total approx. value: ₹ '+fmtNum(Math.round(tot))+' (indicative, final price is agreed with each supplier)':''}}}
+});
+document.addEventListener('change',function(e){if(e.target.id==='bvCat'||e.target.id==='bvSelOnly'){BVN=24;bvGrid()}});
+document.addEventListener('submit',function(e){
+ if(e.target.id!=='bvF')return;e.preventDefault();
+ var n=$('bvName').value.trim(),tel=$('bvTel').value.trim(),mail=$('bvMail').value.trim(),city=$('bvCity').value.trim(),er=$('bvErr');
+ var bad=BKL.filter(function(x){var q=parseFloat(String(x.qty).replace(/,/g,''));return !(q>0)})[0];
+ var err=bad?'Enter a quantity for '+getP(bad.pid).name+'.':n.length<2?'Enter your name.':!/^[0-9+\-\s()]{7,16}$/.test(tel)?'Enter a valid mobile number (digits, spaces, + or -).':(mail&&!/^\S+@\S+\.\S+$/.test(mail))?'That email address does not look right.':city.length<2?'Enter your city or delivery location.':'';
+ er.textContent=err;if(err)return;
+ var buyer={name:n,company:$('bvCo').value.trim(),tel:tel,mail:mail,city:city};Store.buyer.set(buyer);
+ var need=$('bvDate').value,gm=$('bvMsg').value.trim(),out=[];
+ BKL.forEach(function(it){var p=getP(it.pid);if(!p)return;
+  var m='Selected from the product picture'+(p.price?' at the listed price ₹ '+fmtNum(p.price)+' / '+p.unit:' (price on request)')+'.';
+  if(it.note)m+=' Requirement: '+it.note+'.';if(need)m+=' Needed by: '+need+'.';if(gm)m+=' '+gm;
+  out.push(Store.enquiries.create({type:'product',pid:p.id,product:p.name,supplier:p.seller.n,buyer:buyer,qty:it.qty,unit:it.unit||p.unit,msg:m,city:city}))});
+ BVDONE=out;BKL=[];bkSave();bkSync();
+ if(window.SELLER)SELLER.sync();if(window.ADMIN)ADMIN.refresh();
+ $('bvGrid').querySelectorAll('.pc').forEach(function(x){x.classList.remove('sel')});window.scrollTo(0,$('bvCart').getBoundingClientRect().top+scrollY-12);
+});
+(function(){var b=document.createElement('div');b.id='bkBar';b.hidden=true;b.innerHTML='<b id="bkN"></b><button type="button" id="bkGo">Review &amp; send requirement</button><button type="button" class="bk-clear" id="bkClear">Clear</button>';document.body.appendChild(b)})();
+bkLoad();
+
 /* My Enquiries */
 function enqStatusCls(s){return 'st st-'+String(s).toLowerCase().split(' ')[0]}
 function renderEnquiries(){
@@ -3751,7 +3894,7 @@ document.addEventListener('click',function(e){
  if(!a||e.defaultPrevented)return;
  var n=a.getAttribute('href').slice(1);
  if(!n||n==='req')return;
- if(n==='home'||n==='seller'||n==='admin'||n==='enquiries'){e.preventDefault();go(n);return}
+ if(n==='home'||n==='seller'||n==='admin'||n==='enquiries'||n==='buy'){e.preventDefault();go(n);return}
  if(n==='top'||document.getElementById(n)){
   if($('top').hidden){e.preventDefault();go('home');setTimeout(function(){var t=n==='top'?null:document.getElementById(n);if(t)t.scrollIntoView();else window.scrollTo(0,0)},30)}
  }
