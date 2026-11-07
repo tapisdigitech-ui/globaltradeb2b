@@ -710,7 +710,8 @@ input,select,textarea{font-size:16px}
 .lw-badge{display:inline-block;background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.35);color:#fff;font-weight:700;font-size:14px;border-radius:999px;padding:6px 14px}
 .lw-grid{display:grid;grid-template-columns:minmax(0,1fr) 360px;gap:28px;align-items:start;margin-top:-52px;padding-bottom:56px}
 .lw-main{background:var(--surface);border:1px solid var(--line);border-radius:16px;box-shadow:0 14px 40px rgba(16,32,56,.12);padding:28px 32px 32px;color:var(--fg);min-width:0}
-.lw-steps{list-style:none;margin:0 0 26px;padding:0;display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.lw-steps{list-style:none;margin:0 0 26px;padding:0;display:grid;grid-template-columns:repeat(5,1fr);gap:8px}
+.lw-fs{border:1px solid var(--line);border-radius:14px;padding:18px 20px 6px;margin:0 0 18px;min-width:0}.lw-fs legend{font:700 17px var(--font-display);padding:0 8px;color:var(--navy-2,var(--fg))}
 .lw-steps li{display:flex;align-items:center;gap:10px;color:var(--muted);font-size:15px;padding-bottom:12px;border-bottom:4px solid var(--line);min-width:0}
 .lw-steps li b{font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .lw-steps .n{flex:none;width:30px;height:30px;border-radius:50%;background:var(--surface-2);border:2px solid var(--line);display:grid;place-items:center;font-weight:800;font-size:14px}
@@ -3348,11 +3349,11 @@ function applyCompany(oldName){
 applyCompany();
 /* ===== List your business: guided sign-up (demonstration, saved in this browser only) ===== */
 var LWK='gtb2b-listdraft',LWTYPES=['Manufacturer','Supplier','Wholesaler','Exporter','Trader','Retailer','Service Provider'],LWUNITS=['Piece','Kg','Meter','Sq. Ft.','Sq. Mtr.','Set','Pair','Litre','Roll','Bag','Ton'];
-var LW={step:1,done:false,acct:{name:'',mobile:'',email:''},biz:{name:'',types:[],cat:'',state:'',city:'',year:'',about:'',logo:''},prods:[],pd:{name:'',cat:'',price:'',por:false,unit:'Piece',moq:'',desc:'',imgs:[],editId:''},err:{},agree:false,pubName:''};
-function lwLoad(){try{var d=JSON.parse(localStorage.getItem(LWK)||'null');if(d&&d.acct&&d.biz){LW.step=Math.max(1,Math.min(d.step||1,4));LW.acct=d.acct;LW.biz=d.biz;LW.prods=d.prods||[]}}catch(e){}}
+var LW={step:1,done:false,acct:{name:'',mobile:'',mobile2:'',email:'',email2:''},biz:{name:'',types:[],cat:'',state:'',city:'',year:'',about:'',logo:''},pro:{address:'',pin:'',gst:'',iec:'',acc:'',web:'',emp:'',turn:'',v1:'',v2:'',imgs:[]},prods:[],pd:{name:'',cat:'',price:'',por:false,unit:'Piece',moq:'',desc:'',imgs:[],editId:''},err:{},agree:false,pubName:''};
+function lwLoad(){try{var d=JSON.parse(localStorage.getItem(LWK)||'null');if(d&&d.acct&&d.biz){LW.step=Math.max(1,Math.min(d.step||1,5));LW.acct=Object.assign({mobile2:'',email2:''},d.acct);LW.biz=d.biz;LW.pro=Object.assign({address:'',pin:'',gst:'',iec:'',acc:'',web:'',emp:'',turn:'',v1:'',v2:'',imgs:[]},d.pro||{});LW.prods=d.prods||[]}}catch(e){}}
 function lwSave(){
- var o={step:LW.step,acct:LW.acct,biz:LW.biz,prods:LW.prods};
- try{localStorage.setItem(LWK,JSON.stringify(o))}catch(e){try{o.biz=Object.assign({},LW.biz,{logo:''});o.prods=LW.prods.map(function(p){return Object.assign({},p,{imgs:[]})});localStorage.setItem(LWK,JSON.stringify(o))}catch(e2){}}
+ var o={step:LW.step,acct:LW.acct,biz:LW.biz,pro:Object.assign({},LW.pro,{acc:''}),prods:LW.prods};
+ try{localStorage.setItem(LWK,JSON.stringify(o))}catch(e){try{o.biz=Object.assign({},LW.biz,{logo:''});o.pro=Object.assign({},o.pro,{imgs:[]});o.prods=LW.prods.map(function(p){return Object.assign({},p,{imgs:[]})});localStorage.setItem(LWK,JSON.stringify(o))}catch(e2){}}
 }
 function lwGet(p){var k=p.split('.');return LW[k[0]][k[1]]}
 function lwSet(p,v){var k=p.split('.');if(k.length<2){LW[p]=v;return}LW[k[0]][k[1]]=v}
@@ -3363,7 +3364,8 @@ function lwInp(p,label,o){o=o||{};var e=LW.err[p];
 function lwSel(p,label,opts,ph,o){o=o||{};var e=LW.err[p],v=lwGet(p);
  return '<label class="lw-f'+(o.cls?' '+o.cls:'')+'"><span>'+label+'</span><select data-f="'+p+'"'+(o.dis?' disabled':'')+(e?' aria-invalid="true"':'')+'><option value="">'+esc(ph)+'</option>'+opts.map(function(x){return '<option'+(String(x)===String(v)?' selected':'')+'>'+esc(x)+'</option>'}).join('')+'</select>'+(e?'<em class="lw-e">'+esc(e)+'</em>':'')+'</label>';
 }
-var LWSTEPS=['Your details','Your business','Your products','Review & publish'];
+var LWSTEPS=['Your details','Your business','Company profile','Your products','Review & publish'];
+var LWEMP=['1 to 10','11 to 50','51 to 200','201 to 500','501 to 1,000','More than 1,000'],LWTURN=['Up to \u20b940 lakh','\u20b940 lakh to \u20b91.5 crore','\u20b91.5 to \u20b95 crore','\u20b95 to \u20b925 crore','\u20b925 to \u20b9100 crore','\u20b9100 to \u20b9500 crore','More than \u20b9500 crore'];
 function lwSteps(){
  $('lwSteps').innerHTML=LWSTEPS.map(function(t,i){var n=i+1,c=LW.done||n<LW.step?' done':(n===LW.step?' on':'');
   return '<li class="'+c.trim()+'"'+(n===LW.step&&!LW.done?' aria-current="step"':'')+'><span class="n">'+(LW.done||n<LW.step?'&#10003;':n)+'</span><b>'+t+'</b></li>'}).join('');
@@ -3378,8 +3380,9 @@ function lwBody(){
  }
  if(LW.step===1){
   h+='<h2>Let&rsquo;s get you started</h2><p class="lw-sub">Tell us who is setting up the account. Buyers will contact you on these details.</p>'
-   +'<div class="lw-row">'+lwInp('acct.name','Your full name <i>*</i>',{ph:'For example: Rajesh Kumar',attr:'autocomplete="name"'})+lwInp('acct.mobile','Mobile number <i>*</i>',{type:'tel',ph:'10-digit mobile number',attr:'inputmode="tel" autocomplete="tel"'})+'</div>'
-   +lwInp('acct.email','Email address <i>*</i>',{type:'email',ph:'you@company.com',attr:'autocomplete="email"',hint:'We use this for enquiry alerts in the full version.'})
+   +lwInp('acct.name','Your full name <i>*</i>',{ph:'For example: Rajesh Kumar',attr:'autocomplete="name"'})
+   +'<div class="lw-row">'+lwInp('acct.mobile','Primary mobile number <i>*</i>',{type:'tel',ph:'10-digit mobile number',attr:'inputmode="tel" autocomplete="tel"'})+lwInp('acct.mobile2','Alternate mobile number',{type:'tel',ph:'Optional',attr:'inputmode="tel"'})+'</div>'
+   +'<div class="lw-row">'+lwInp('acct.email','Primary email address <i>*</i>',{type:'email',ph:'you@company.com',attr:'autocomplete="email"',hint:'We use this for enquiry alerts in the full version.'})+lwInp('acct.email2','Alternate email address',{type:'email',ph:'Optional'})+'</div>'
    +(localStorage.getItem('gtb2b-fresh')?'<p class="lw-info">You have already listed <b>'+esc(Store.company.get().name)+'</b>. <a href="#seller">Open your Seller Centre</a>, or continue below to list a different business (it replaces your company details).</p>':'')
    +lwNote()+'<div class="lw-act"><span></span><button type="button" class="lw-next" data-next>Continue &rarr;</button></div>';
  }else if(LW.step===2){
@@ -3393,6 +3396,16 @@ function lwBody(){
    +'<div class="lw-f"><span>Company logo <small>Optional</small></span><div class="lw-logo">'+(b.logo?'<img src="'+b.logo+'" alt="Your logo"><button type="button" class="lw-link" data-rmlogo>Remove</button>':'<div class="lw-ph">Logo</div>')+'<label class="lw-up">'+(b.logo?'Change':'Upload')+' logo<input type="file" accept="image/jpeg,image/png,image/webp" data-file="logo" hidden></label></div><small>JPG or PNG, under 10 MB. Use only a logo you own.</small></div>'
    +'<div class="lw-act"><button type="button" class="lw-alt" data-back>&larr; Back</button><button type="button" class="lw-next" data-next>Continue &rarr;</button></div>';
  }else if(LW.step===3){
+  var o=LW.pro;
+  h+='<h2>Complete your company profile</h2><p class="lw-sub">A complete profile builds trust and gets more enquiries. Everything on this page is optional, so you can skip it and finish later from your Seller Centre.</p>'
+   +'<fieldset class="lw-fs"><legend>Registration details</legend><div class="lw-row">'+lwInp('pro.gst','GST number <small>Optional</small>',{ph:'15-character GSTIN',attr:'maxlength="15" autocapitalize="characters" autocomplete="off"'})+lwInp('pro.iec','Import Export Code (IEC) <small>Optional</small>',{ph:'10-character IEC',attr:'maxlength="10" autocapitalize="characters" autocomplete="off"'})+'</div>'
+   +lwInp('pro.acc','Bank account number <small>Optional</small>',{ph:'Account number',attr:'inputmode="numeric" maxlength="18" autocomplete="off"',hint:'For your privacy this demonstration keeps only the last 4 digits and never stores the full number.'})+'</fieldset>'
+   +'<fieldset class="lw-fs"><legend>Address and website</legend>'+lwInp('pro.address','Street address',{ph:'Plot, street, area',attr:'maxlength="140" autocomplete="street-address"'})+'<div class="lw-row">'+lwInp('pro.pin','PIN code',{ph:'6 digits',attr:'inputmode="numeric" maxlength="6" autocomplete="postal-code"'})+lwInp('pro.web','Website address',{ph:'www.example.com',attr:'autocomplete="url"'})+'</div></fieldset>'
+   +'<fieldset class="lw-fs"><legend>Size of your business</legend><div class="lw-row">'+lwSel('pro.emp','Number of employees',LWEMP,'Choose a range')+lwSel('pro.turn','Annual turnover',LWTURN,'Choose a range')+'</div></fieldset>'
+   +'<fieldset class="lw-fs"><legend>Photos and videos of your company</legend><div class="lw-f"><span>Company photos <small>Up to 5: factory, office, products, team</small></span><div class="lw-imgs">'+o.imgs.map(function(u,i){return '<div class="im"><img src="'+u+'" alt=""><button type="button" data-rmc="'+i+'" aria-label="Remove photo">&times;</button></div>'}).join('')+(o.imgs.length<5?'<label class="im add"><span>+</span><small>Add photo</small><input type="file" accept="image/jpeg,image/png,image/webp" multiple data-file="co" hidden></label>':'')+'</div></div>'
+   +'<div class="lw-row">'+lwInp('pro.v1','Company video link',{ph:'https://www.youtube.com/watch?v=...',hint:'Paste a YouTube or Vimeo link. Large video files are not stored in this demonstration.'})+lwInp('pro.v2','Second video link',{ph:'Optional'})+'</div></fieldset>'
+   +'<div class="lw-act"><button type="button" class="lw-alt" data-back>&larr; Back</button><span class="lw-r"><button type="button" class="lw-link" data-skip3>Skip for now</button><button type="button" class="lw-next" data-next>Continue &rarr;</button></span></div>';
+ }else if(LW.step===4){
   var p=LW.pd,cats=SECTIONS.map(function(s){return s.n});
   h+='<h2>Add your products</h2><p class="lw-sub">Add at least one product so buyers can find you. You can add more any time from your Seller Centre.</p>'
    +(LW.prods.length?'<div class="lw-plist">'+LW.prods.map(function(q){return '<div class="lw-pi"><div class="th">'+(q.imgs[0]?'<img src="'+q.imgs[0]+'" alt="">':'<span>'+esc(q.name.charAt(0).toUpperCase())+'</span>')+'</div><div class="tx"><b>'+esc(q.name)+'</b><small>'+esc(q.cat)+' &middot; '+(q.price?'&#8377; '+fmtNum(q.price)+' / '+esc(q.unit):'Price on request')+' &middot; Min. '+fmtNum(q.moq)+' '+esc(q.unit)+'</small></div><button type="button" class="lw-link" data-edp="'+q.id+'">Edit</button><button type="button" class="lw-link r" data-rmp="'+q.id+'">Remove</button></div>'}).join('')+'</div>':'')
@@ -3410,23 +3423,33 @@ function lwBody(){
   h+='<h2>Review and publish</h2><p class="lw-sub">Check everything below. You can change any of it later in your Seller Centre.</p>'
    +'<div class="lw-rv"><div><h3>You <button type="button" class="lw-link" data-go="1">Edit</button></h3><p><b>'+esc(a.name)+'</b><br>'+esc(a.mobile)+'<br>'+esc(a.email)+'</p></div>'
    +'<div><h3>Business <button type="button" class="lw-link" data-go="2">Edit</button></h3><p><b>'+esc(b.name)+'</b><br>'+esc(b.types.join(', '))+'<br>'+esc(b.city)+', '+esc(b.state)+(b.year?' &middot; Since '+esc(b.year):'')+'<br><span class="mu">'+esc(b.cat)+'</span></p></div></div>'
-   +'<div class="lw-rv one"><div><h3>Products ('+LW.prods.length+') <button type="button" class="lw-link" data-go="3">Edit</button></h3>'+(LW.prods.length?'<div class="lw-plist">'+LW.prods.map(function(q){return '<div class="lw-pi"><div class="th">'+(q.imgs[0]?'<img src="'+q.imgs[0]+'" alt="">':'<span>'+esc(q.name.charAt(0).toUpperCase())+'</span>')+'</div><div class="tx"><b>'+esc(q.name)+'</b><small>'+esc(q.cat)+' &middot; '+(q.price?'&#8377; '+fmtNum(q.price)+' / '+esc(q.unit):'Price on request')+'</small></div></div>'}).join('')+'</div>':'<p class="mu">No products yet. You can add them from your Seller Centre.</p>')+'</div></div>'
+   +'<div class="lw-rv one"><div><h3>Company profile <button type="button" class="lw-link" data-go="3">Edit</button></h3><p>'+lwProSum()+'</p></div></div>'
+   +'<div class="lw-rv one"><div><h3>Products ('+LW.prods.length+') <button type="button" class="lw-link" data-go="4">Edit</button></h3>'+(LW.prods.length?'<div class="lw-plist">'+LW.prods.map(function(q){return '<div class="lw-pi"><div class="th">'+(q.imgs[0]?'<img src="'+q.imgs[0]+'" alt="">':'<span>'+esc(q.name.charAt(0).toUpperCase())+'</span>')+'</div><div class="tx"><b>'+esc(q.name)+'</b><small>'+esc(q.cat)+' &middot; '+(q.price?'&#8377; '+fmtNum(q.price)+' / '+esc(q.unit):'Price on request')+'</small></div></div>'}).join('')+'</div>':'<p class="mu">No products yet. You can add them from your Seller Centre.</p>')+'</div></div>'
    +'<label class="lw-ck big"><input type="checkbox" data-f="agree"'+(LW.agree?' checked':'')+'> I understand this is a demonstration listing. The company and products are samples, saved only in this browser, and are not verified or offered for sale.</label>'
    +(LW.err.agree?'<em class="lw-e">'+esc(LW.err.agree)+'</em>':'')
    +'<div class="lw-act"><button type="button" class="lw-alt" data-back>&larr; Back</button><button type="button" class="lw-next pub" data-publish>Publish my business</button></div>';
  }
  return h;
 }
+function lwProSum(){
+ var o=LW.pro,a=LW.acct,r=[];
+ if(a.mobile2)r.push('Alternate mobile: '+esc(a.mobile2));if(a.email2)r.push('Alternate email: '+esc(a.email2));
+ if(o.gst)r.push('GST: '+esc(o.gst));if(o.iec)r.push('IEC: '+esc(o.iec));if(o.acc)r.push('Bank account: ending '+esc(o.acc.slice(-4)));
+ if(o.web)r.push('Website: '+esc(o.web));if(o.address||o.pin)r.push('Address: '+esc([o.address,o.pin].filter(Boolean).join(', ')));
+ if(o.emp)r.push('Employees: '+esc(o.emp));if(o.turn)r.push('Turnover: '+esc(o.turn));
+ if(o.imgs.length)r.push(o.imgs.length+' company photo'+(o.imgs.length>1?'s':''));if(o.v1||o.v2)r.push('Video link added');
+ return r.length?r.join('<br>'):'<span class="mu">Nothing added yet. You can complete this from your Seller Centre.</span>';
+}
 function lwAside(){
  var b=LW.biz,pc=LW.prods.length,nm=b.name.trim()||'Your business name';
- var items=[['Your details',!!(LW.acct.name&&LW.acct.mobile&&LW.acct.email)],['Business details',!!(b.name&&b.cat&&b.city&&b.about)],['At least one product',pc>0],['Company logo',!!b.logo]];
+ var items=[['Your details',!!(LW.acct.name&&LW.acct.mobile&&LW.acct.email)],['Business details',!!(b.name&&b.cat&&b.city&&b.about)],['At least one product',pc>0],['Company logo',!!b.logo],['GST / IEC details',!!(LW.pro.gst||LW.pro.iec)],['Company photos or video',!!(LW.pro.imgs.length||LW.pro.v1)]];
  $('lwSide').innerHTML='<div class="lw-card"><div class="lw-pv-h">How buyers will see you</div><div class="lw-pv"><div class="lg">'+(b.logo?'<img src="'+b.logo+'" alt="">':'<span>'+esc(nm.charAt(0).toUpperCase())+'</span>')+'</div><div><b>'+esc(nm)+'</b><small>'+esc(b.types.join(', ')||'Business type')+'</small><small>'+(b.city?esc(b.city)+', '+esc(b.state):'City, State')+'</small></div></div>'
   +'<div class="lw-pv-s"><span>'+pc+' product'+(pc===1?'':'s')+'</span>'+(b.cat?'<span>'+esc(b.cat)+'</span>':'')+'</div>'
   +'<ul class="lw-ck-l">'+items.map(function(x){return '<li class="'+(x[1]?'ok':'')+'"><i>'+(x[1]?'&#10003;':'')+'</i>'+x[0]+'</li>'}).join('')+'</ul></div>'
   +'<div class="lw-card why"><h3>Why list here?</h3><ul><li><b>Free to start</b><span>No fee to create your company page in this demonstration.</span></li><li><b>Be found by buyers</b><span>Your products appear in search and category pages.</span></li><li><b>Manage enquiries</b><span>Reply to every buyer from one Seller Centre.</span></li></ul></div>';
 }
 function lwRender(){lwSteps();$('lwBody').innerHTML=lwBody();lwAside()}
-function lwReset(){LW.done=false;LW.step=1;LW.acct={name:'',mobile:'',email:''};LW.biz={name:'',types:[],cat:'',state:'',city:'',year:'',about:'',logo:''};LW.prods=[];LW.pd={name:'',cat:'',price:'',por:false,unit:'Piece',moq:'',desc:'',imgs:[],editId:''};LW.agree=false}
+function lwReset(){LW.done=false;LW.step=1;LW.acct={name:'',mobile:'',mobile2:'',email:'',email2:''};LW.biz={name:'',types:[],cat:'',state:'',city:'',year:'',about:'',logo:''};LW.pro={address:'',pin:'',gst:'',iec:'',acc:'',web:'',emp:'',turn:'',v1:'',v2:'',imgs:[]};LW.prods=[];LW.pd={name:'',cat:'',price:'',por:false,unit:'Piece',moq:'',desc:'',imgs:[],editId:''};LW.agree=false}
 function lwOpen(){if(LW.done)lwReset();lwLoad();LW.err={};if(!LW.pd.cat)LW.pd.cat=LW.biz.cat||'';lwRender()}
 function lwGo(n){LW.step=n;LW.err={};lwSave();lwRender();window.scrollTo({top:$('listView').offsetTop,behavior:'smooth'});setTimeout(function(){var f=$('lwBody').querySelector('input:not([type=file]),select,textarea');if(f&&window.innerWidth>800)f.focus()},60)}
 function lwValid(step){
@@ -3435,6 +3458,19 @@ function lwValid(step){
   if(a.name.trim().length<2)e['acct.name']='Enter your full name.';
   if(!/^[0-9+\-\s()]{7,16}$/.test(a.mobile.trim()))e['acct.mobile']='Enter a valid mobile number (digits, spaces, + or -).';
   if(!/^\S+@\S+\.\S+$/.test(a.email.trim()))e['acct.email']='Enter a valid email address.';
+ }
+ if(step===1){
+  if(a.mobile2.trim()&&!/^[0-9+\-\s()]{7,16}$/.test(a.mobile2.trim()))e['acct.mobile2']='Enter a valid alternate mobile number or leave it empty.';
+  if(a.email2.trim()&&!/^\S+@\S+\.\S+$/.test(a.email2.trim()))e['acct.email2']='Enter a valid alternate email or leave it empty.';
+ }
+ if(step===3){
+  var o=LW.pro;o.gst=o.gst.trim().toUpperCase();o.iec=o.iec.trim().toUpperCase();
+  if(o.gst&&!/^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z][A-Z0-9]Z[A-Z0-9]$/.test(o.gst))e['pro.gst']='A GST number has 15 characters, for example 09ABCDE1234F1Z5.';
+  if(o.iec&&!/^[A-Z0-9]{10}$/.test(o.iec))e['pro.iec']='An IEC has 10 letters or digits.';
+  if(o.acc&&!/^[0-9]{9,18}$/.test(o.acc.trim()))e['pro.acc']='Account numbers have 9 to 18 digits.';
+  if(o.pin&&!/^[0-9]{6}$/.test(o.pin.trim()))e['pro.pin']='PIN code must be 6 digits.';
+  if(o.web&&!/^(https?:\/\/)?[^\s\/.]+(\.[^\s\/.]+)+(\/\S*)?$/i.test(o.web.trim()))e['pro.web']='Enter a website like www.example.com.';
+  ['v1','v2'].forEach(function(k){if(o[k]&&!/^https?:\/\/\S+\.\S+/i.test(o[k].trim()))e['pro.'+k]='Paste a full link starting with https://';});
  }
  if(step===2){
   if(b.name.trim().length<3)e['biz.name']='Enter your business name (at least 3 characters).';
@@ -3466,7 +3502,8 @@ function lwAddProduct(){
 function lwPublish(){
  var a=LW.acct,b=LW.biz;
  if(!LW.agree){LW.err={agree:'Please tick the box to confirm you understand.'};lwRender();return}
- Store.company.set({name:b.name.trim(),type:b.types.join(', '),about:b.about.trim(),city:b.city,contactPerson:a.name.trim(),phone:a.mobile.trim(),email:a.email.trim(),cats:[b.cat],logo:b.logo||'',images:[]});
+ var o=LW.pro;
+ Store.company.set({name:b.name.trim(),type:b.types.join(', '),about:b.about.trim(),city:b.city,contactPerson:a.name.trim(),phone:a.mobile.trim(),email:a.email.trim(),altPhone:a.mobile2.trim(),altEmail:a.email2.trim(),cats:[b.cat],logo:b.logo||'',images:o.imgs.slice(),address:o.address.trim(),pin:o.pin.trim(),website:o.web.trim(),gst:o.gst,iec:o.iec,accLast4:o.acc?o.acc.trim().slice(-4):'',employees:o.emp,turnover:o.turn,established:b.year,videos:[o.v1.trim(),o.v2.trim()].filter(Boolean)});
  try{localStorage.setItem('gtb2b-fresh','1')}catch(e){}
  PRODUCTS.forEach(function(p){if(p.mine&&!p.user){p.mine=false;p.seller=pickSeller(p.name,p.cat)}});
  PRODUCTS.forEach(function(p){if(p.user&&p.lw){var i=PRODUCTS.indexOf(p);if(i>-1)PRODUCTS.splice(i,1)}});
@@ -3499,27 +3536,29 @@ function lwPublish(){
   }
   var fl=t.getAttribute&&t.getAttribute('data-file');
   if(fl&&t.files&&t.files.length){
-   var files=Array.prototype.slice.call(t.files).slice(0,fl==='logo'?1:3-LW.pd.imgs.length),left=files.length,bad=0;
-   files.forEach(function(file){cropPhoto(file,function(u){if(u){if(fl==='logo')LW.biz.logo=u;else LW.pd.imgs.push(u)}else bad++;if(--left===0){lwSave();lwRender();if(bad)lwToast(bad+' file'+(bad>1?'s were':' was')+' skipped. Use JPG, PNG or WebP images under 10 MB.')}})});
+   var files=Array.prototype.slice.call(t.files).slice(0,fl==='logo'?1:fl==='co'?5-LW.pro.imgs.length:3-LW.pd.imgs.length),left=files.length,bad=0;
+   files.forEach(function(file){cropPhoto(file,function(u){if(u){if(fl==='logo')LW.biz.logo=u;else if(fl==='co')LW.pro.imgs.push(u);else LW.pd.imgs.push(u)}else bad++;if(--left===0){lwSave();lwRender();if(bad)lwToast(bad+' file'+(bad>1?'s were':' was')+' skipped. Use JPG, PNG or WebP images under 10 MB.')}})});
   }
  });
  v.addEventListener('click',function(e){
   var t=e.target,x;
   if(t.closest('[data-next]')){
-   if(LW.step<3){if(!lwValid(LW.step)){lwRender();var f=$('lwBody').querySelector('[aria-invalid],.lw-e');if(f)(f.closest('.lw-f')||f).scrollIntoView({block:'center',behavior:'smooth'});return}lwGo(LW.step+1);return}
-   if(LW.step===3){
+   if(LW.step<4){if(!lwValid(LW.step)){lwRender();var f=$('lwBody').querySelector('[aria-invalid],.lw-e');if(f)(f.closest('.lw-f')||f).scrollIntoView({block:'center',behavior:'smooth'});return}lwGo(LW.step+1);return}
+   if(LW.step===4){
     var p=LW.pd;if(p.name.trim()||p.desc.trim()||p.price||p.moq){if(!lwAddProduct())return}
     if(!LW.prods.length){LW.err={prods:'Add at least one product, or choose Skip for now.'};lwRender();return}
-    lwGo(4);return}
+    lwGo(5);return}
   }
+  if(t.closest('[data-skip3]')){lwGo(4);return}
   if(t.closest('[data-back]')){lwGo(Math.max(1,LW.step-1));return}
-  if(t.closest('[data-skip]')){lwGo(4);return}
+  if(t.closest('[data-skip]')){lwGo(5);return}
   if((x=t.closest('[data-go]'))){lwGo(+x.getAttribute('data-go'));return}
   if((x=t.closest('[data-chip]'))){var c=x.getAttribute('data-chip'),i=LW.biz.types.indexOf(c);if(i>-1)LW.biz.types.splice(i,1);else LW.biz.types.push(c);delete LW.err['biz.types'];lwSave();lwRender();return}
   if(t.closest('[data-rmlogo]')){LW.biz.logo='';lwSave();lwRender();return}
   if(t.closest('[data-addp]')){lwAddProduct();return}
   if((x=t.closest('[data-rmp]'))){LW.prods=LW.prods.filter(function(q){return q.id!==x.getAttribute('data-rmp')});lwSave();lwRender();return}
   if((x=t.closest('[data-edp]'))){var q=LW.prods.filter(function(r){return r.id===x.getAttribute('data-edp')})[0];if(q){LW.pd={name:q.name,cat:q.cat,price:q.price?String(q.price):'',por:!q.price,unit:q.unit,moq:String(q.moq),desc:q.desc,imgs:q.imgs.slice(),editId:q.id};lwRender();$('lwBody').querySelector('.lw-pf').scrollIntoView({behavior:'smooth',block:'center'})}return}
+  if((x=t.closest('[data-rmc]'))){LW.pro.imgs.splice(+x.getAttribute('data-rmc'),1);lwSave();lwRender();return}
   if((x=t.closest('[data-rmi]'))){LW.pd.imgs.splice(+x.getAttribute('data-rmi'),1);lwRender();return}
   if(t.closest('[data-publish]')){lwPublish();return}
   if(t.closest('[data-opensc]')){go('seller');return}
