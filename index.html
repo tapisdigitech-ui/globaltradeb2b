@@ -701,6 +701,89 @@ input,select,textarea{font-size:16px}
 .intl .shipi{width:34%!important}.intl .flags{max-width:62%!important}
 @media (max-width:1000px){.req{grid-template-columns:1fr}.req .r{clip-path:none;padding:22px!important}.req .r .man{display:none!important}.steps{flex-wrap:wrap!important}}
 @media (max-width:1300px){.req .r{padding-right:34px!important}.req .r .man{display:none!important}.steps{flex-wrap:wrap}.intl .shipi{opacity:.22;width:50%!important}}
+
+/* ===== List your business wizard ===== */
+#listView{background:var(--bg)}
+.lw-hero{background:linear-gradient(110deg,#0c2744,#1d4f86 60%,#2b6cb0);color:#fff;padding:44px 0 80px}
+.lw-hero h1{font:800 clamp(28px,4vw,44px)/1.15 var(--font-display);letter-spacing:-.02em;margin:12px 0 10px;max-width:760px}
+.lw-hero p{font-size:18px;line-height:1.55;color:#dbe6f5;max-width:680px}
+.lw-badge{display:inline-block;background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.35);color:#fff;font-weight:700;font-size:14px;border-radius:999px;padding:6px 14px}
+.lw-grid{display:grid;grid-template-columns:minmax(0,1fr) 360px;gap:28px;align-items:start;margin-top:-52px;padding-bottom:56px}
+.lw-main{background:var(--surface);border:1px solid var(--line);border-radius:16px;box-shadow:0 14px 40px rgba(16,32,56,.12);padding:28px 32px 32px;color:var(--fg);min-width:0}
+.lw-steps{list-style:none;margin:0 0 26px;padding:0;display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.lw-steps li{display:flex;align-items:center;gap:10px;color:var(--muted);font-size:15px;padding-bottom:12px;border-bottom:4px solid var(--line);min-width:0}
+.lw-steps li b{font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.lw-steps .n{flex:none;width:30px;height:30px;border-radius:50%;background:var(--surface-2);border:2px solid var(--line);display:grid;place-items:center;font-weight:800;font-size:14px}
+.lw-steps li.on{color:var(--fg);border-color:var(--orange)}.lw-steps li.on .n{background:var(--orange);border-color:var(--orange);color:#fff}
+.lw-steps li.done{color:var(--fg);border-color:var(--green,#1f8a4c)}.lw-steps li.done .n{background:var(--green,#1f8a4c);border-color:var(--green,#1f8a4c);color:#fff}
+#lwBody h2{font:800 28px/1.2 var(--font-display);margin:0 0 6px;letter-spacing:-.015em}
+.lw-sub{color:var(--muted);font-size:16px;margin:0 0 22px}
+.lw-row{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.lw-f{display:flex;flex-direction:column;gap:6px;margin-bottom:16px;min-width:0}
+.lw-f>span{font-weight:700;font-size:15px}.lw-f>span i{color:#c0392b;font-style:normal}.lw-f>span small{font-weight:400;color:var(--muted);font-size:13px}
+.lw-f small{color:var(--muted);font-size:13px}
+.lw-f input,.lw-f select,.lw-f textarea{border:1.5px solid var(--line);background:var(--surface);color:var(--fg);border-radius:10px;padding:13px 14px;font-size:16px;min-width:0;width:100%;transition:border-color .15s,box-shadow .15s}
+.lw-f textarea{resize:vertical;line-height:1.5;font-family:inherit}.lw-f input,.lw-f select{font-family:inherit}
+.lw-f input:focus,.lw-f select:focus,.lw-f textarea:focus{outline:0;border-color:var(--blue);box-shadow:0 0 0 4px rgba(26,86,160,.15)}
+.lw-f [aria-invalid]{border-color:#c0392b}
+.lw-e{color:#c0392b;font-style:normal;font-size:14px;font-weight:600}
+.lw-note{background:var(--surface-2);border:1px dashed var(--line);border-radius:10px;color:var(--muted);font-size:14px;padding:12px 14px;margin:8px 0 0}
+.lw-info{background:#fff7e6;border:1px solid #f4c87a;color:#5b4210;border-radius:10px;padding:12px 14px;font-size:15px}.lw-info a{color:var(--blue);font-weight:700}
+.lw-chips{display:flex;flex-wrap:wrap;gap:10px}
+.lw-chips button{border:1.5px solid var(--line);background:var(--surface);color:var(--fg);border-radius:999px;padding:10px 18px;font-size:15px;font-weight:600;transition:all .15s}
+.lw-chips button:hover{border-color:var(--blue)}
+.lw-chips button.on{background:var(--blue);border-color:var(--blue);color:#fff}
+.lw-logo{display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+.lw-logo img,.lw-ph{width:84px;height:84px;border-radius:50%;object-fit:cover;border:2px solid var(--line)}
+.lw-ph{display:grid;place-items:center;background:var(--surface-2);color:var(--muted);font-weight:700}
+.lw-up{display:inline-flex;border:1.5px solid var(--blue);color:var(--blue);border-radius:10px;padding:10px 18px;font-weight:700;cursor:pointer}.lw-up:hover{background:rgba(26,86,160,.08)}
+.lw-link{background:none;border:0;color:var(--blue);font-weight:700;font-size:15px;padding:4px 6px;text-decoration:underline}.lw-link.r{color:#c0392b}
+.lw-act{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-top:26px;flex-wrap:wrap}
+.lw-r{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.lw-next{background:var(--orange);color:#fff;border:0;border-radius:10px;font-weight:800;font-size:17px;padding:15px 30px;box-shadow:0 6px 16px rgba(201,70,18,.3);transition:transform .15s,box-shadow .15s}
+.lw-next:hover{transform:translateY(-1px);box-shadow:0 10px 22px rgba(201,70,18,.38)}
+.lw-next.pub{background:var(--green,#1f8a4c);box-shadow:0 6px 16px rgba(31,138,76,.3)}
+.lw-alt{background:var(--surface);color:var(--blue);border:1.5px solid var(--blue);border-radius:10px;font-weight:700;font-size:16px;padding:13px 24px}.lw-alt:hover{background:rgba(26,86,160,.08)}
+.lw-alt.wide{width:100%;margin-top:4px}
+.lw-ck{display:flex;gap:10px;align-items:flex-start;font-size:15px;margin:2px 0 14px;cursor:pointer}.lw-ck input{width:20px;height:20px;margin-top:2px;flex:none}
+.lw-ck.big{background:var(--surface-2);border:1px solid var(--line);border-radius:10px;padding:14px;margin-top:18px}
+.lw-pf{background:var(--surface-2);border:1px solid var(--line);border-radius:14px;padding:20px;margin-top:8px}
+.lw-pf h3{font:700 18px var(--font-display);margin:0 0 14px}
+.lw-plist{display:grid;gap:10px;margin-bottom:14px}
+.lw-pi{display:flex;align-items:center;gap:14px;border:1px solid var(--line);background:var(--surface);border-radius:12px;padding:10px 14px}
+.lw-pi .th{flex:none;width:56px;height:56px;border-radius:10px;overflow:hidden;background:var(--surface-2);display:grid;place-items:center;font-weight:800;color:var(--blue);font-size:20px}.lw-pi .th img{width:100%;height:100%;object-fit:cover}
+.lw-pi .tx{flex:1;min-width:0}.lw-pi .tx b{display:block;font-size:16px}.lw-pi .tx small{display:block;color:var(--muted);font-size:14px}
+.lw-imgs{display:flex;gap:12px;flex-wrap:wrap}
+.lw-imgs .im{position:relative;width:104px;height:78px;border-radius:10px;overflow:hidden;border:1.5px solid var(--line)}.lw-imgs .im img{width:100%;height:100%;object-fit:cover}
+.lw-imgs .im button{position:absolute;top:4px;right:4px;width:26px;height:26px;border-radius:50%;border:0;background:rgba(0,0,0,.65);color:#fff;font-size:17px;line-height:1}
+.lw-imgs .im.add{display:flex;flex-direction:column;align-items:center;justify-content:center;border-style:dashed;color:var(--blue);cursor:pointer;background:var(--surface)}.lw-imgs .im.add span{font-size:26px;font-weight:300;line-height:1}.lw-imgs .im.add small{color:var(--blue);font-weight:700}
+.lw-rv{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px}.lw-rv.one{grid-template-columns:1fr}
+.lw-rv>div{border:1px solid var(--line);border-radius:12px;padding:16px 18px;background:var(--surface)}
+.lw-rv h3{display:flex;justify-content:space-between;align-items:center;font:700 16px var(--font-display);margin:0 0 8px}
+.lw-rv p{margin:0;line-height:1.65;font-size:16px;overflow-wrap:anywhere}.mu{color:var(--muted)}
+.lw-done{text-align:center;padding:12px 0 4px}
+.lw-ok{width:76px;height:76px;border-radius:50%;background:var(--green,#1f8a4c);color:#fff;font-size:40px;display:grid;place-items:center;margin:0 auto 18px;box-shadow:0 10px 26px rgba(31,138,76,.35)}
+.lw-done p{color:var(--muted);font-size:17px;max-width:620px;margin:8px auto 22px}
+.lw-next-steps{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;text-align:left}
+.lw-next-steps div{border:1px solid var(--line);border-radius:12px;padding:16px;background:var(--surface-2)}.lw-next-steps b{display:block;font-size:16px;margin-bottom:4px}.lw-next-steps span{color:var(--muted);font-size:14.5px}
+.lw-done .lw-act{justify-content:center;margin-top:26px}
+.lw-side{position:sticky;top:16px;display:grid;gap:18px;color:var(--fg)}
+.lw-card{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:20px 22px;box-shadow:0 8px 24px rgba(16,32,56,.08)}
+.lw-pv-h{font-weight:800;font-size:14px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:14px}
+.lw-pv{display:flex;gap:14px;align-items:center}
+.lw-pv .lg{flex:none;width:68px;height:68px;border-radius:50%;background:var(--blue);color:#fff;display:grid;place-items:center;font:800 28px var(--font-display);overflow:hidden}.lw-pv .lg img{width:100%;height:100%;object-fit:cover}
+.lw-pv b{display:block;font-size:18px;overflow-wrap:anywhere}.lw-pv small{display:block;color:var(--muted);font-size:14.5px}
+.lw-pv-s{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0}.lw-pv-s span{background:var(--surface-2);border:1px solid var(--line);border-radius:999px;font-size:13.5px;padding:4px 12px;font-weight:600}
+.lw-ck-l{list-style:none;margin:0;padding:0;display:grid;gap:8px;font-size:15px}
+.lw-ck-l li{display:flex;align-items:center;gap:10px;color:var(--muted)}.lw-ck-l li.ok{color:var(--fg)}
+.lw-ck-l i{width:22px;height:22px;border-radius:50%;border:2px solid var(--line);display:grid;place-items:center;font-size:13px;font-style:normal;color:#fff}.lw-ck-l li.ok i{background:var(--green,#1f8a4c);border-color:var(--green,#1f8a4c)}
+.lw-card.why h3{font:700 18px var(--font-display);margin:0 0 12px}
+.lw-card.why ul{list-style:none;margin:0;padding:0;display:grid;gap:12px}.lw-card.why b{display:block;font-size:16px}.lw-card.why span{color:var(--muted);font-size:14.5px}
+.lw-toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:#14213a;color:#fff;padding:12px 20px;border-radius:10px;font-weight:600;z-index:80;box-shadow:0 10px 30px rgba(0,0,0,.3)}
+@media (max-width:1000px){.lw-grid{grid-template-columns:1fr;margin-top:-40px}.lw-side{position:static;order:2}.lw-steps li b{display:none}.lw-steps li.on b{display:block}}
+@media (max-width:640px){.lw-hero{padding:30px 0 64px}.lw-hero p{font-size:16px}.lw-main{padding:20px 16px 24px;border-radius:14px}.lw-row,.lw-rv,.lw-next-steps{grid-template-columns:1fr}.lw-act{flex-direction:column-reverse;align-items:stretch}.lw-act .lw-r{flex-direction:column-reverse;align-items:stretch}.lw-next,.lw-alt{width:100%;text-align:center}.lw-act>span:empty{display:none}#lwBody h2{font-size:24px}.lw-pi{flex-wrap:wrap}}
+.bar .cta.lb{background:#fff;color:var(--navy,#0f2a47);border:2px solid #fff}
+.bar .cta.lb:hover{background:#ffe9d9}
 </style>
 
 <header>
@@ -714,7 +797,7 @@ input,select,textarea{font-size:16px}
     <a class="all" href="#categories"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><line x1="4" x2="20" y1="12" y2="12"/> <line x1="4" x2="20" y1="6" y2="6"/> <line x1="4" x2="20" y1="18" y2="18"/></svg>All Categories <svg class="i chev" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></a>
     <a href="#products">Products</a><a href="#suppliers">Suppliers</a><a href="#manufacturers">Manufacturers</a><a href="#types">Wholesalers</a><a href="#intl">Exporters</a><a href="#leads">Buy Leads</a><a href="#faq">Tenders &amp; Trade Fairs</a><a class="me" href="#enquiries">My Enquiries</a>
     <span class="grow"></span>
-    <a class="cta" href="#req">Post Your Requirement</a>
+    <a class="cta" href="#req">Post Your Requirement</a><a class="cta lb" href="#list">List Your Business</a>
     <a class="login" href="#seller"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10"/> <circle cx="12" cy="10" r="3"/> <path d="M7 20.662V19a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v1.662"/></svg>Seller Login</a>
   </div></div>
 </header>
@@ -734,7 +817,7 @@ input,select,textarea{font-size:16px}
     <div class="quickloc" id="quickLoc"></div>
     <div class="ctas">
       <a class="c o" href="#req"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/> <path d="M14 2v4a2 2 0 0 0 2 2h4"/> <path d="M10 9H8"/> <path d="M16 13H8"/> <path d="M16 17H8"/></svg><span><b>Post Your Requirement</b><small>Receive quotations from matching suppliers</small></span></a>
-      <a class="c w" href="#seller"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 20a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8l-7 5V8l-7 5V4a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z"/> <path d="M17 18h1"/> <path d="M12 18h1"/> <path d="M7 18h1"/></svg><span><b>List Your Business &ndash; Free</b><small style="color:var(--muted)">Reach buyers in India and abroad</small></span></a>
+      <a class="c w" href="#list"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 20a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8l-7 5V8l-7 5V4a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z"/> <path d="M17 18h1"/> <path d="M12 18h1"/> <path d="M7 18h1"/></svg><span><b>List Your Business &ndash; Free</b><small style="color:var(--muted)">Reach buyers in India and abroad</small></span></a>
       <div class="trust">
         <div><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/> <path d="m9 12 2 2 4-4"/></svg><span>Search<br>suppliers</span></div>
         <div><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10"/> <path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/> <path d="M2 12h20"/></svg><span>Domestic and<br>export trade</span></div>
@@ -822,7 +905,7 @@ input,select,textarea{font-size:16px}
 <section id="suppliers">
   <div class="cta2">
     <div class="b1"><svg class="i art" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="8"/> <path d="m21 21-4.3-4.3"/></svg><div><h2>Buying for your business?</h2><ul><li>Search sample listings across categories</li><li>Send one enquiry to several suppliers</li><li>Compare quotations side by side</li></ul><a class="btn" href="#req">Post a requirement &rarr;</a></div><img class="ph" id="man1" alt="Warehouse aisle with palletised stock" loading="lazy" decoding="async" width="190" height="150"></div>
-    <div class="b2"><svg class="i art" viewBox="0 0 24 24" aria-hidden="true"><path d="m2 7 4.41-4.41A2 2 0 0 1 7.83 2h8.34a2 2 0 0 1 1.42.59L22 7"/> <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/> <path d="M15 22v-4a2 2 0 0 0-2-2h-2a2 2 0 0 0-2 2v4"/> <path d="M2 7h20"/> <path d="M22 7v3a2 2 0 0 1-2 2a2.7 2.7 0 0 1-1.59-.63.7.7 0 0 0-.82 0A2.7 2.7 0 0 1 16 12a2.7 2.7 0 0 1-1.59-.63.7.7 0 0 0-.82 0A2.7 2.7 0 0 1 12 12a2.7 2.7 0 0 1-1.59-.63.7.7 0 0 0-.82 0A2.7 2.7 0 0 1 8 12a2.7 2.7 0 0 1-1.59-.63.7.7 0 0 0-.82 0A2.7 2.7 0 0 1 4 12a2 2 0 0 1-2-2V7"/></svg><div><h2>Manufacturing or selling?</h2><ul><li>Create a free company profile</li><li>Claim your profile if it is already listed</li><li>Add products, catalogues and company details</li><li>Receive enquiries from buyers</li></ul><a class="btn" href="#seller">List Your Business &ndash; Free &rarr;</a></div><img class="ph" id="man2" alt="Freight truck on a highway" loading="lazy" decoding="async" width="190" height="150"></div>
+    <div class="b2"><svg class="i art" viewBox="0 0 24 24" aria-hidden="true"><path d="m2 7 4.41-4.41A2 2 0 0 1 7.83 2h8.34a2 2 0 0 1 1.42.59L22 7"/> <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/> <path d="M15 22v-4a2 2 0 0 0-2-2h-2a2 2 0 0 0-2 2v4"/> <path d="M2 7h20"/> <path d="M22 7v3a2 2 0 0 1-2 2a2.7 2.7 0 0 1-1.59-.63.7.7 0 0 0-.82 0A2.7 2.7 0 0 1 16 12a2.7 2.7 0 0 1-1.59-.63.7.7 0 0 0-.82 0A2.7 2.7 0 0 1 12 12a2.7 2.7 0 0 1-1.59-.63.7.7 0 0 0-.82 0A2.7 2.7 0 0 1 8 12a2.7 2.7 0 0 1-1.59-.63.7.7 0 0 0-.82 0A2.7 2.7 0 0 1 4 12a2 2 0 0 1-2-2V7"/></svg><div><h2>Manufacturing or selling?</h2><ul><li>Create a free company profile</li><li>Claim your profile if it is already listed</li><li>Add products, catalogues and company details</li><li>Receive enquiries from buyers</li></ul><a class="btn" href="#list">List Your Business &ndash; Free &rarr;</a></div><img class="ph" id="man2" alt="Freight truck on a highway" loading="lazy" decoding="async" width="190" height="150"></div>
   </div>
 </section>
 
@@ -835,7 +918,7 @@ input,select,textarea{font-size:16px}
       <li><span class="badge"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 20a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8l-7 5V8l-7 5V4a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z"/> <path d="M17 18h1"/> <path d="M12 18h1"/> <path d="M7 18h1"/></svg><em>2</em></span><b>Add business details</b><small>Add company name, address and email</small></li>
       <li><span class="badge"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/> <path d="m3.3 7 8.7 5 8.7-5"/> <path d="M12 22V12"/></svg><em>3</em></span><b>Add products or services</b><small>Add at least three products or services to publish your page</small></li>
     </ol>
-    <a class="btn-w" href="#seller">Start Selling &rarr;</a></div>
+    <a class="btn-w" href="#list">Start Selling &rarr;</a></div>
   <div id="catsB"></div>
 </section>
 <div class="band"><div class="bh"><h2>How GlobalTradeB2B works</h2><p>From requirement to quotation in four steps.</p></div><ol class="flow" id="howGrid"></ol></div>
@@ -865,12 +948,23 @@ input,select,textarea{font-size:16px}
 </section>
 <div class="tc-head"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0"/> <circle cx="12" cy="10" r="3"/></svg>Suppliers by city</div>
 <div class="tc" id="tcGrid"></div>
-<div class="final"><div><h2>Start sourcing or selling today</h2><p>Post a requirement or list your business. Setup takes a few minutes.</p></div><div class="btns"><a class="b-o" href="#req">Post Your Requirement</a><a class="b-w" href="#seller">List Your Business &ndash; Free</a></div></div>
+<div class="final"><div><h2>Start sourcing or selling today</h2><p>Post a requirement or list your business. Setup takes a few minutes.</p></div><div class="btns"><a class="b-o" href="#req">Post Your Requirement</a><a class="b-w" href="#list">List Your Business &ndash; Free</a></div></div>
 </div>
 </main>
 <section id="productView" hidden><div class="pv-back" id="pvBack" hidden></div><div class="wrap" id="pvInner"></div></section>
 <section id="supplierView" hidden><div class="wrap" id="spInner"></div></section>
 <section id="enquiriesView" hidden><div class="wrap"><nav class="pp-bc"><a href="#home">Home</a><span>&rsaquo;</span>My Enquiries</nav><h1>My Enquiries</h1><p style="color:var(--muted);margin-top:4px">Enquiries and requirements sent from this browser, with their status and any seller reply. Demonstration data only.</p><div id="enList"></div></div></section>
+<section id="listView" hidden>
+  <div class="lw-hero"><div class="wrap"><span class="lw-badge">Free to list &middot; Demonstration</span><h1>List your business on GlobalTradeB2B</h1><p>Create your company page and add your first products in about five minutes. Buyers across India and abroad can then find you and send enquiries.</p></div></div>
+  <div class="wrap lw-grid">
+    <div class="lw-main">
+      <ol class="lw-steps" id="lwSteps" aria-label="Progress"></ol>
+      <div id="lwBody" aria-live="polite"></div>
+    </div>
+    <aside class="lw-side" id="lwSide"></aside>
+  </div>
+  <div class="lw-toast" id="lwToast" hidden role="status"></div>
+</section>
 <section id="signinView" hidden><div class="wrap"><div class="si-card"><h1>Seller Centre sign-in <span class="demo">Demonstration</span></h1><p>You have signed out of the demonstration seller account. There are no real accounts, passwords or verification in this prototype.</p><button type="button" class="pp-btn" id="siGo">Continue as the demo seller</button> <a class="btn-o" href="#home">Back to marketplace</a><p class="pp-note">Real sign-in will be added in the backend phase.</p></div></div></section>
 <section id="pageView" hidden><div class="wrap" id="pgInner"></div></section>
 <div id="sellerView" hidden></div>
@@ -883,7 +977,7 @@ input,select,textarea{font-size:16px}
         <p class="about">A B2B platform connecting buyers with manufacturers, suppliers and exporters in India and abroad. This prototype uses demonstration data only.</p>
         <div class="soc"><a href="#" aria-label="LinkedIn"><svg class="i" viewBox="0 0 24 24"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/> <rect width="4" height="12" x="2" y="9"/> <circle cx="4" cy="4" r="2"/></svg></a><a href="#" aria-label="Facebook"><svg class="i" viewBox="0 0 24 24"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg></a><a href="#" aria-label="X"><svg class="i" viewBox="0 0 24 24"><path d="M22 4s-.7 2.1-2 3.4c1.6 10-9.4 17.3-18 11.6 2.2.1 4.4-.6 6-2C3 15.5.5 9.6 3 5c2.2 2.6 5.6 4.1 9 4-.9-4.2 4-6.6 7-3.8 1.1 0 3-1.2 3-1.2z"/></svg></a><a href="#" aria-label="YouTube"><svg class="i" viewBox="0 0 24 24"><path d="M2.5 17a24.12 24.12 0 0 1 0-10 2 2 0 0 1 1.4-1.4 49.56 49.56 0 0 1 16.2 0A2 2 0 0 1 21.5 7a24.12 24.12 0 0 1 0 10 2 2 0 0 1-1.4 1.4 49.55 49.55 0 0 1-16.2 0A2 2 0 0 1 2.5 17"/> <path d="m10 15 5-3-5-3z"/></svg></a><a href="#" aria-label="Instagram"><svg class="i" viewBox="0 0 24 24"><rect width="20" height="20" x="2" y="2" rx="5" ry="5"/> <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/> <line x1="17.5" x2="17.51" y1="6.5" y2="6.5"/></svg></a></div></div>
       <div><h4>For Buyers</h4><ul><li><a href="#">Search Products</a></li><li><a href="#req">Post Requirement</a></li><li><a href="#suppliers">Find Suppliers</a></li><li><a href="#leads">Buy Leads</a></li><li><a href="#enquiries">My Enquiries</a></li><li><a href="#">Buyer Guide</a></li></ul></div>
-      <div><h4>For Suppliers</h4><ul><li><a href="#seller">List Your Business</a></li><li><a href="#">Claim Your Company</a></li><li><a href="#">Promote Products</a></li><li><a href="#seller">Seller Dashboard</a></li><li><a href="#admin">Admin Console (prototype)</a></li><li><a href="#">Seller Guide</a></li></ul></div>
+      <div><h4>For Suppliers</h4><ul><li><a href="#list">List Your Business</a></li><li><a href="#">Claim Your Company</a></li><li><a href="#">Promote Products</a></li><li><a href="#seller">Seller Dashboard</a></li><li><a href="#admin">Admin Console (prototype)</a></li><li><a href="#">Seller Guide</a></li></ul></div>
       <div><h4>Explore Categories</h4><ul><li><a href="#categories">Industrial Machinery</a></li><li><a href="#categories">Electrical &amp; Electronics</a></li><li><a href="#categories">Textiles &amp; Garments</a></li><li><a href="#categories">Building &amp; Construction</a></li><li><a href="#categories">Food &amp; Beverages</a></li><li><a href="#categories">View All Categories</a></li></ul></div>
       <div><h4>Company</h4><ul><li><a href="#">About Us</a></li><li><a href="#">Contact Us</a></li><li><a href="#">Careers</a></li><li><a href="#">Press &amp; Media</a></li><li><a href="#">Partner With Us</a></li></ul></div>
       <div><h4>Help &amp; Support</h4><ul><li><a href="#">Help Center</a></li><li><a href="#faq">FAQs</a></li><li><a href="#">Report an Issue</a></li><li><a href="#">Business Support</a></li><li><a href="#">Sitemap</a></li></ul></div>
@@ -3075,6 +3169,7 @@ SECTIONS.forEach(function(sec,si){sec.i.forEach(function(it,ii){
  PRODUCTS.push({id:'p'+si+'_'+ii,name:it[0],cat:sec.n,kind:it[1],h:(sec.h+ii*13)%360,price:it[2],unit:it[3],moq:it[4],desc:descFor(it[0],sl),specs:specsFor(sec,it[0]),tags:sec.n+' '+it[1],seller:sl,mine:!!MYSEED[it[0]],imgs:[],paused:false});
 })});
 function loadMine(){
+ try{if(localStorage.getItem('gtb2b-fresh')==='1')PRODUCTS.forEach(function(p){if(p.mine){p.mine=false;p.seller=pickSeller(p.name,p.cat)}})}catch(e){}
  try{var a=JSON.parse(localStorage.getItem('gtb2b-myprods')||'[]');a.forEach(function(p){p.seller=TAPIS;p.mine=true;p.user=true;if(!p.imgs)p.imgs=[];PRODUCTS.unshift(p)})}catch(e){}
  try{var pz=JSON.parse(localStorage.getItem('gtb2b-paused')||'[]');PRODUCTS.forEach(function(p){if(pz.indexOf(p.id)>-1)p.paused=true})}catch(e){}
 }
@@ -3125,7 +3220,7 @@ function refreshBuyer(){renderSections();renderTrending();if(typeof renderCatDlg
 
 /* router */
 var CUR=null,FROMSEL=false;
-var VIEWIDS={home:'top',product:'productView',seller:'sellerView',admin:'adminView',supplier:'supplierView',enquiries:'enquiriesView',page:'pageView',signin:'signinView'};
+var VIEWIDS={list:'listView',home:'top',product:'productView',seller:'sellerView',admin:'adminView',supplier:'supplierView',enquiries:'enquiriesView',page:'pageView',signin:'signinView'};
 function stKey(s){return s?(s.v+'|'+(s.id||s.name||s.key||'')):''}
 function go(v,nohash,extra){
  if(v==='seller'&&Store.seller.session.signedOut())v='signin';
@@ -3138,6 +3233,7 @@ function go(v,nohash,extra){
  if(v==='seller'&&window.SELLER)SELLER.sync();
  if(v==='admin'&&window.ADMIN)ADMIN.refresh();
  if(v==='enquiries')renderEnquiries();
+ if(v==='list')lwOpen();
  window.scrollTo(0,0);
  if(v==='home'&&!$('results').hidden)runSearch(false);
 }
@@ -3150,7 +3246,7 @@ function openProduct(id,nopush){
 }
 window.addEventListener('popstate',function(ev){
  var s=ev.state;
- if(!s||!s.v){var h=location.hash.slice(1);go(h==='seller'||h==='admin'||h==='enquiries'?h:'home',true);return}
+ if(!s||!s.v){var h=location.hash.slice(1);go(h==='seller'||h==='admin'||h==='enquiries'||h==='list'?h:'home',true);return}
  if(s.v==='product'&&s.id&&getP(s.id))openProduct(s.id,true);
  else if(s.v==='supplier'&&s.name)openSupplier(s.name,true);
  else if(s.v==='page'&&s.key)openPage(s.key,true);
@@ -3159,7 +3255,7 @@ window.addEventListener('popstate',function(ev){
 window.addEventListener('hashchange',function(){
  var n=location.hash.slice(1);
  if(n==='product'||n==='supplier'||n==='page')return;
- if(n==='seller'||n==='admin'||n==='enquiries'||n==='home'||n===''){go(n||'home',true);return}
+ if(n==='seller'||n==='admin'||n==='enquiries'||n==='list'||n==='home'||n===''){go(n||'home',true);return}
  if(n==='product'&&CUR){go('product',true);return}
  if(n&&$('top').hidden){go('home',true);setTimeout(function(){var el=document.getElementById(n);if(el)el.scrollIntoView()},40)}
 });
@@ -3235,7 +3331,7 @@ function resetFilters(){F.ver=false;F.type='All';F.sort='near';F.min=0;F.max=0;F
 var LEADS=[['Hand Tufted Rugs','Custom design, wool material','prod0','500 Pieces','UAE','05 Nov 2026','View Requirement'],['Packing Boxes (Corrugated)','5 ply, printed logo','prod3','10,000 Pieces','Mumbai, India','04 Nov 2026','View Requirement'],['Textile Fabric (Cotton)','Dyed, 150 GSM','prod2','5,000 Meters','USA','03 Nov 2026','View Requirement'],['Industrial Water Pumps','Cast iron, 5 HP','prod1','20 Units','Delhi, India','02 Nov 2026','Contact Supplier']];
 $('leadRows').innerHTML=LEADS.map(function(l,i){return '<tr><td><div class="lead-p"><b>'+(i+1)+'</b><img alt="" loading="lazy" decoding="async" width="44" height="44" src="'+IMG[l[2]]+'"><span><strong>'+l[0]+'</strong><small>'+l[1]+'</small></span></div></td><td>'+l[3]+'</td><td>'+l[4]+'</td><td>'+l[5]+'</td><td>'+(i==3?'<a class="cs" href="#req" data-prod="'+l[0]+'">':'<a class="vb" href="#" data-lead="1">')+l[6]+'</a></td></tr>'}).join('');
 
-function initProducts(){loadMine();renderSections();renderTrending();var h0=location.hash.slice(1);try{history.replaceState({v:(h0==='seller'||h0==='admin'||h0==='enquiries')?h0:'home'},'')}catch(e){}if(h0==='seller'||h0==='admin'||h0==='enquiries')go(h0,true)}
+function initProducts(){loadMine();renderSections();renderTrending();var h0=location.hash.slice(1);try{history.replaceState({v:(h0==='seller'||h0==='admin'||h0==='enquiries'||h0==='list')?h0:'home'},'')}catch(e){}if(h0==='seller'||h0==='admin'||h0==='enquiries'||h0==='list')go(h0,true)}
 
 
 /* ===== company profile -> shared listing record (TAPIS) ===== */
@@ -3250,6 +3346,187 @@ function applyCompany(oldName){
  if(c.cats&&c.cats.length)TAPIS.cat=c.cats[0];
 }
 applyCompany();
+/* ===== List your business: guided sign-up (demonstration, saved in this browser only) ===== */
+var LWK='gtb2b-listdraft',LWTYPES=['Manufacturer','Supplier','Wholesaler','Exporter','Trader','Retailer','Service Provider'],LWUNITS=['Piece','Kg','Meter','Sq. Ft.','Sq. Mtr.','Set','Pair','Litre','Roll','Bag','Ton'];
+var LW={step:1,done:false,acct:{name:'',mobile:'',email:''},biz:{name:'',types:[],cat:'',state:'',city:'',year:'',about:'',logo:''},prods:[],pd:{name:'',cat:'',price:'',por:false,unit:'Piece',moq:'',desc:'',imgs:[],editId:''},err:{},agree:false,pubName:''};
+function lwLoad(){try{var d=JSON.parse(localStorage.getItem(LWK)||'null');if(d&&d.acct&&d.biz){LW.step=Math.max(1,Math.min(d.step||1,4));LW.acct=d.acct;LW.biz=d.biz;LW.prods=d.prods||[]}}catch(e){}}
+function lwSave(){
+ var o={step:LW.step,acct:LW.acct,biz:LW.biz,prods:LW.prods};
+ try{localStorage.setItem(LWK,JSON.stringify(o))}catch(e){try{o.biz=Object.assign({},LW.biz,{logo:''});o.prods=LW.prods.map(function(p){return Object.assign({},p,{imgs:[]})});localStorage.setItem(LWK,JSON.stringify(o))}catch(e2){}}
+}
+function lwGet(p){var k=p.split('.');return LW[k[0]][k[1]]}
+function lwSet(p,v){var k=p.split('.');if(k.length<2){LW[p]=v;return}LW[k[0]][k[1]]=v}
+var lwTT;function lwToast(m){var t=$('lwToast');if(!t)return;t.textContent=m;t.hidden=false;clearTimeout(lwTT);lwTT=setTimeout(function(){t.hidden=true},3200)}
+function lwInp(p,label,o){o=o||{};var e=LW.err[p];
+ return '<label class="lw-f'+(o.cls?' '+o.cls:'')+'"><span>'+label+'</span><input data-f="'+p+'" type="'+(o.type||'text')+'" value="'+esc(lwGet(p))+'"'+(o.ph?' placeholder="'+esc(o.ph)+'"':'')+(o.attr?' '+o.attr:'')+(e?' aria-invalid="true"':'')+'>'+(o.hint?'<small>'+o.hint+'</small>':'')+(e?'<em class="lw-e">'+esc(e)+'</em>':'')+'</label>';
+}
+function lwSel(p,label,opts,ph,o){o=o||{};var e=LW.err[p],v=lwGet(p);
+ return '<label class="lw-f'+(o.cls?' '+o.cls:'')+'"><span>'+label+'</span><select data-f="'+p+'"'+(o.dis?' disabled':'')+(e?' aria-invalid="true"':'')+'><option value="">'+esc(ph)+'</option>'+opts.map(function(x){return '<option'+(String(x)===String(v)?' selected':'')+'>'+esc(x)+'</option>'}).join('')+'</select>'+(e?'<em class="lw-e">'+esc(e)+'</em>':'')+'</label>';
+}
+var LWSTEPS=['Your details','Your business','Your products','Review & publish'];
+function lwSteps(){
+ $('lwSteps').innerHTML=LWSTEPS.map(function(t,i){var n=i+1,c=LW.done||n<LW.step?' done':(n===LW.step?' on':'');
+  return '<li class="'+c.trim()+'"'+(n===LW.step&&!LW.done?' aria-current="step"':'')+'><span class="n">'+(LW.done||n<LW.step?'&#10003;':n)+'</span><b>'+t+'</b></li>'}).join('');
+}
+function lwNote(){return '<p class="lw-note">Demonstration only: no real account, password or verification is created, nothing is sent to anyone, and everything is saved in this browser.</p>'}
+function lwBody(){
+ var h='',b=LW.biz,a=LW.acct;
+ if(LW.done){
+  return '<div class="lw-done"><div class="lw-ok">&#10003;</div><h2>'+esc(LW.pubName)+' is now listed</h2><p>Your company page and '+LW.prods.length+' product'+(LW.prods.length===1?'':'s')+' are live on this demonstration marketplace. Buyers can search for them and send you enquiries, which you will answer from your Seller Centre.</p>'
+   +'<div class="lw-next-steps"><div><b>1. Open your Seller Centre</b><span>Reply to enquiries, add more products and complete your profile.</span></div><div><b>2. See what buyers see</b><span>View your company page and products on the marketplace.</span></div><div><b>3. Add photos and a brochure</b><span>Listings with real photos get more enquiries.</span></div></div>'
+   +'<div class="lw-act"><button type="button" class="lw-alt" data-viewco>View my company page</button><button type="button" class="lw-next" data-opensc>Open Seller Centre &rarr;</button></div>'+lwNote()+'</div>';
+ }
+ if(LW.step===1){
+  h+='<h2>Let&rsquo;s get you started</h2><p class="lw-sub">Tell us who is setting up the account. Buyers will contact you on these details.</p>'
+   +'<div class="lw-row">'+lwInp('acct.name','Your full name <i>*</i>',{ph:'For example: Rajesh Kumar',attr:'autocomplete="name"'})+lwInp('acct.mobile','Mobile number <i>*</i>',{type:'tel',ph:'10-digit mobile number',attr:'inputmode="tel" autocomplete="tel"'})+'</div>'
+   +lwInp('acct.email','Email address <i>*</i>',{type:'email',ph:'you@company.com',attr:'autocomplete="email"',hint:'We use this for enquiry alerts in the full version.'})
+   +(localStorage.getItem('gtb2b-fresh')?'<p class="lw-info">You have already listed <b>'+esc(Store.company.get().name)+'</b>. <a href="#seller">Open your Seller Centre</a>, or continue below to list a different business (it replaces your company details).</p>':'')
+   +lwNote()+'<div class="lw-act"><span></span><button type="button" class="lw-next" data-next>Continue &rarr;</button></div>';
+ }else if(LW.step===2){
+  var cities=b.state&&STATES[b.state]?STATES[b.state]:[],years=[],y=new Date().getFullYear(),i;for(i=y;i>=1950;i--)years.push(i);
+  h+='<h2>About your business</h2><p class="lw-sub">This becomes your public company page.</p>'
+   +lwInp('biz.name','Business name <i>*</i>',{ph:'For example: Sharma Handicrafts Pvt. Ltd.',attr:'maxlength="80" autocomplete="organization"'})
+   +'<div class="lw-f"><span>What best describes you? <i>*</i> <small>Choose all that apply</small></span><div class="lw-chips" role="group">'+LWTYPES.map(function(t){return '<button type="button" class="'+(b.types.indexOf(t)>-1?'on':'')+'" data-chip="'+esc(t)+'" aria-pressed="'+(b.types.indexOf(t)>-1)+'">'+t+'</button>'}).join('')+'</div>'+(LW.err['biz.types']?'<em class="lw-e">'+esc(LW.err['biz.types'])+'</em>':'')+'</div>'
+   +'<div class="lw-row">'+lwSel('biz.cat','Main product category <i>*</i>',SECTIONS.map(function(s){return s.n}),'Choose a category')+lwSel('biz.year','Year established',years,'Optional')+'</div>'
+   +'<div class="lw-row">'+lwSel('biz.state','State <i>*</i>',Object.keys(STATES).sort(),'Choose state')+lwSel('biz.city','City <i>*</i>',cities,b.state?'Choose city':'Choose state first',{dis:!b.state})+'</div>'
+   +'<label class="lw-f"><span>About your business <i>*</i></span><textarea data-f="biz.about" rows="4" maxlength="600" placeholder="What do you make or sell? Materials, capacity, export experience, certifications..."'+(LW.err['biz.about']?' aria-invalid="true"':'')+'>'+esc(b.about)+'</textarea><small id="lwCnt">'+b.about.length+'/600</small>'+(LW.err['biz.about']?'<em class="lw-e">'+esc(LW.err['biz.about'])+'</em>':'')+'</label>'
+   +'<div class="lw-f"><span>Company logo <small>Optional</small></span><div class="lw-logo">'+(b.logo?'<img src="'+b.logo+'" alt="Your logo"><button type="button" class="lw-link" data-rmlogo>Remove</button>':'<div class="lw-ph">Logo</div>')+'<label class="lw-up">'+(b.logo?'Change':'Upload')+' logo<input type="file" accept="image/jpeg,image/png,image/webp" data-file="logo" hidden></label></div><small>JPG or PNG, under 10 MB. Use only a logo you own.</small></div>'
+   +'<div class="lw-act"><button type="button" class="lw-alt" data-back>&larr; Back</button><button type="button" class="lw-next" data-next>Continue &rarr;</button></div>';
+ }else if(LW.step===3){
+  var p=LW.pd,cats=SECTIONS.map(function(s){return s.n});
+  h+='<h2>Add your products</h2><p class="lw-sub">Add at least one product so buyers can find you. You can add more any time from your Seller Centre.</p>'
+   +(LW.prods.length?'<div class="lw-plist">'+LW.prods.map(function(q){return '<div class="lw-pi"><div class="th">'+(q.imgs[0]?'<img src="'+q.imgs[0]+'" alt="">':'<span>'+esc(q.name.charAt(0).toUpperCase())+'</span>')+'</div><div class="tx"><b>'+esc(q.name)+'</b><small>'+esc(q.cat)+' &middot; '+(q.price?'&#8377; '+fmtNum(q.price)+' / '+esc(q.unit):'Price on request')+' &middot; Min. '+fmtNum(q.moq)+' '+esc(q.unit)+'</small></div><button type="button" class="lw-link" data-edp="'+q.id+'">Edit</button><button type="button" class="lw-link r" data-rmp="'+q.id+'">Remove</button></div>'}).join('')+'</div>':'')
+   +'<div class="lw-pf"><h3>'+(p.editId?'Edit product':'Product '+(LW.prods.length+1))+'</h3>'
+   +lwInp('pd.name','Product name <i>*</i>',{ph:'For example: Hand Tufted Wool Rug',attr:'maxlength="80"'})
+   +'<div class="lw-row">'+lwSel('pd.cat','Category <i>*</i>',cats,'Choose a category')+lwSel('pd.unit','Sold per',LWUNITS,'Unit')+'</div>'
+   +'<div class="lw-row">'+lwInp('pd.price','Price (&#8377;)',{type:'number',ph:'0',attr:'min="0" step="any" inputmode="decimal"'+(p.por?' disabled':'')})+lwInp('pd.moq','Minimum order <i>*</i>',{type:'number',ph:'1',attr:'min="1" step="any" inputmode="decimal"'})+'</div>'
+   +'<label class="lw-ck"><input type="checkbox" data-f="pd.por"'+(p.por?' checked':'')+'> Price on request (buyers see &ldquo;Price on request&rdquo;)</label>'
+   +'<label class="lw-f"><span>Description <i>*</i></span><textarea data-f="pd.desc" rows="3" maxlength="800" placeholder="Material, size, finish, colours, packaging, customisation..."'+(LW.err['pd.desc']?' aria-invalid="true"':'')+'>'+esc(p.desc)+'</textarea>'+(LW.err['pd.desc']?'<em class="lw-e">'+esc(LW.err['pd.desc'])+'</em>':'')+'</label>'
+   +'<div class="lw-f"><span>Photos <small>Up to 3. Clear photos on a plain background get more enquiries.</small></span><div class="lw-imgs">'+p.imgs.map(function(u,i){return '<div class="im"><img src="'+u+'" alt=""><button type="button" data-rmi="'+i+'" aria-label="Remove photo">&times;</button></div>'}).join('')+(p.imgs.length<3?'<label class="im add"><span>+</span><small>Add photo</small><input type="file" accept="image/jpeg,image/png,image/webp" multiple data-file="prod" hidden></label>':'')+'</div></div>'
+   +(LW.err.prods?'<em class="lw-e">'+esc(LW.err.prods)+'</em>':'')
+   +'<button type="button" class="lw-alt wide" data-addp>'+(p.editId?'Save changes to this product':'+ Add this product to my list')+'</button></div>'
+   +'<div class="lw-act"><button type="button" class="lw-alt" data-back>&larr; Back</button><span class="lw-r"><button type="button" class="lw-link" data-skip>Skip for now</button><button type="button" class="lw-next" data-next>Continue &rarr;</button></span></div>';
+ }else{
+  h+='<h2>Review and publish</h2><p class="lw-sub">Check everything below. You can change any of it later in your Seller Centre.</p>'
+   +'<div class="lw-rv"><div><h3>You <button type="button" class="lw-link" data-go="1">Edit</button></h3><p><b>'+esc(a.name)+'</b><br>'+esc(a.mobile)+'<br>'+esc(a.email)+'</p></div>'
+   +'<div><h3>Business <button type="button" class="lw-link" data-go="2">Edit</button></h3><p><b>'+esc(b.name)+'</b><br>'+esc(b.types.join(', '))+'<br>'+esc(b.city)+', '+esc(b.state)+(b.year?' &middot; Since '+esc(b.year):'')+'<br><span class="mu">'+esc(b.cat)+'</span></p></div></div>'
+   +'<div class="lw-rv one"><div><h3>Products ('+LW.prods.length+') <button type="button" class="lw-link" data-go="3">Edit</button></h3>'+(LW.prods.length?'<div class="lw-plist">'+LW.prods.map(function(q){return '<div class="lw-pi"><div class="th">'+(q.imgs[0]?'<img src="'+q.imgs[0]+'" alt="">':'<span>'+esc(q.name.charAt(0).toUpperCase())+'</span>')+'</div><div class="tx"><b>'+esc(q.name)+'</b><small>'+esc(q.cat)+' &middot; '+(q.price?'&#8377; '+fmtNum(q.price)+' / '+esc(q.unit):'Price on request')+'</small></div></div>'}).join('')+'</div>':'<p class="mu">No products yet. You can add them from your Seller Centre.</p>')+'</div></div>'
+   +'<label class="lw-ck big"><input type="checkbox" data-f="agree"'+(LW.agree?' checked':'')+'> I understand this is a demonstration listing. The company and products are samples, saved only in this browser, and are not verified or offered for sale.</label>'
+   +(LW.err.agree?'<em class="lw-e">'+esc(LW.err.agree)+'</em>':'')
+   +'<div class="lw-act"><button type="button" class="lw-alt" data-back>&larr; Back</button><button type="button" class="lw-next pub" data-publish>Publish my business</button></div>';
+ }
+ return h;
+}
+function lwAside(){
+ var b=LW.biz,pc=LW.prods.length,nm=b.name.trim()||'Your business name';
+ var items=[['Your details',!!(LW.acct.name&&LW.acct.mobile&&LW.acct.email)],['Business details',!!(b.name&&b.cat&&b.city&&b.about)],['At least one product',pc>0],['Company logo',!!b.logo]];
+ $('lwSide').innerHTML='<div class="lw-card"><div class="lw-pv-h">How buyers will see you</div><div class="lw-pv"><div class="lg">'+(b.logo?'<img src="'+b.logo+'" alt="">':'<span>'+esc(nm.charAt(0).toUpperCase())+'</span>')+'</div><div><b>'+esc(nm)+'</b><small>'+esc(b.types.join(', ')||'Business type')+'</small><small>'+(b.city?esc(b.city)+', '+esc(b.state):'City, State')+'</small></div></div>'
+  +'<div class="lw-pv-s"><span>'+pc+' product'+(pc===1?'':'s')+'</span>'+(b.cat?'<span>'+esc(b.cat)+'</span>':'')+'</div>'
+  +'<ul class="lw-ck-l">'+items.map(function(x){return '<li class="'+(x[1]?'ok':'')+'"><i>'+(x[1]?'&#10003;':'')+'</i>'+x[0]+'</li>'}).join('')+'</ul></div>'
+  +'<div class="lw-card why"><h3>Why list here?</h3><ul><li><b>Free to start</b><span>No fee to create your company page in this demonstration.</span></li><li><b>Be found by buyers</b><span>Your products appear in search and category pages.</span></li><li><b>Manage enquiries</b><span>Reply to every buyer from one Seller Centre.</span></li></ul></div>';
+}
+function lwRender(){lwSteps();$('lwBody').innerHTML=lwBody();lwAside()}
+function lwReset(){LW.done=false;LW.step=1;LW.acct={name:'',mobile:'',email:''};LW.biz={name:'',types:[],cat:'',state:'',city:'',year:'',about:'',logo:''};LW.prods=[];LW.pd={name:'',cat:'',price:'',por:false,unit:'Piece',moq:'',desc:'',imgs:[],editId:''};LW.agree=false}
+function lwOpen(){if(LW.done)lwReset();lwLoad();LW.err={};if(!LW.pd.cat)LW.pd.cat=LW.biz.cat||'';lwRender()}
+function lwGo(n){LW.step=n;LW.err={};lwSave();lwRender();window.scrollTo({top:$('listView').offsetTop,behavior:'smooth'});setTimeout(function(){var f=$('lwBody').querySelector('input:not([type=file]),select,textarea');if(f&&window.innerWidth>800)f.focus()},60)}
+function lwValid(step){
+ var e={},a=LW.acct,b=LW.biz;
+ if(step===1){
+  if(a.name.trim().length<2)e['acct.name']='Enter your full name.';
+  if(!/^[0-9+\-\s()]{7,16}$/.test(a.mobile.trim()))e['acct.mobile']='Enter a valid mobile number (digits, spaces, + or -).';
+  if(!/^\S+@\S+\.\S+$/.test(a.email.trim()))e['acct.email']='Enter a valid email address.';
+ }
+ if(step===2){
+  if(b.name.trim().length<3)e['biz.name']='Enter your business name (at least 3 characters).';
+  if(!b.types.length)e['biz.types']='Choose at least one option.';
+  if(!b.cat)e['biz.cat']='Choose your main product category.';
+  if(!b.state)e['biz.state']='Choose your state.';
+  if(!b.city)e['biz.city']='Choose your city.';
+  if(b.about.trim().length<30)e['biz.about']='Write at least 30 characters so buyers understand what you do.';
+ }
+ LW.err=e;return !Object.keys(e).length;
+}
+function lwPdValid(){
+ var p=LW.pd,e={};
+ if(p.name.trim().length<3)e['pd.name']='Enter a product name (at least 3 characters).';
+ if(!p.cat)e['pd.cat']='Choose a category.';
+ if(!p.por&&!(parseFloat(p.price)>0))e['pd.price']='Enter a price above 0, or tick Price on request.';
+ if(!(parseFloat(p.moq)>0))e['pd.moq']='Enter the minimum order (1 or more).';
+ if(p.desc.trim().length<20)e['pd.desc']='Write at least 20 characters about the product.';
+ LW.err=e;return !Object.keys(e).length;
+}
+function lwAddProduct(){
+ if(!lwPdValid()){lwRender();var f=$('lwBody').querySelector('[aria-invalid]');if(f)f.focus();return false}
+ var p=LW.pd,o={id:p.editId||('t'+Date.now().toString(36)),name:p.name.trim(),cat:p.cat,price:p.por?0:parseFloat(p.price),unit:p.unit||'Piece',moq:parseFloat(p.moq),desc:p.desc.trim(),imgs:p.imgs.slice()};
+ var i=-1;LW.prods.forEach(function(q,k){if(q.id===o.id)i=k});
+ if(i>-1)LW.prods[i]=o;else LW.prods.push(o);
+ LW.pd={name:'',cat:LW.biz.cat||o.cat,price:'',por:false,unit:'Piece',moq:'',desc:'',imgs:[],editId:''};
+ LW.err={};lwSave();lwRender();lwToast('Product added to your list.');return true;
+}
+function lwPublish(){
+ var a=LW.acct,b=LW.biz;
+ if(!LW.agree){LW.err={agree:'Please tick the box to confirm you understand.'};lwRender();return}
+ Store.company.set({name:b.name.trim(),type:b.types.join(', '),about:b.about.trim(),city:b.city,contactPerson:a.name.trim(),phone:a.mobile.trim(),email:a.email.trim(),cats:[b.cat],logo:b.logo||'',images:[]});
+ try{localStorage.setItem('gtb2b-fresh','1')}catch(e){}
+ PRODUCTS.forEach(function(p){if(p.mine&&!p.user){p.mine=false;p.seller=pickSeller(p.name,p.cat)}});
+ PRODUCTS.forEach(function(p){if(p.user&&p.lw){var i=PRODUCTS.indexOf(p);if(i>-1)PRODUCTS.splice(i,1)}});
+ LW.prods.forEach(function(q){
+  var sec=SECTIONS.filter(function(s){return s.n===q.cat})[0]||SECTIONS[0],kind=sec.i[0][1];
+  PRODUCTS.unshift({id:'u'+q.id,name:q.name,cat:sec.n,kind:kind,h:sec.h,price:q.price,unit:q.unit,moq:q.moq,desc:q.desc,specs:specsFor(sec,q.name),tags:sec.n+' '+kind,seller:TAPIS,mine:true,user:true,lw:true,imgs:q.imgs.slice(),created:Date.now(),paused:false});
+ });
+ saveMine();applyCompany();
+ try{Store.seller.session.set(false)}catch(e){}
+ try{Store.notifs.add('system','Welcome, '+b.name.trim()+'!','Your business is listed (demonstration). Add more products and complete your profile.','dash')}catch(e){}
+ refreshBuyer();
+ LW.pubName=b.name.trim();LW.done=true;
+ try{localStorage.removeItem(LWK)}catch(e){}
+ lwRender();window.scrollTo({top:$('listView').offsetTop,behavior:'smooth'});
+}
+(function(){
+ var v=$('listView');
+ v.addEventListener('input',function(e){
+  var f=e.target.getAttribute&&e.target.getAttribute('data-f');if(!f||e.target.type==='checkbox'||e.target.tagName==='SELECT')return;
+  lwSet(f,e.target.value);
+  if(f==='biz.about'){var c=$('lwCnt');if(c)c.textContent=e.target.value.length+'/600'}
+  if(LW.err[f]){delete LW.err[f];e.target.removeAttribute('aria-invalid');var em=e.target.parentNode.querySelector('.lw-e');if(em)em.remove()}
+  lwSave();lwAside();
+ });
+ v.addEventListener('change',function(e){
+  var t=e.target,f=t.getAttribute&&t.getAttribute('data-f');
+  if(f){
+   if(t.type==='checkbox'){lwSet(f,t.checked);if(f==='pd.por'){var pr=v.querySelector('[data-f="pd.price"]');if(pr){pr.disabled=t.checked;if(t.checked){LW.pd.price='';pr.value=''}}}if(f==='agree'&&t.checked)delete LW.err.agree;lwSave();return}
+   if(t.tagName==='SELECT'){lwSet(f,t.value);if(f==='biz.state'){LW.biz.city='';if(!LW.pd.cat)LW.pd.cat=LW.biz.cat}if(f==='biz.cat'&&!LW.pd.cat)LW.pd.cat=t.value;delete LW.err[f];lwSave();lwRender();return}
+  }
+  var fl=t.getAttribute&&t.getAttribute('data-file');
+  if(fl&&t.files&&t.files.length){
+   var files=Array.prototype.slice.call(t.files).slice(0,fl==='logo'?1:3-LW.pd.imgs.length),left=files.length,bad=0;
+   files.forEach(function(file){cropPhoto(file,function(u){if(u){if(fl==='logo')LW.biz.logo=u;else LW.pd.imgs.push(u)}else bad++;if(--left===0){lwSave();lwRender();if(bad)lwToast(bad+' file'+(bad>1?'s were':' was')+' skipped. Use JPG, PNG or WebP images under 10 MB.')}})});
+  }
+ });
+ v.addEventListener('click',function(e){
+  var t=e.target,x;
+  if(t.closest('[data-next]')){
+   if(LW.step<3){if(!lwValid(LW.step)){lwRender();var f=$('lwBody').querySelector('[aria-invalid],.lw-e');if(f)(f.closest('.lw-f')||f).scrollIntoView({block:'center',behavior:'smooth'});return}lwGo(LW.step+1);return}
+   if(LW.step===3){
+    var p=LW.pd;if(p.name.trim()||p.desc.trim()||p.price||p.moq){if(!lwAddProduct())return}
+    if(!LW.prods.length){LW.err={prods:'Add at least one product, or choose Skip for now.'};lwRender();return}
+    lwGo(4);return}
+  }
+  if(t.closest('[data-back]')){lwGo(Math.max(1,LW.step-1));return}
+  if(t.closest('[data-skip]')){lwGo(4);return}
+  if((x=t.closest('[data-go]'))){lwGo(+x.getAttribute('data-go'));return}
+  if((x=t.closest('[data-chip]'))){var c=x.getAttribute('data-chip'),i=LW.biz.types.indexOf(c);if(i>-1)LW.biz.types.splice(i,1);else LW.biz.types.push(c);delete LW.err['biz.types'];lwSave();lwRender();return}
+  if(t.closest('[data-rmlogo]')){LW.biz.logo='';lwSave();lwRender();return}
+  if(t.closest('[data-addp]')){lwAddProduct();return}
+  if((x=t.closest('[data-rmp]'))){LW.prods=LW.prods.filter(function(q){return q.id!==x.getAttribute('data-rmp')});lwSave();lwRender();return}
+  if((x=t.closest('[data-edp]'))){var q=LW.prods.filter(function(r){return r.id===x.getAttribute('data-edp')})[0];if(q){LW.pd={name:q.name,cat:q.cat,price:q.price?String(q.price):'',por:!q.price,unit:q.unit,moq:String(q.moq),desc:q.desc,imgs:q.imgs.slice(),editId:q.id};lwRender();$('lwBody').querySelector('.lw-pf').scrollIntoView({behavior:'smooth',block:'center'})}return}
+  if((x=t.closest('[data-rmi]'))){LW.pd.imgs.splice(+x.getAttribute('data-rmi'),1);lwRender();return}
+  if(t.closest('[data-publish]')){lwPublish();return}
+  if(t.closest('[data-opensc]')){go('seller');return}
+  if(t.closest('[data-viewco]')){openSupplier(TAPIS.n);return}
+ });
+})();
+
 function isPromo(p){
  if(!p.mine||!window.Store||!Store.seller)return false;
  var L=Store.seller.get().promos||[],now=Date.now();
