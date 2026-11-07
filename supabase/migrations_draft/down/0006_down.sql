@@ -1,7 +1,8 @@
 -- DOWN for 0006_real_schema_hardening. DRAFT, not applied to any Supabase project.
--- Restores the exact post-0005 definitions (generated from a local replica of the staging schema + migrations 0001-0005).
+-- Restores the exact post-0005 definitions (generated from a LOCAL clone of the staging schema + migrations 0001-0005).
+-- Data note: lead_cases in queue product_enquiry_review are re-queued (not deleted); audit tables created by 0006 are dropped with their rows.
 begin;
--- policies first (they reference functions that are dropped below)
+-- 1. policies (restore originals)
 drop policy cev_read on public.company_claim_evidence;
 create policy cev_read on public.company_claim_evidence for select using (((claim_claimant(claim_id) = auth.uid()) OR is_staff()));
 drop policy vd_read on storage.objects;
@@ -18,8 +19,17 @@ drop policy cpriv_write on public.company_private;
 create policy cpriv_write on public.company_private for insert with check ((has_company_role(company_id, ARRAY['owner'::member_role, 'manager'::member_role]) OR is_staff()));
 drop policy profiles_self_read on public.profiles;
 create policy profiles_self_read on public.profiles for select using (((id = auth.uid()) OR is_staff()));
-drop policy cra_read on public.claim_reviewer_assignments; drop policy ceal_admin_read on public.claim_evidence_access_log;
--- F-R9: 0006 forced RLS on these 0001-0005 tables; restore non-forced state
+drop policy dt_read on public.direct_threads;
+create policy dt_read on public.direct_threads for select using (((buyer_id = auth.uid()) OR has_company_role(company_id, ARRAY['owner'::member_role, 'manager'::member_role, 'sales'::member_role]) OR is_staff()));
+drop policy dm_read on public.direct_messages;
+create policy dm_read on public.direct_messages for select using (((thread_buyer(thread_id) = auth.uid()) OR has_company_role(thread_company(thread_id), ARRAY['owner'::member_role, 'manager'::member_role, 'sales'::member_role]) OR is_staff()));
+drop policy orders_read on public.orders;
+create policy orders_read on public.orders for select using (((buyer_id = auth.uid()) OR has_company_role(company_id, ARRAY['owner'::member_role, 'manager'::member_role, 'sales'::member_role]) OR is_staff()));
+drop policy replies_read on public.enquiry_replies;
+create policy replies_read on public.enquiry_replies for select using (((enquiry_buyer(enquiry_id) = auth.uid()) OR seller_can_reply(enquiry_id) OR is_staff()));
+drop policy quotes_read on public.quotations;
+create policy quotes_read on public.quotations for select using ((has_company_role(company_id, ARRAY['owner'::member_role, 'manager'::member_role, 'sales'::member_role]) OR is_staff() OR ((enquiry_buyer(enquiry_id) = auth.uid()) AND ((status = ANY (ARRAY['sent'::quote_status, 'accepted'::quote_status, 'declined'::quote_status, 'expired'::quote_status])) OR ((status = 'withdrawn'::quote_status) AND (sent_at IS NOT NULL))))));
+-- 2. FORCE RLS added by 0006 on earlier tables
 alter table public.claim_invitations no force row level security;
 alter table public.claim_verification_outbox no force row level security;
 alter table public.claim_verifications no force row level security;
@@ -31,25 +41,15 @@ alter table public.lead_routing_settings no force row level security;
 alter table public.lead_status_history no force row level security;
 alter table public.requirement_details no force row level security;
 alter table public.requirement_matches no force row level security;
--- C1: product_enquiry_review cases are re-queued rather than deleted
+-- 3. lead_cases queue constraint
 update public.lead_cases set queue='unverified_matches' where queue='product_enquiry_review';
 alter table public.lead_cases drop constraint lead_cases_queue_check;
 alter table public.lead_cases add constraint lead_cases_queue_check check (queue in ('unclaimed_matches','unverified_matches','capped_eligible','unmatched'));
--- C4/C5: restore original staff-wide read policies
-drop policy dt_read on public.direct_threads;
-create policy dt_read on public.direct_threads for select using (((buyer_id = auth.uid()) OR has_company_role(company_id, ARRAY['owner'::member_role, 'manager'::member_role, 'sales'::member_role]) OR is_staff()));
-drop policy dm_read on public.direct_messages;
-create policy dm_read on public.direct_messages for select using (((thread_buyer(thread_id) = auth.uid()) OR has_company_role(thread_company(thread_id), ARRAY['owner'::member_role, 'manager'::member_role, 'sales'::member_role]) OR is_staff()));
-drop policy orders_read on public.orders;
-create policy orders_read on public.orders for select using (((buyer_id = auth.uid()) OR has_company_role(company_id, ARRAY['owner'::member_role, 'manager'::member_role, 'sales'::member_role]) OR is_staff()));
-drop policy replies_read on public.enquiry_replies;
-create policy replies_read on public.enquiry_replies for select using (((enquiry_buyer(enquiry_id) = auth.uid()) OR seller_can_reply(enquiry_id) OR is_staff()));
-drop policy quotes_read on public.quotations;
-create policy quotes_read on public.quotations for select using ((has_company_role(company_id, ARRAY['owner'::member_role, 'manager'::member_role, 'sales'::member_role]) OR is_staff() OR ((enquiry_buyer(enquiry_id) = auth.uid()) AND ((status = ANY (ARRAY['sent'::quote_status, 'accepted'::quote_status, 'declined'::quote_status, 'expired'::quote_status])) OR ((status = 'withdrawn'::quote_status) AND (sent_at IS NOT NULL))))));
--- new objects
-drop function public.staff_open_claim_evidence(uuid,text); drop function public.evidence_grant_active(uuid); drop function public.admin_assign_claim_reviewer(uuid,uuid); drop function public.seller_product_enquiry_visible(uuid);
-drop table public.claim_evidence_grants; drop table public.claim_evidence_access_log; drop table public.claim_reviewer_assignments;
--- replaced functions (restore post-0005 bodies)
+-- 4. objects created by 0006
+drop function public.staff_open_claim_evidence(uuid,text); drop function public.evidence_grant_active(uuid); drop function public.admin_assign_claim_reviewer(uuid,uuid); drop function public.admin_unassign_claim_reviewer(uuid); drop function public.seller_product_enquiry_visible(uuid);
+drop function public.staff_open_enquiry_comms(uuid,text); drop function public.staff_thread_comms_ok(uuid); drop function public.comms_grant_active(uuid); drop function public.staff_recommend_review(text,uuid,text,text); drop function public.staff_assigned_to_company(uuid);
+drop table public.claim_evidence_grants; drop table public.claim_evidence_access_log; drop table public.claim_reviewer_assignments; drop table public.staff_comms_grants; drop table public.staff_comms_access_log; drop table public.review_recommendations;
+-- 5. replaced functions (restore post-0005 bodies)
 CREATE OR REPLACE FUNCTION public.guard_company_columns()
  RETURNS trigger
  LANGUAGE plpgsql
@@ -262,5 +262,42 @@ begin
   if not found then raise exception 'enquiry not found'; end if;
 end $function$
 ;
-
+CREATE OR REPLACE FUNCTION public.set_data_review(p_target text, p_id uuid, p_status review_status, p_note text)
+ RETURNS void
+ LANGUAGE plpgsql
+ SECURITY DEFINER
+ SET search_path TO 'public', 'pg_temp'
+AS $function$
+begin
+  if not is_staff() then raise exception 'staff only' using errcode='42501'; end if;
+  if p_target='company' then
+    update companies set data_review_status=p_status, data_reviewed_by=auth.uid(), data_reviewed_at=now(),
+        directory_status=case when p_status='approved' then directory_status when p_status='rejected' then 'rejected' when directory_status='published' then 'pending_review' else directory_status end
+     where id=p_id;
+  elsif p_target='product' then
+    update products set data_review_status=p_status, data_reviewed_by=auth.uid(), data_reviewed_at=now(),
+        rejected_reason=case when p_status='rejected' then p_note end,
+        directory_status=case when p_status='approved' then directory_status when p_status='rejected' then 'rejected' when directory_status='published' then 'pending_review' else directory_status end
+     where id=p_id;
+  else raise exception 'unknown target'; end if;
+  if not found then raise exception 'target not found'; end if;
+  insert into moderation_actions(target_type,target_id,action,reason,admin_id) values (p_target,p_id::text,'data_review:'||p_status::text,p_note,auth.uid());
+end $function$
+;
+CREATE OR REPLACE FUNCTION public.set_directory_status(p_target text, p_id uuid, p_status directory_status, p_reason text)
+ RETURNS void
+ LANGUAGE plpgsql
+ SECURITY DEFINER
+ SET search_path TO 'public', 'pg_temp'
+AS $function$
+begin
+  if not is_staff() then raise exception 'staff only' using errcode='42501'; end if;
+  if coalesce(trim(p_reason),'')='' then raise exception 'reason required'; end if;
+  if p_target='company' then update companies set directory_status=p_status where id=p_id;
+  elsif p_target='product' then update products set directory_status=p_status, rejected_reason=case when p_status='rejected' then p_reason end where id=p_id;
+  else raise exception 'unknown target'; end if;
+  if not found then raise exception 'target not found'; end if;
+  insert into moderation_actions(target_type,target_id,action,reason,admin_id) values (p_target,p_id::text,'status:'||p_status::text,p_reason,auth.uid());
+end $function$
+;
 commit;

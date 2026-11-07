@@ -196,6 +196,51 @@ select pg_temp.ok('other claimant cannot read claim 1 evidence', (select count(*
 reset role; reset app.uid;
 \endif
 
+-- ===== DECISION 3: evidence upload / read / expiry / revoke / cross-claim (real schema) =====
+grant insert on storage.objects to authenticated;   -- stub fidelity: real Supabase grants this; RLS policies (extracted from staging) decide
+select pg_temp.ok('U0 verification-docs bucket is private and no policy grants it to anon/public',
+  (select not public from storage.buckets where id='verification-docs')
+  and not exists(select 1 from pg_policy p where p.polrelid='storage.objects'::regclass and pg_get_expr(coalesce(p.polqual,p.polwithcheck),p.polrelid) like '%verification-docs%' and (p.polroles='{0}' or exists(select 1 from pg_roles r where r.oid=any(p.polroles) and r.rolname='anon'))));
+set role authenticated; set app.uid='00000000-0000-0000-0000-0000000000b1';
+select pg_temp.ok('U1 claimant uploads evidence into their own open claim folder', pg_temp.try($$insert into storage.objects(bucket_id,name) values ('verification-docs','a1a00000-0000-0000-0000-000000000001/extra.pdf')$$));
+select pg_temp.denied('U2 claimant cannot upload into another claimant''s claim folder', $$insert into storage.objects(bucket_id,name) values ('verification-docs','a1a00000-0000-0000-0000-000000000002/forged.pdf')$$);
+select pg_temp.denied('U3 claimant cannot overwrite/replace an existing object (no update policy)', $$update storage.objects set name=name where bucket_id='verification-docs' and name like 'a1a00000-0000-0000-0000-000000000001/%'$$) ;
+reset role; reset app.uid;
+select pg_temp.ok('U3b existing object untouched', (select count(*) from storage.objects where name='a1a00000-0000-0000-0000-000000000001/doc1.pdf')=1);
+set role authenticated; set app.uid='00000000-0000-0000-0000-0000000000a2';
+select pg_temp.denied('U4 assigned reviewer cannot upload evidence into the claim', $$insert into storage.objects(bucket_id,name) values ('verification-docs','a1a00000-0000-0000-0000-000000000001/staff.pdf')$$);
+reset role; reset app.uid;
+set role anon;
+select pg_temp.denied('U5 anon cannot upload', $$insert into storage.objects(bucket_id,name) values ('verification-docs','a1a00000-0000-0000-0000-000000000001/anon.pdf')$$);
+select pg_temp.ok('U5b anon cannot read evidence objects', not pg_temp.try($$select 1 from storage.objects where bucket_id='verification-docs'$$));
+reset role;
+\if :post
+set role authenticated; set app.uid='00000000-0000-0000-0000-0000000000a2';
+select pg_temp.ok('R1 assigned reviewer with active grant reads claim-1 objects incl. the new upload (2 objects) and none of claim 2', (select count(*) from storage.objects where bucket_id='verification-docs' and name like 'a1a00000-0000-0000-0000-000000000001/%')=2 and (select count(*) from storage.objects where bucket_id='verification-docs' and name like 'a1a00000-0000-0000-0000-000000000002/%')=0);
+select pg_temp.ok('R2 grant lifetime <= 10 minutes and signed-URL ceiling <= 600 s', (select max(access_expires_at) <= now()+interval '10 minutes 5 seconds' and max(max_signed_url_seconds) <= 600 from public.staff_open_claim_evidence('a1a00000-0000-0000-0000-000000000001','re-open to test ttl')));
+reset role; reset app.uid;
+update claim_evidence_grants set expires_at = now() - interval '1 minute' where claim_id='a1a00000-0000-0000-0000-000000000001';
+set role authenticated; set app.uid='00000000-0000-0000-0000-0000000000a2';
+select pg_temp.ok('R3 expired grant: storage read denied again', (select count(*) from storage.objects where bucket_id='verification-docs' and name like 'a1a00000-0000-0000-0000-000000000001/%')=0);
+select pg_temp.ok('R4a re-opening is an audited RPC call returning the evidence row', (select count(*) from public.staff_open_claim_evidence('a1a00000-0000-0000-0000-000000000001','second review pass'))=1);
+select pg_temp.ok('R4b after re-opening, storage read works again', (select count(*) from storage.objects where bucket_id='verification-docs' and name like 'a1a00000-0000-0000-0000-000000000001/%')=2);
+reset role; reset app.uid;
+set role authenticated; set app.uid='00000000-0000-0000-0000-0000000000a3';
+select pg_temp.ok('R5 unassigned reviewer cannot use a forged/planted grant', (select count(*) from storage.objects where bucket_id='verification-docs')=0);
+reset role; reset app.uid;
+insert into claim_evidence_grants(claim_id,staff_id,expires_at) values ('a1a00000-0000-0000-0000-000000000001','00000000-0000-0000-0000-0000000000a3',now()+interval '10 minutes');
+set role authenticated; set app.uid='00000000-0000-0000-0000-0000000000a3';
+select pg_temp.ok('R5b planted grant without assignment still denied (storage + rows)', (select count(*) from storage.objects where bucket_id='verification-docs')=0 and (select count(*) from public.company_claim_evidence)=0);
+reset role; reset app.uid;
+set role authenticated; set app.uid='00000000-0000-0000-0000-0000000000a1';
+select pg_temp.ok('R6 admin revokes the reviewer assignment', pg_temp.try($$select public.admin_unassign_claim_reviewer('a1a00000-0000-0000-0000-000000000001')$$));
+reset role; reset app.uid;
+select pg_temp.ok('R6b grants for that claim deleted', (select count(*) from claim_evidence_grants where claim_id='a1a00000-0000-0000-0000-000000000001')=0);
+set role authenticated; set app.uid='00000000-0000-0000-0000-0000000000a2';
+select pg_temp.ok('R7 revoked reviewer: storage read denied and RPC denied immediately', (select count(*) from storage.objects where bucket_id='verification-docs')=0 and not pg_temp.try($$select * from public.staff_open_claim_evidence('a1a00000-0000-0000-0000-000000000001','still trying')$$));
+reset role; reset app.uid;
+\endif
+
 -- ===== seller notification rules (post; in-app rows only, nothing is sent) =====
 \if :post
 select pg_temp.ok('N1 eligible verified seller C1 has exactly one notification for requirement r1', (select count(*) from notifications where user_id='00000000-0000-0000-0000-0000000000c1' and kind='lead' and body='Hand Tufted Rugs')=1);
@@ -328,11 +373,85 @@ select pg_temp.gap('MO5 unassigned reviewer reads quotations/replies of a lead n
 reset role; reset app.uid;
 \if :post
 set role authenticated; set app.uid='00000000-0000-0000-0000-0000000000a2';
-select pg_temp.ok('MO6 assigned reviewer a2 reads quotation+reply of its lead but not threads/messages/orders', pg_temp.enqscoped()=2 and pg_temp.conf()=0);
+select pg_temp.ok('MO6 assigned reviewer a2 sees NO messages/quotes/replies/orders before opening an audited grant', pg_temp.enqscoped()=0 and pg_temp.conf()=0);
+select pg_temp.ok('MO6b a2 opens comms for its assigned enquiry (purpose required)', (select public.staff_open_enquiry_comms(:'r1','assigned buyer follow-up') > now()));
+select pg_temp.ok('MO6c a2 now reads quotation+reply and the associated thread+message, but still no order', pg_temp.enqscoped()=2 and (select count(*) from public.direct_threads)=1 and (select count(*) from public.direct_messages)=1 and (select count(*) from public.orders)=0);
+select pg_temp.denied('MO6d purpose required to open comms', format($$select public.staff_open_enquiry_comms(%L,'')$$, :'r1'), 'purpose');
+reset role; reset app.uid;
+select pg_temp.ok('MO6e access was logged (immutable) with actor and purpose', (select count(*) from staff_comms_access_log where actor_id='00000000-0000-0000-0000-0000000000a2' and purpose='assigned buyer follow-up')=1);
+select pg_temp.denied('MO6f comms log cannot be altered', $$update staff_comms_access_log set purpose='tampered'$$);
+update staff_comms_grants set expires_at = now() - interval '1 minute';
+set role authenticated; set app.uid='00000000-0000-0000-0000-0000000000a2';
+select pg_temp.ok('MO6g expired comms grant: access gone again', pg_temp.enqscoped()=0 and (select count(*) from public.direct_messages)=0);
+reset role; reset app.uid;
+set role authenticated; set app.uid='00000000-0000-0000-0000-0000000000a3';
+select pg_temp.denied('MO6h unassigned a3 cannot open comms for a2''s enquiry', format($$select public.staff_open_enquiry_comms(%L,'curiosity')$$, :'r1'));
+reset role; reset app.uid;
+insert into staff_comms_grants(enquiry_id,staff_id,expires_at) values (:'r1','00000000-0000-0000-0000-0000000000a3',now()+interval '10 minutes');
+set role authenticated; set app.uid='00000000-0000-0000-0000-0000000000a3';
+select pg_temp.ok('MO6i planted grant without assignment is useless', pg_temp.enqscoped()=0 and pg_temp.conf()=0);
 reset role; reset app.uid;
 set role authenticated; set app.uid='00000000-0000-0000-0000-0000000000c2';
 select pg_temp.ok('MO7 non-delivered seller C2 reads none of them', pg_temp.conf()=0 and pg_temp.enqscoped()=0);
 reset role; reset app.uid;
+set role authenticated; set app.uid='00000000-0000-0000-0000-0000000000a1';
+select pg_temp.ok('MO8 admin keeps full oversight without a grant', pg_temp.conf()=3 and pg_temp.enqscoped()=2);
+reset role; reset app.uid;
+\endif
+
+
+-- ===== DECISION 1: publication admin-only; reviewers recommend on assigned records =====
+create or replace function pg_temp.pubstate(slug_ text) returns text language sql as $$ select directory_status::text||'/'||data_review_status::text from public.companies where slug=slug_ $$;
+select pg_temp.ok('D1-0 fixture C3 is published/approved', pg_temp.pubstate('c3')='published/approved');
+set role authenticated; set app.uid='00000000-0000-0000-0000-0000000000a3';
+select pg_temp.gap('D1a reviewer unpublishes a company via set_directory_status', pg_temp.try($$select public.set_directory_status('company','c0000000-0000-0000-0000-000000000003','suspended','reviewer attempt')$$));
+select pg_temp.gap('D1b reviewer rejects a company via set_data_review', pg_temp.try($$select public.set_data_review('company','c0000000-0000-0000-0000-000000000003','rejected','reviewer attempt')$$));
+reset role; reset app.uid;
+select pg_temp.gap('D1d state of C3 changed by reviewer: '||pg_temp.pubstate('c3'), pg_temp.pubstate('c3')<>'published/approved');
+update companies set directory_status='published', data_review_status='approved' where slug='c3';
+set role authenticated; set app.uid='00000000-0000-0000-0000-0000000000a3';
+select pg_temp.try($$update public.companies set directory_status='suspended' where slug='c3'$$);
+select pg_temp.try($$update public.companies set data_review_status='rejected' where slug='c3'$$);
+select pg_temp.try($$update public.products set directory_status='rejected' where name='Rug A'$$);
+reset role; reset app.uid;
+select pg_temp.ok('D1e direct table UPDATE by reviewer cannot change publication (guard triggers, both phases)', pg_temp.pubstate('c3')='published/approved' and (select directory_status::text from products where name='Rug A')='published');
+\if :post
+set role authenticated; set app.uid='00000000-0000-0000-0000-0000000000a3';
+select pg_temp.denied('D1f reviewer denied set_directory_status', $$select public.set_directory_status('company','c0000000-0000-0000-0000-000000000003','suspended','x')$$, 'admin only');
+select pg_temp.denied('D1g reviewer denied set_data_review', $$select public.set_data_review('company','c0000000-0000-0000-0000-000000000003','rejected','x')$$, 'admin only');
+select pg_temp.denied('D1h unassigned reviewer cannot even recommend', $$select public.staff_recommend_review('company','c0000000-0000-0000-0000-000000000003','unpublish','looks wrong to me')$$, 'not assigned');
+reset role; reset app.uid;
+set role authenticated; set app.uid='00000000-0000-0000-0000-0000000000a2';
+select pg_temp.ok('D1i reviewer assigned to the C1 lead may recommend on C1', pg_temp.try($$select public.staff_recommend_review('company','c0000000-0000-0000-0000-000000000001','approve','data matches website')$$));
+select pg_temp.ok('D1j ...and on a C1 product', pg_temp.try($$select public.staff_recommend_review('product','d0000000-0000-0000-0000-000000000001','needs_changes','spec table incomplete')$$));
+select pg_temp.denied('D1k ...but not on a company outside their assignment', $$select public.staff_recommend_review('company','c0000000-0000-0000-0000-000000000006','publish','not mine to touch')$$, 'not assigned');
+select pg_temp.denied('D1l recommendation text required', $$select public.staff_recommend_review('company','c0000000-0000-0000-0000-000000000001','approve','')$$);
+reset role; reset app.uid;
+select pg_temp.ok('D1m recommendations stored, audited in moderation_actions, state unchanged', (select count(*) from review_recommendations)=2 and (select count(*) from moderation_actions where action like 'recommendation:%')=2 and pg_temp.pubstate('c1')='published/approved');
+select pg_temp.denied('D1n recommendations immutable', $$update review_recommendations set note='tampered note'$$);
+set role authenticated; set app.uid='00000000-0000-0000-0000-0000000000a1';
+select pg_temp.ok('D1o admin decides: set_directory_status works and is audited', pg_temp.try($$select public.set_directory_status('company','c0000000-0000-0000-0000-000000000003','pending_review','admin decision after recommendation')$$));
+select pg_temp.ok('D1p admin set_data_review works and is audited', pg_temp.try($$select public.set_data_review('company','c0000000-0000-0000-0000-000000000003','approved','admin re-approves')$$));
+reset role; reset app.uid;
+select pg_temp.ok('D1q both admin decisions are in moderation_actions', (select count(*) from moderation_actions where action in ('status:pending_review','data_review:approved') and admin_id='00000000-0000-0000-0000-0000000000a1')=2);
+set role authenticated; set app.uid='00000000-0000-0000-0000-0000000000a3';
+select pg_temp.ok('D1s other reviewer a3 sees none of a2''s recommendations', (select count(*) from public.review_recommendations)=0);
+reset role; reset app.uid;
+\endif
+
+-- ===== DECISION 4: notification recipients by member role/status (new delivery) =====
+insert into company_members(company_id,user_id,role,status) values ('c0000000-0000-0000-0000-000000000001','00000000-0000-0000-0000-0000000000c2','catalogue_editor','active'),('c0000000-0000-0000-0000-000000000001','00000000-0000-0000-0000-0000000000c5','sales','removed');
+set role authenticated; set app.uid='00000000-0000-0000-0000-0000000000b2';
+select pg_temp.ok('N7 new requirement r3 stored', (select delivery::text from public.submit_enquiry('requirement',null,null,1,'Silk kilims 300',300,'Piece','kilims','Delhi','Buyer Two','+91 90000 22222','b2@example.com','BuyCo2',true,'v1'))='stored');
+reset role;
+select id as r3 from enquiries where subject='Silk kilims 300' \gset
+set role authenticated; set app.uid='00000000-0000-0000-0000-0000000000b2';
+select pg_temp.ok('N8 create_requirement r3', public.create_requirement(:'r3','Silk Kilim','silk','5x8','export','handmade','Germany','45d','x') is not null);
+reset role; reset app.uid;
+\if :post
+select pg_temp.ok('N9 only the active owner of the delivered company is notified (editor and removed sales member are not)', (select count(*) from notifications where kind='lead' and body='Silk Kilim' and user_id='00000000-0000-0000-0000-0000000000c1')>=1 and (select count(*) from notifications where kind='lead' and body='Silk Kilim' and user_id in ('00000000-0000-0000-0000-0000000000c2','00000000-0000-0000-0000-0000000000c5'))=0);
+select pg_temp.ok('N10 notification totals still equal actual delivered_direct events x active owner/manager/sales members', (select count(*) from notifications where kind='lead')=(select count(*) from lead_distribution_events e join company_members m on m.company_id=e.company_id and m.role in ('owner','manager','sales') and m.status='active' where e.event='delivered_direct'));
+select pg_temp.ok('N11 no email/SMS mechanism is invoked: no pg_net/http extension installed and no trigger calls one', not exists(select 1 from pg_extension where extname in ('pg_net','http')) and not exists(select 1 from pg_proc where prosrc ~* '(net\.http|http_post|smtp|sendgrid|twilio)' and pronamespace='public'::regnamespace));
 \endif
 
 \echo ALL REAL-SCHEMA TESTS COMPLETED (phase=:phase) ON LOCAL REPLICA

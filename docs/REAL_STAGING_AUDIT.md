@@ -131,3 +131,67 @@ Required-test mapping: verified seller delivered lead (N1, V1–V3), unverified 
 * Supabase-hosted behaviour (Auth, Storage service, PG17, PostgREST grants) is untested; recommended next step is a real Supabase branch once you approve its cost.
 * Whole-schema `diff` ignores data; rollback with live data present is untested (the down script re-queues `product_enquiry_review` cases).
 * Open decisions: admin-only vs. scoped `set_data_review`/`set_directory_status`; reviewer access to messages/orders; storage upload paths for evidence by edge function.
+
+
+---
+# Revision 3 (decisions 1–4 implemented). Still LOCAL only: nothing applied to original staging/production; no Supabase branch created; Lead Desk demo untouched and unconnected.
+
+## R3-1. Permission matrix (post-0006, enforced by RLS + definer functions; tested on the local clone)
+| Resource | Buyer | Seller (eligible, delivered) | Seller (other) | Reviewer (assigned) | Reviewer (unassigned) | Admin |
+|---|---|---|---|---|---|---|
+| Buyer contact (`enquiry_private`, reveal) | own | via `respond_to_lead`+`reveal_buyer_contact`, logged | none | **assigned enquiry only, read directly via RLS (`epriv_read`; needed to work the lead; not individually logged, see R3-6)** | none (tested: 0 rows) | all |
+| Enquiry / requirement row | own | delivered only | none | assigned only | none | all |
+| Quotations, enquiry replies | own | own company roles | none | assigned enquiry **and** active 10-min audited grant | none | all |
+| Direct threads / messages | own | own company roles | none | thread associated with an assigned enquiry **and** active grant | none | all |
+| Orders | own | own company roles | none | **none** | none | all |
+| Claim row | claimant | n/a | n/a | assigned open claims | none | all |
+| Claim evidence (table + storage) | own claim only (upload to own open claim; read own) | n/a | n/a | via `staff_open_claim_evidence`, 10-min grant, assignment re-checked on every read | none | via same audited function |
+| Company private contacts (`company_private`, vault) | n/a | owner/manager | none | vault functions only (purpose, assignment, log) | none | vault functions |
+| set_data_review / set_directory_status | no | no | no | **denied** (recommend only) | denied | allowed, audited in `moderation_actions` |
+| `staff_recommend_review` | no | no | no | assigned records only; immutable; audited | denied | allowed |
+| Seller notifications | n/a | active owner/manager/sales of a delivered eligible company only | none | n/a | n/a | admin alerts separate |
+Audit trails: `claim_evidence_access_log`, `staff_comms_access_log`, `contact_access_log`, `enquiry_contact_access`, `moderation_actions`, `audit_log` (all immutable or insert-only). Limitation: **admin reads through RLS are not individually logged** (oversight); only staff reads are grant-gated and logged.
+
+## R3-2. Evidence upload/read architecture
+1. **Upload:** claimant uploads (client or edge function with the claimant's JWT) to private bucket `verification-docs` at `<claim_id>/<file>`; `vd_insert` allows it only if the caller is the claimant of that claim and the claim is open (`claim_is_open_for_me`). No UPDATE policy (no overwrite); only admin may delete. Row in `company_claim_evidence` (`cev_ins`, same check).
+2. **Read by claimant:** own claim folder (`vd_read`, `cev_read`).
+3. **Read by staff:** (a) call `staff_open_claim_evidence(claim, purpose)` — requires admin or the assigned reviewer of an open claim, purpose ≥5 chars, writes the immutable log, opens a **10-minute** grant, returns the paths and `max_signed_url_seconds = 600`; (b) an edge function acting with the staff user's JWT then creates signed URLs with `expiresIn ≤ max_signed_url_seconds`. (c) `vd_read` additionally requires an unexpired grant **and** current assignment, so the raw Storage API cannot be used to bypass (a); revoking the assignment (`admin_unassign_claim_reviewer`) deletes grants and blocks reads immediately.
+4. **No public URLs:** bucket `verification-docs` is `public=false` (read from staging, mirrored in the clone) and no policy on it is granted to anon/public (test U0).
+Not testable locally: actual signed-URL generation and its TTL are done by the Supabase Storage service; locally we prove the database side (grant TTL ≤10 min, ceiling value, policy checks). A signed URL, once minted, is a bearer link until it expires (≤10 minutes by construction of the edge function; **to be verified on a Supabase branch**).
+
+## R3-3. Seller notification behaviour (unchanged rules, extra tests N7–N11)
+Only active owner/manager/sales members of a company that received an actual `delivered_direct` event (or an eligible/released product enquiry). Catalogue editors and removed members receive nothing (N9). Totals equal delivered events × eligible members (N10). Admin alerts are separate rows (`kind='admin'`). No email/SMS: the clone has no `pg_net`/`http` extension and no function mentions an HTTP/SMTP sender (N11); notifications are in-app rows only.
+
+## R3-4. Product enquiry workflow (unchanged from Revision 2; tests P1–P16)
+Held enquiry → Lead Desk case `product_enquiry_review` → admin assigns → assignee sees it → release only after the supplier is eligible → seller notified → case closed.
+
+## R3-5. Review of grants, RLS, Storage policies and definer functions (`tests/security_inventory.sql`, post-0006 clone)
+* 0 SECURITY DEFINER functions without pinned `search_path`; 0 public functions executable by `anon`.
+* 0 public tables without ENABLE+FORCE RLS; deny-all tables (no policy, definer-only): `claim_evidence_grants`, `staff_comms_grants`, `claim_verifications`, `claim_verification_outbox`, `rate_events`.
+* New tables grant `authenticated` SELECT only on the audit/assignment tables (read policies admin/own); grants tables have no grants.
+* `anon` table privileges: only `categories`, `cms_pages`, `media_assets` SELECT (existing, public by design) plus the six public views.
+* Storage: 8 policies, all `authenticated`; `vd_*` as described.
+
+## R3-6. UNRESOLVED risks (not covered by decisions 1–4; need your decisions)
+Assigned staff read the buyer's contact details (`enquiry_private`) directly through RLS for their assigned enquiries, without a purpose/log step (existing 0002 design). If audited access is wanted here too, it needs the same grant pattern as comms.
+39 existing policies still use a bare `is_staff()` (any reviewer). Most relevant: `company_internal_notes`, `company_outreach_events`, `company_follow_ups`, `company_acquisition`, `seller_feedback`, `enquiry_contact_access` (log of who revealed buyer contacts), `lead_responses`, `audit_log`, `company_membership_audit`, `suppression_list`, `company_sources`, `company_data_corrections`, `company_images`/`product_images`, `members_read`, import tables, and UPDATE policies `companies_staff_update` / `products_staff_upd` (protected columns are guarded by triggers, tested D1e, but other columns are editable by any reviewer). Also `approve_product_image` (staff-wide), and storage policies `bro_obj_read/write`, `pmp_public_staff`, `cap_write` that include `is_staff()`. None of these touches buyer/seller contact data or evidence directly, but internal notes and outreach events may hold supplier contact details.
+
+## R3-7. Results (every figure: LOCAL clone of the staging schema extract on PostgreSQL 16.15, NOT Supabase, NOT staging; legacy = LOCAL reconstructed baseline)
+| Suite | Result |
+|---|---|
+| Legacy (reconstructed baseline) | 138 pass, 0 fail |
+| Real-schema clone + 0001–0005 (`run_real.sh pre`) | 54 pass, 0 fail, **15 exposure controls EXPOSED** (E1–E4, E6–E10, P0, MO4, MO5, D1a, D1b, D1d) |
+| Real-schema clone + 0001–0006 (`run_real.sh post`) | **157 pass, 0 fail, 0 exposed** |
+Negative tests include: reviewer denied publication functions (D1f–D1h), direct table UPDATE denied (D1e), unassigned staff denied comms/evidence (MO6h, MO6i, R5, R5b), cross-claim upload and read denied (U2, R1), anon denied (U5, U5b), expired/revoked grants (R3, R6, R7), planted grants useless (R5b, MO6i), seller cross-access (V4–V8), restricted seller (E4).
+Limits: U3 (no overwrite) passes in the clone because the stub grants no UPDATE on `storage.objects`; on Supabase it rests on the absence of an UPDATE policy — verify on a branch. Expiry tests manipulate `expires_at` rather than waiting 10 minutes.
+
+## R3-8. Rollback comparison
+| Check | Result |
+|---|---|
+| Apply 0006 to clone | ok (753 changed dump lines) |
+| Roll back 0006 → `pg_dump -s` (tables, columns, functions incl. SECURITY DEFINER/search_path, triggers, policies, RLS/FORCE flags, grants) vs pre-0006 | **0 diff lines**; re-apply ok |
+| Roll back with data present (post suite data: 5 enquiries, cases, grants) | down ran clean; schema identical to a clone that never had 0006 (0 diff lines) |
+| Roll back 0006→0001 vs untouched clone | identical except whitespace in 3 restored function bodies (identical after normalisation) |
+
+## R3-9. Remaining blockers
+Supabase-branch validation (cost approval pending); signed-URL TTL and Storage-service behaviour; the 39 staff-wide policies above; `approve_product_image`; edge function for evidence URLs and the admin/reviewer UI changes required by decisions 1–3 (reviewer screens for messages/orders will be empty by design).

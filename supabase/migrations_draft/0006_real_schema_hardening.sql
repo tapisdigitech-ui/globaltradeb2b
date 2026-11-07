@@ -110,7 +110,7 @@ create function public.evidence_grant_active(p_claim uuid) returns boolean langu
   select p_claim is not null and exists(select 1 from public.claim_evidence_grants g where g.claim_id = p_claim and g.staff_id = auth.uid() and g.expires_at > now())
     and public.staff_can_review_claim(p_claim)
 $$;
-create function public.staff_open_claim_evidence(p_claim uuid, p_purpose text) returns table(evidence_id uuid, storage_path text, description text, uploaded_at timestamptz, access_expires_at timestamptz)
+create function public.staff_open_claim_evidence(p_claim uuid, p_purpose text) returns table(evidence_id uuid, storage_path text, description text, uploaded_at timestamptz, access_expires_at timestamptz, max_signed_url_seconds integer)
 language plpgsql security definer set search_path = public, pg_temp as $$
 declare cid uuid; n int; exp timestamptz := now() + interval '10 minutes';
 begin
@@ -122,7 +122,7 @@ begin
   insert into public.claim_evidence_access_log(actor_id, claim_id, company_id, purpose, evidence_count) values (auth.uid(), p_claim, cid, trim(p_purpose), n);
   insert into public.claim_evidence_grants(claim_id, staff_id, expires_at) values (p_claim, auth.uid(), exp)
     on conflict (claim_id, staff_id) do update set expires_at = excluded.expires_at;
-  return query select e.id, e.storage_path, e.description, e.created_at, exp from public.company_claim_evidence e where e.claim_id = p_claim order by e.created_at;
+  return query select e.id, e.storage_path, e.description, e.created_at, exp, 600 from public.company_claim_evidence e where e.claim_id = p_claim order by e.created_at;
 end $$;
 drop policy cev_read on public.company_claim_evidence;
 create policy cev_read on public.company_claim_evidence for select using (public.claim_claimant(claim_id) = auth.uid());
@@ -292,19 +292,132 @@ begin
   end if;
 end $$;
 
--- ===== C4/C5 staff-wide read access to confidential commercial records (found in real policies; any reviewer could read ALL of these) =====
--- direct_threads / direct_messages / orders: no lead-case link exists -> admin oversight only (buyer and seller-side access unchanged)
--- enquiry_replies / quotations: staff only for enquiries assigned to them (staff_can_see_enquiry = admin OR assigned), like the enquiry itself
+-- ===== DECISION 2: messages, quotations, orders =====
+-- orders: buyer, seller roles, ADMIN only (no general staff access).
+-- direct_threads/direct_messages/enquiry_replies/quotations: buyer + seller roles + ADMIN; other staff ONLY for an ASSIGNED enquiry
+-- (admin or lead_cases.assigned_to) AND only while an audited 10-minute communications grant is active (staff_open_enquiry_comms).
+-- A direct thread is "associated" with an assigned enquiry when the thread buyer is the enquiry buyer and the thread company is the
+-- enquiry's company or a matched company of that requirement.
+-- Admin reads through RLS are not individually logged (admin oversight); staff reads are always preceded by a logged grant.
+create table public.staff_comms_access_log (
+  id bigint generated always as identity primary key,
+  actor_id uuid not null, enquiry_id uuid not null,   -- no FK: audit rows survive deletions
+  purpose text not null check (length(trim(purpose)) >= 5), at timestamptz not null default now());
+create trigger scal_immutable before update or delete on public.staff_comms_access_log for each row execute function public.block_mutation();
+create table public.staff_comms_grants (enquiry_id uuid not null, staff_id uuid not null, expires_at timestamptz not null, primary key (enquiry_id, staff_id));
+create function public.comms_grant_active(p_enq uuid) returns boolean language sql stable security definer set search_path = public, pg_temp as $$
+  select p_enq is not null and public.is_staff() and public.staff_can_see_enquiry(p_enq)
+     and exists(select 1 from public.staff_comms_grants g where g.enquiry_id = p_enq and g.staff_id = auth.uid() and g.expires_at > now())
+$$;
+create function public.staff_thread_comms_ok(p_thread uuid) returns boolean language sql stable security definer set search_path = public, pg_temp as $$
+  select public.is_staff() and exists(
+    select 1 from public.direct_threads t join public.enquiries e on e.buyer_id = t.buyer_id
+      and (e.company_id = t.company_id or exists(select 1 from public.requirement_matches rm where rm.enquiry_id = e.id and rm.company_id = t.company_id))
+    where t.id = p_thread and public.comms_grant_active(e.id))
+$$;
+create function public.staff_open_enquiry_comms(p_enquiry uuid, p_purpose text) returns timestamptz language plpgsql security definer set search_path = public, pg_temp as $$
+declare exp timestamptz := now() + interval '10 minutes';
+begin
+  if not public.is_staff() or not public.staff_can_see_enquiry(p_enquiry) then raise exception 'not authorised for this enquiry' using errcode = '42501'; end if;
+  if coalesce(length(trim(p_purpose)),0) < 5 then raise exception 'purpose required (min 5 characters)'; end if;
+  perform public.check_rate('comms_open', 200, interval '1 day');
+  insert into public.staff_comms_access_log(actor_id, enquiry_id, purpose) values (auth.uid(), p_enquiry, trim(p_purpose));
+  insert into public.staff_comms_grants(enquiry_id, staff_id, expires_at) values (p_enquiry, auth.uid(), exp)
+    on conflict (enquiry_id, staff_id) do update set expires_at = excluded.expires_at;
+  return exp;
+end $$;
 drop policy dt_read on public.direct_threads;
-create policy dt_read on public.direct_threads for select using (buyer_id = auth.uid() or has_company_role(company_id, array['owner'::member_role,'manager'::member_role,'sales'::member_role]) or is_admin());
+create policy dt_read on public.direct_threads for select using (buyer_id = auth.uid() or has_company_role(company_id, array['owner'::member_role,'manager'::member_role,'sales'::member_role]) or is_admin() or public.staff_thread_comms_ok(id));
 drop policy dm_read on public.direct_messages;
-create policy dm_read on public.direct_messages for select using (thread_buyer(thread_id) = auth.uid() or has_company_role(thread_company(thread_id), array['owner'::member_role,'manager'::member_role,'sales'::member_role]) or is_admin());
+create policy dm_read on public.direct_messages for select using (thread_buyer(thread_id) = auth.uid() or has_company_role(thread_company(thread_id), array['owner'::member_role,'manager'::member_role,'sales'::member_role]) or is_admin() or public.staff_thread_comms_ok(thread_id));
 drop policy orders_read on public.orders;
 create policy orders_read on public.orders for select using (buyer_id = auth.uid() or has_company_role(company_id, array['owner'::member_role,'manager'::member_role,'sales'::member_role]) or is_admin());
 drop policy replies_read on public.enquiry_replies;
-create policy replies_read on public.enquiry_replies for select using (enquiry_buyer(enquiry_id) = auth.uid() or seller_can_reply(enquiry_id) or public.staff_can_see_enquiry(enquiry_id));
+create policy replies_read on public.enquiry_replies for select using (enquiry_buyer(enquiry_id) = auth.uid() or seller_can_reply(enquiry_id) or is_admin() or public.comms_grant_active(enquiry_id));
 drop policy quotes_read on public.quotations;
-create policy quotes_read on public.quotations for select using (has_company_role(company_id, array['owner'::member_role,'manager'::member_role,'sales'::member_role]) or public.staff_can_see_enquiry(enquiry_id) or ((enquiry_buyer(enquiry_id) = auth.uid()) and (status = any (array['sent'::quote_status,'accepted'::quote_status,'declined'::quote_status,'expired'::quote_status]) or (status = 'withdrawn'::quote_status and sent_at is not null))));
+create policy quotes_read on public.quotations for select using (has_company_role(company_id, array['owner'::member_role,'manager'::member_role,'sales'::member_role]) or is_admin() or public.comms_grant_active(enquiry_id) or ((enquiry_buyer(enquiry_id) = auth.uid()) and (status = any (array['sent'::quote_status,'accepted'::quote_status,'declined'::quote_status,'expired'::quote_status]) or (status = 'withdrawn'::quote_status and sent_at is not null))));
+alter table public.staff_comms_access_log enable row level security; alter table public.staff_comms_access_log force row level security;
+alter table public.staff_comms_grants enable row level security; alter table public.staff_comms_grants force row level security;
+revoke all on public.staff_comms_access_log, public.staff_comms_grants from public, anon, authenticated;
+grant select on public.staff_comms_access_log to authenticated;
+create policy scal_admin_read on public.staff_comms_access_log for select to authenticated using (public.is_admin());
+revoke all on function public.comms_grant_active(uuid), public.staff_thread_comms_ok(uuid), public.staff_open_enquiry_comms(uuid,text) from public, anon, authenticated;
+grant execute on function public.comms_grant_active(uuid), public.staff_thread_comms_ok(uuid), public.staff_open_enquiry_comms(uuid,text) to authenticated;
+
+-- ===== DECISION 1: publication is admin-only; reviewers recommend on assigned records =====
+create function public.staff_assigned_to_company(p_company uuid) returns boolean language sql stable security definer set search_path = public, pg_temp as $$
+  select public.is_admin() or (public.is_staff() and (
+    exists(select 1 from public.claim_reviewer_assignments a join public.company_claims c on c.id = a.claim_id
+            where a.reviewer_id = auth.uid() and c.company_id = p_company and c.status in ('claim_submitted','evidence_requested','under_review'))
+    or exists(select 1 from public.lead_cases lc join public.requirement_matches rm on rm.enquiry_id = lc.enquiry_id
+            where lc.assigned_to = auth.uid() and rm.company_id = p_company and lc.status <> 'closed')
+    or exists(select 1 from public.lead_cases lc join public.enquiries e on e.id = lc.enquiry_id
+            where lc.assigned_to = auth.uid() and e.company_id = p_company and lc.status <> 'closed')))
+$$;
+create table public.review_recommendations (
+  id uuid primary key default gen_random_uuid(),
+  target_type text not null check (target_type in ('company','product')),
+  target_id uuid not null, company_id uuid not null,
+  recommendation text not null check (recommendation in ('approve','reject','needs_changes','publish','unpublish')),
+  note text not null check (length(trim(note)) >= 5),
+  reviewer_id uuid not null, created_at timestamptz not null default now());
+create trigger rr_immutable before update or delete on public.review_recommendations for each row execute function public.block_mutation();
+create function public.staff_recommend_review(p_target text, p_id uuid, p_recommendation text, p_note text) returns uuid language plpgsql security definer set search_path = public, pg_temp as $$
+declare cid uuid; rid uuid;
+begin
+  if not public.is_staff() then raise exception 'staff only' using errcode = '42501'; end if;
+  if p_target = 'company' then cid := p_id;
+  elsif p_target = 'product' then select company_id into cid from public.products where id = p_id;
+  else raise exception 'unknown target'; end if;
+  if cid is null or not exists(select 1 from public.companies where id = cid) then raise exception 'target not found'; end if;
+  if not public.staff_assigned_to_company(cid) then raise exception 'not assigned to this record' using errcode = '42501'; end if;
+  insert into public.review_recommendations(target_type, target_id, company_id, recommendation, note, reviewer_id)
+    values (p_target, p_id, cid, p_recommendation, trim(p_note), auth.uid()) returning id into rid;
+  insert into public.moderation_actions(target_type, target_id, action, reason, admin_id) values (p_target, p_id::text, 'recommendation:' || p_recommendation, left(p_note, 500), auth.uid());
+  return rid;
+end $$;
+alter table public.review_recommendations enable row level security; alter table public.review_recommendations force row level security;
+revoke all on public.review_recommendations from public, anon, authenticated; grant select on public.review_recommendations to authenticated;
+create policy rr_read on public.review_recommendations for select to authenticated using (public.is_admin() or reviewer_id = auth.uid());
+revoke all on function public.staff_assigned_to_company(uuid), public.staff_recommend_review(text,uuid,text,text) from public, anon, authenticated;
+grant execute on function public.staff_assigned_to_company(uuid), public.staff_recommend_review(text,uuid,text,text) to authenticated;
+-- same bodies as staging (incl. moderation_actions audit); only the first guard changes: is_staff() -> is_admin()
+create or replace function public.set_data_review(p_target text, p_id uuid, p_status review_status, p_note text) returns void language plpgsql security definer set search_path to 'public','pg_temp' as $$
+begin
+  if not is_admin() then raise exception 'admin only: reviewers may recommend, not decide' using errcode='42501'; end if;
+  if p_target='company' then
+    update companies set data_review_status=p_status, data_reviewed_by=auth.uid(), data_reviewed_at=now(),
+        directory_status=case when p_status='approved' then directory_status when p_status='rejected' then 'rejected' when directory_status='published' then 'pending_review' else directory_status end
+     where id=p_id;
+  elsif p_target='product' then
+    update products set data_review_status=p_status, data_reviewed_by=auth.uid(), data_reviewed_at=now(),
+        rejected_reason=case when p_status='rejected' then p_note end,
+        directory_status=case when p_status='approved' then directory_status when p_status='rejected' then 'rejected' when directory_status='published' then 'pending_review' else directory_status end
+     where id=p_id;
+  else raise exception 'unknown target'; end if;
+  if not found then raise exception 'target not found'; end if;
+  insert into moderation_actions(target_type,target_id,action,reason,admin_id) values (p_target,p_id::text,'data_review:'||p_status::text,p_note,auth.uid());
+end $$;
+create or replace function public.set_directory_status(p_target text, p_id uuid, p_status directory_status, p_reason text) returns void language plpgsql security definer set search_path to 'public','pg_temp' as $$
+begin
+  if not is_admin() then raise exception 'admin only: reviewers may recommend, not decide' using errcode='42501'; end if;
+  if coalesce(trim(p_reason),'')='' then raise exception 'reason required'; end if;
+  if p_target='company' then update companies set directory_status=p_status where id=p_id;
+  elsif p_target='product' then update products set directory_status=p_status, rejected_reason=case when p_status='rejected' then p_reason end where id=p_id;
+  else raise exception 'unknown target'; end if;
+  if not found then raise exception 'target not found'; end if;
+  insert into moderation_actions(target_type,target_id,action,reason,admin_id) values (p_target,p_id::text,'status:'||p_status::text,p_reason,auth.uid());
+end $$;
+
+-- ===== DECISION 3: explicit revocation of a reviewer's evidence access =====
+create function public.admin_unassign_claim_reviewer(p_claim uuid) returns void language plpgsql security definer set search_path = public, pg_temp as $$
+begin
+  if not public.is_admin() then raise exception 'admin only' using errcode = '42501'; end if;
+  delete from public.claim_evidence_grants where claim_id = p_claim;
+  delete from public.claim_reviewer_assignments where claim_id = p_claim;
+  insert into public.audit_log(actor_id, actor_role, action, entity, entity_id, new_value) values (auth.uid(), current_user, 'claim_reviewer_unassigned', 'company_claims', p_claim::text, '{}'::jsonb);
+end $$;
+revoke all on function public.admin_unassign_claim_reviewer(uuid) from public, anon, authenticated; grant execute on function public.admin_unassign_claim_reviewer(uuid) to authenticated;
 
 revoke all on function public.admin_assign_claim_reviewer(uuid,uuid), public.evidence_grant_active(uuid), public.staff_open_claim_evidence(uuid,text), public.seller_product_enquiry_visible(uuid) from public, anon;
 grant execute on function public.admin_assign_claim_reviewer(uuid,uuid), public.evidence_grant_active(uuid), public.staff_open_claim_evidence(uuid,text), public.seller_product_enquiry_visible(uuid) to authenticated;

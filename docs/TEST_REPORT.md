@@ -39,3 +39,7 @@ See `REAL_STAGING_AUDIT.md`. Legacy suite still 138 PASS (reconstructed baseline
 
 ## Update (round 2) — LOCAL clone of real schema
 Pre-0006 42 pass (controls exposed); post-0006 107 pass / 0 fail; rollback diff 0 lines; competing-claim block now tested on the real-schema clone. Not Supabase, not staging. See REAL_STAGING_AUDIT.md Revision 2.
+
+
+## Update (round 3) — LOCAL clone of real schema, PG16
+Pre-0006: 54 pass, 15 exposure controls. Post-0006: 157 pass / 0 fail / 0 exposed. Rollback (with and without data): 0 diff lines. Not Supabase, not staging. See REAL_STAGING_AUDIT.md Revision 3.
