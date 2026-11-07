@@ -13,4 +13,10 @@
 | 9 | Secrets | No service-role key in frontend or repo; env vars only in Vercel/Supabase | Secret scan |
 | 10 | Outbound comms | Email/SMS integrations disabled by config until explicitly approved | Approval gate |
 
-**Blocking dependency:** the existing staging RLS/grants/functions posture (previous hardening) must be read before any migration is drafted so new objects follow the same patterns.
+## Findings from the real staging schema (supersede the 'blocking dependency' note)
+* **F1 (high, business logic):** direct lead visibility ignores `verification_status` (see CURRENT_STATE_AUDIT §3.1). Fix: route through a new eligibility function requiring approved claim + verified + published + verified contact + active member.
+* **F2 (medium):** staff access is role-wide. Fix: assignment-scoped helper (`is_assigned_staff(case)`), keep admin = all, audit staff reads of the contact vault.
+* **F3 (medium):** contact-vault reads are not audited. Fix: contact reads via an audited RPC; revoke direct SELECT for staff on the new contacts table.
+* **F4 (info):** six SECURITY DEFINER public views flagged ERROR by the linter; intended, document in SECURITY_ARCHITECTURE.md and re-evaluate invoker views.
+* **F5 (info):** 42 authenticated-executable SECURITY DEFINER RPCs; every new RPC must start with an explicit auth/role check, `search_path=public,pg_temp`, `REVOKE ... FROM PUBLIC, anon`.
+* New objects follow existing patterns: RLS on, explicit grants, immutable logs via `block_mutation` trigger, RPC-only writes for status changes.

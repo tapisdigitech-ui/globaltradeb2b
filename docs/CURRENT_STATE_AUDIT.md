@@ -28,12 +28,26 @@ Supplier-intelligence/ingestion, unclaimed/claimed/verified profile model, conta
 3. Auth is simulated in localStorage — no real security boundary exists.
 4. Client-side only validation.
 
-## 3. Supabase staging (`lhmexhafyuzojrmcbtbz`) — **NOT AUDITED: BLOCKER**
-The Supabase connector available in this session returns `permission denied` for the staging project (list_tables, list_migrations) and lists only one project, **TAPIS KASA STAGING** (`udtiszljbycvmvpwqodu`), which is explicitly out of scope and was **not** touched. The Phase 2 schema files (Phase 2.2 `p22/` scripts) live on the owner's machine, not in this repository.
-Therefore: tables, RLS, functions, triggers, storage buckets/policies, views and grants are **unverified**. See `EXISTING_SCHEMA_MAP.md` for what is needed. No schema work will be proposed as final until this is resolved. No production-candidate project (`kwtveqzeayupwrxpwkce`) access was attempted.
+## 3. Supabase staging (`lhmexhafyuzojrmcbtbz`) — audited read-only (see EXISTING_SCHEMA_MAP.md)
+*(Correction: an earlier version of this section said staging was unreachable. That was caused by the session's connector being pointed at a different account; it now reaches the GlobalTradeB2B organisation. Only the staging project was queried.)*
+
+44 tables, RLS on all, empty except 14 categories. The Phase 2 foundation already covers: companies with directory/claim/verification states, private company contacts, field-level source provenance, import batches/rows with terms gate and rollback, claims + evidence + reviews, members, products/images with rights, enquiries with private buyer contact and audited reveal, quotations, orders, outreach events, follow-ups, internal notes, suppression list, audit log, rate limiting, private/public storage buckets.
+
+### Findings that affect the brief
+1. **Lead eligibility is too loose for Path A.** `seller_can_see_leads()` / `lead_matches_my_company()` only need an *approved claim + published* company; they do not require `verification_status='verified'`, verified contact details or profile completeness. Brief scenario 3 (claimed but unverified → no direct routing) is therefore **not satisfied**.
+2. **Staff are not scoped by assignment.** `is_staff()` = any admin/reviewer; staff read all enquiries, claims, `company_private`. Brief requires access limited by assignment/role, plus admin visibility of staff activity.
+3. **Contact vault is thin.** One row per company; no contact-level status, last_verified, source, legal basis, do-not-contact, and no read/export audit (only enquiry-buyer reveals are audited).
+4. **No requirement model beyond quantity/unit/message/city/category**; no match table, no match explanation, no assignment/lead-status history, no delivery history beyond one `delivery` column, no duplicate protection.
+5. **Claims lack email-token and phone-OTP verification and claim invitations.**
+6. **Categories are flat** (no subcategories); `business_type` is a single text; no export markets/capabilities.
+7. No demo/real flag for reporting (staging is empty, so none needed yet, but reports must exclude demo data once any is loaded).
+8. Advisor items listed in EXISTING_SCHEMA_MAP.md.
+
+### What can be reused unchanged
+Provenance, import pipeline, claim review RPCs and evidence bucket, image rights/pending→public flow, enquiry privacy design (`enquiry_private`, `reveal_buyer_contact`), outreach logging semantics (`logged_manual` vs `sent` with provider_ref), audit_log, rate limiter.
 
 ## 4. Vercel
 Project is Git-linked; a push to `main` deploys production (confirmed by GitHub commit status "success" per push). Preview URLs are produced for non-main branches. This session's shell cannot reach the deployed site (proxy 403); deployment status is read via the GitHub commit-status API only.
 
 ## 5. Phase 0 conclusion
-Reusable: UI components (cards, selection flow, wizard, seller/admin shells), design tokens, enquiry/claim concepts as UX reference. Everything backend-related must be designed from the verified staging schema once available.
+Reusable: the UI components (cards, selection flow, wizard, seller/admin shells) and most of the Phase 2 backend foundation. New work is a targeted extension (see IMPLEMENTATION_ROADMAP.md gap list), not a rebuild.
