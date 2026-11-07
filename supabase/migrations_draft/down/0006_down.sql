@@ -202,7 +202,7 @@ begin
   for r in select * from company_import_rows where batch_id=p_batch and status in ('staged','invalid','duplicate_review','suppressed') order by row_no loop
     errs := '{}';
     if coalesce(trim(r.name),'')='' then errs := array_append(errs,'name missing'); end if;
-    if r.website is not null and r.website !~* '^https?://[^ ]+\\.[^ ]+$' then errs := array_append(errs,'website not a valid http(s) URL'); end if;
+    if r.website is not null and r.website !~* '^https?://[^ ]+\.[^ ]+$' then errs := array_append(errs,'website not a valid http(s) URL'); end if;
     k := case when norm_domain(r.website) is not null then 'd:'||norm_domain(r.website)
               else 'n:'||coalesce(norm_name(r.name),'')||'|'||lower(coalesce(trim(r.city),'')) end;
     select exists(select 1 from suppression_list s where (s.domain is not null and s.domain=norm_domain(r.website))
@@ -339,14 +339,19 @@ CREATE OR REPLACE FUNCTION public.set_data_review(p_target text, p_id uuid, p_st
 AS $function$
 begin
   if not is_staff() then raise exception 'staff only' using errcode='42501'; end if;
+  -- a review that is not 'approved' ALWAYS withdraws publication in the same statement
   if p_target='company' then
     update companies set data_review_status=p_status, data_reviewed_by=auth.uid(), data_reviewed_at=now(),
-        directory_status=case when p_status='approved' then directory_status when p_status='rejected' then 'rejected' when directory_status='published' then 'pending_review' else directory_status end
+        directory_status=case when p_status='approved' then directory_status
+                              when p_status='rejected' then 'rejected'
+                              when directory_status='published' then 'pending_review' else directory_status end
      where id=p_id;
   elsif p_target='product' then
     update products set data_review_status=p_status, data_reviewed_by=auth.uid(), data_reviewed_at=now(),
         rejected_reason=case when p_status='rejected' then p_note end,
-        directory_status=case when p_status='approved' then directory_status when p_status='rejected' then 'rejected' when directory_status='published' then 'pending_review' else directory_status end
+        directory_status=case when p_status='approved' then directory_status
+                              when p_status='rejected' then 'rejected'
+                              when directory_status='published' then 'pending_review' else directory_status end
      where id=p_id;
   else raise exception 'unknown target'; end if;
   if not found then raise exception 'target not found'; end if;

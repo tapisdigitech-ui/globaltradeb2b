@@ -68,3 +68,20 @@ Source: read-only catalogue SELECT (`pg_get_functiondef`, `proacl`) against `glo
 
 Classification (unchanged where not mentioned): Required for launch - accept_invitation, create_company_request, import_apply, import_rollback (if the directory is import-seeded); Required later - decline_invitation, my_invitations, report_correction, record_product_view, orders/quotation functions (create_order, advance_order, cancel_order, respond_quotation); security-sensitive - accept_invitation, create_company_request, import_*, all four order functions; none proven unused/obsolete (nothing in this repo calls them).
 Recommended migration items (proposed only, NOT written or applied; need approval): F1 invitation expiry NOT NULL/default; F2 duplicate detection; F3 product/company check; F5 import audit; F6 rollback guard; F7/F8 `is distinct from`, order-time validity checks, expiry persistence (write the expired status without raising). These replace real staging functions, so each needs its own approved migration and test.
+
+## Round 7: findings F1–F8 fixed locally in `0007_function_hardening.sql` (draft, local PG 16.15 only; not applied to any Supabase project)
+Details, threat scenarios, decisions and tests: `docs/ROUND7_TEST_REPORT.md` §2. Status of the original table:
+
+| # | Function | Fix in 0007 | Status |
+|---|---|---|---|
+| F1 | `accept_invitation` | NULL `expires_at` = expired (fail closed); `NOT VALID` check forbids new pending invites without expiry | fixed, tested |
+| F2 | `create_company_request` | per-creator idempotent (advisory lock + open-state lookup before rate limit); cross-user duplicates intentionally allowed | fixed, tested incl. 8-way concurrency |
+| F3 | `report_correction` | product must belong to company; evidence URL http(s) only, ≤500 chars, `NOT VALID` check on the table | fixed, tested |
+| F4/F5 | `import_apply`/`import_rollback` | new immutable `company_import_audit` (apply + rollback rows) | fixed, tested |
+| F6 | `import_rollback` | refuses when imported companies have lead matches or quotations; batch row lock; second rollback is a no-op | fixed, tested incl. concurrent match insert |
+| F7 | `respond_quotation` | returns `'expired'` and persists it instead of raising; NULL-uid refused; `IS DISTINCT FROM` owner check; return type void→text | fixed, tested |
+| F8 | `create_order` | NULL-uid, row lock, validity date and supplier eligibility rechecked | fixed, tested incl. 4-way concurrency |
+| new F9 | 4 pgcrypto functions | `extensions.`-qualified `digest`/`gen_random_bytes` (hosted layout) | fixed, tested |
+| new F10 | `import_normalize` | my own 0006 doubled the backslash in the website regex (every normal URL rejected); staging form restored | fixed, tested |
+
+Not changed (documented limits): refusals raised for non-admin callers are not audited (the exception rolls the row back); other URL columns (`company_sources.source_url`, batch `source_url`) are not scheme-checked; cross-user company duplicates remain a staff dedupe task.

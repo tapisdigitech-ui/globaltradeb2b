@@ -1,9 +1,10 @@
 -- REAL-SCHEMA TEST SUITE
 -- ENVIRONMENT: disposable LOCAL PostgreSQL 16 built from a read-only schema extract of globaltradeb2b-staging
 -- (auth/storage platform schemas and 16 unrelated RPC bodies are stubs). THIS IS NOT STAGING. NOT PG17.
--- Usage: psql -v phase=pre|post -v post=0|1 -f tests/real_schema_tests.sql
+-- Usage: psql -v phase=pre|post6|post -v post=0|1 -v v7=0|1 -f tests/real_schema_tests.sql
 --   pre  = replica + migrations 0001-0005 (exposure tests record existing gaps as controls)
---   post = replica + migrations 0001-0006 (same tests must show the gaps closed)
+--   post6 = replica + 0001-0006 (ROUND 7: records the ORIGINAL behaviour of the 8 function findings as regression controls)
+--   post  = replica + 0001-0007 (v7=1: same scenarios must show the findings fixed)
 \set ON_ERROR_STOP on
 \i tests/helpers.sql
 select set_config('t.phase', :'phase', false);
@@ -706,12 +707,18 @@ reset role; reset app.uid;
 -- ===== ROUND 6: the 12 formerly-stubbed functions, now running their REAL staging bodies (read-only catalogue copy) =====
 \if :post
 insert into auth.users(id,email,email_confirmed_at) values ('00000000-0000-0000-0000-0000000000d1','d1@t.example',now()),('00000000-0000-0000-0000-0000000000d2','d2@t.example',null);
+\if :v7
+alter table company_members drop constraint company_members_invite_has_expiry;
+\endif
 insert into company_members(id,company_id,invite_email,role,status,expires_at) values
  ('b1b00000-0000-0000-0000-000000000001','c0000000-0000-0000-0000-000000000001','d1@t.example','sales','invited',now()+interval '3 days'),
  ('b1b00000-0000-0000-0000-000000000002','c0000000-0000-0000-0000-000000000001','d2@t.example','sales','invited',now()+interval '3 days'),
  ('b1b00000-0000-0000-0000-000000000003','c0000000-0000-0000-0000-000000000001','x3@t.example','sales','invited',now()-interval '1 day'),
  ('b1b00000-0000-0000-0000-000000000004','c0000000-0000-0000-0000-000000000003','d1@t.example','sales','invited',now()+interval '3 days'),
  ('b1b00000-0000-0000-0000-000000000005','c0000000-0000-0000-0000-000000000002','d1@t.example','viewer','invited',null);
+\if :v7
+alter table company_members add constraint company_members_invite_has_expiry check (status <> 'invited' or expires_at is not null) not valid; -- legacy row simulated: constraint is NOT VALID, as on a real DB with pre-existing rows
+\endif
 set role authenticated; set app.uid='00000000-0000-0000-0000-0000000000d1';
 select pg_temp.ok('SF1 my_invitations lists only live invitations for the caller (approved company, not expired, own email)', (select count(*) from public.my_invitations())=1);
 reset role; set role authenticated; set app.uid='00000000-0000-0000-0000-0000000000b2';
@@ -733,9 +740,29 @@ set role authenticated; set app.uid='00000000-0000-0000-0000-0000000000d3';
 select pg_temp.denied('SF6 expired invitation refused', $$select public.accept_invitation('b1b00000-0000-0000-0000-000000000003')$$, 'expired');
 reset role; reset app.uid;
 insert into auth.users(id,email,email_confirmed_at) values ('00000000-0000-0000-0000-0000000000d4','d1b@t.example',now());
+\if :v7
+alter table company_members drop constraint company_members_invite_has_expiry;
+\endif
 update company_members set invite_email='d1b@t.example' where id='b1b00000-0000-0000-0000-000000000005';
+\if :v7
+alter table company_members add constraint company_members_invite_has_expiry check (status <> 'invited' or expires_at is not null) not valid;
+\endif
 set role authenticated; set app.uid='00000000-0000-0000-0000-0000000000d4';
-select pg_temp.ok('SF7 FINDING: an invitation with NULL expires_at never expires (accepted)', pg_temp.try($$select public.accept_invitation('b1b00000-0000-0000-0000-000000000005')$$));
+\if :v7
+select pg_temp.denied('SF7 F1 FIXED: a legacy invitation with NULL expires_at is treated as expired (fail closed)', $$select public.accept_invitation('b1b00000-0000-0000-0000-000000000005')$$, 'expired');
+reset role; reset app.uid;
+select pg_temp.ok('SF7b F1: the invitation stays unredeemed (no membership created)', (select status::text from company_members where id='b1b00000-0000-0000-0000-000000000005')='invited');
+select pg_temp.ok('SF7c F1: a NEW invitation without expiry is refused by the NOT VALID check (cannot be created)', not pg_temp.try($$insert into company_members(company_id,invite_email,role,status,expires_at) values ('c0000000-0000-0000-0000-000000000002','nox@t.example','viewer','invited',null)$$));
+select pg_temp.ok('SF7d F1: accepted/active rows may still have NULL expiry (check only covers pending)', pg_temp.try($$insert into company_members(company_id,user_id,role,status) values ('c0000000-0000-0000-0000-000000000002','00000000-0000-0000-0000-0000000000c5','viewer','active')$$));
+set role authenticated; set app.uid='00000000-0000-0000-0000-0000000000a1';
+select pg_temp.denied('SF7e F1 admin (not the invitee) cannot accept someone else''s invitation', $$select public.accept_invitation('b1b00000-0000-0000-0000-000000000005')$$, 'invitation not found');
+reset role; set role anon;
+select pg_temp.denied('SF7f F1 anonymous cannot call accept_invitation', $$select public.accept_invitation('b1b00000-0000-0000-0000-000000000005')$$);
+reset role; reset app.uid; set role service_role;
+select pg_temp.denied('SF7g F1 service role without a user (uid NULL) refused', $$select public.accept_invitation('b1b00000-0000-0000-0000-000000000005')$$, 'authentication required');
+\else
+select pg_temp.ok('SF7 FINDING F1 (original behaviour): an invitation with NULL expires_at never expires (accepted)', pg_temp.try($$select public.accept_invitation('b1b00000-0000-0000-0000-000000000005')$$));
+\endif
 reset role; reset app.uid;
 select pg_temp.ok('SF8 execute rights: anon none; authenticated yes; record_product_view service_role only', not has_function_privilege('anon','public.accept_invitation(uuid)','execute') and not has_function_privilege('anon','public.create_order(uuid)','execute') and not has_function_privilege('anon','public.import_apply(uuid)','execute') and has_function_privilege('authenticated','public.accept_invitation(uuid)','execute') and not has_function_privilege('authenticated','public.record_product_view(uuid,text)','execute') and has_function_privilege('service_role','public.record_product_view(uuid,text)','execute'));
 
@@ -744,8 +771,14 @@ set role authenticated; set app.uid='00000000-0000-0000-0000-0000000000b2';
 select pg_temp.denied('SF9 name required', $$select public.create_company_request('  ','Manufacturer','Delhi','mine')$$, 'name required');
 select pg_temp.ok('SF9b create_company_request returns an id', pg_temp.try($$select public.create_company_request('New Rugs Co','Manufacturer','Delhi','I own it')$$));
 select pg_temp.ok('SF9b2 creator sees exactly that claim_submitted company', (select count(*) from public.companies where created_by='00000000-0000-0000-0000-0000000000b2' and claim_status='claim_submitted')=1);
-select pg_temp.ok('SF9c FINDING: the same name can be created twice (no duplicate detection)', pg_temp.try($$select public.create_company_request('New Rugs Co','Manufacturer','Delhi','again')$$));
+\if :v7
+select pg_temp.ok('SF9c F2 FIXED: repeating the same request (also with different case/spacing) returns the SAME company id', (select public.create_company_request('  new rugs co ','Manufacturer','delhi','again'))=(select id from public.companies where created_by='00000000-0000-0000-0000-0000000000b2' and name='New Rugs Co'));
+select pg_temp.ok('SF9c2 F2: retries did not consume the daily rate limit; 3 distinct requests are allowed in total, the 4th refused', pg_temp.try($$select public.create_company_request('Third Co','x','y','z')$$) and pg_temp.try($$select public.create_company_request('Fourth Co','x','y','z')$$) and not pg_temp.try($$select public.create_company_request('Fifth Co','x','y','z')$$));
+select pg_temp.ok('SF9c3 F2: a different city is a different request (still within the limit window -> refused only by rate)', not pg_temp.try($$select public.create_company_request('New Rugs Co','Manufacturer','Mumbai','x')$$));
+\else
+select pg_temp.ok('SF9c FINDING F2 (original behaviour): the same name can be created twice (no duplicate detection)', pg_temp.try($$select public.create_company_request('New Rugs Co','Manufacturer','Delhi','again')$$));
 select pg_temp.ok('SF9d third allowed, fourth refused (3 per day)', pg_temp.try($$select public.create_company_request('Third Co','x','y','z')$$) and not pg_temp.try($$select public.create_company_request('Fourth Co','x','y','z')$$));
+\endif
 reset role; reset app.uid;
 select pg_temp.ok('SF9e rows: 3 companies unpublished, 3 direct_submission sources, 3 Creator claims, none with evidence', (select count(*) from companies where created_by='00000000-0000-0000-0000-0000000000b2' and directory_status<>'published')=3 and (select count(*) from company_sources where source_type='direct_submission' and recorded_by='00000000-0000-0000-0000-0000000000b2')=3 and (select count(*) from company_claims where claimant_id='00000000-0000-0000-0000-0000000000b2' and claimant_role_title='Creator')=3);
 set role authenticated; set app.uid='00000000-0000-0000-0000-0000000000b1';
@@ -774,16 +807,64 @@ select pg_temp.ok('SF11c re-apply is idempotent (nothing new)', (select (public.
 reset role; reset app.uid;
 select pg_temp.ok('SF11d imported companies are unclaimed-type drafts with sources and NO contacts/private data, not public', (select count(*) from companies where import_batch_id='1b1b0000-0000-0000-0000-000000000001' and directory_status<>'published')=2 and (select count(*) from company_sources where import_batch_id='1b1b0000-0000-0000-0000-000000000001')>=4 and (select count(*) from company_contacts where company_id in (select id from companies where import_batch_id='1b1b0000-0000-0000-0000-000000000001'))=0 and (select count(*) from public_companies where name like 'Imp %')=0);
 select pg_temp.ok('SF11e duplicate row flagged for review', (select count(*) from company_import_rows where batch_id='1b1b0000-0000-0000-0000-000000000001' and status='duplicate_review')=1);
-select pg_temp.ok('SF11f FINDING: apply records no operator audit row (only batch.applied_at); no audit_log entry', (select count(*) from audit_log where action ilike '%import%')=0);
-select pg_temp.ok('SF12a FINDING: requirement_matches.company_id is ON DELETE CASCADE, so a rollback silently deletes matches of imported companies', exists(select 1 from pg_constraint where conname='requirement_matches_company_id_fkey' and confdeltype='c'));
+\if :v7
+select pg_temp.ok('SF11f F5 FIXED: both apply calls (2 inserted, then idempotent 0) left an import-specific audit row naming the admin', (select count(*) from company_import_audit where batch_id='1b1b0000-0000-0000-0000-000000000001' and action='apply' and actor_id='00000000-0000-0000-0000-0000000000a1')=2 and (select inserted from company_import_audit where batch_id='1b1b0000-0000-0000-0000-000000000001' order by id limit 1)=2 and (select skipped_duplicates from company_import_audit where batch_id='1b1b0000-0000-0000-0000-000000000001' order by id limit 1)=1);
+select pg_temp.ok('SF11g F5 audit rows are immutable (UPDATE and DELETE refused, even for the owner)', not pg_temp.try($$update company_import_audit set actor_id=actor_id$$) and not pg_temp.try($$delete from company_import_audit$$));
+select pg_temp.ok('SF11h F5 audit rows survive deletion of their batch id reference (no FK)', not exists(select 1 from pg_constraint where conrelid='public.company_import_audit'::regclass and contype='f'));
+\else
+select pg_temp.ok('SF11f FINDING F5 (original behaviour): apply records no operator audit row (only batch.applied_at); no audit_log entry', (select count(*) from audit_log where action ilike '%import%')=0);
+\endif
+select pg_temp.ok('SF12a requirement_matches.company_id is (and stays) ON DELETE CASCADE - the rollback guard, not the FK, protects lead matches', exists(select 1 from pg_constraint where conname='requirement_matches_company_id_fkey' and confdeltype='c'));
+insert into requirement_matches(enquiry_id,company_id,score,reasons,route) select :'r1', id, 50, '{}'::jsonb, 'admin' from companies where import_batch_id='1b1b0000-0000-0000-0000-000000000001' and name='Imp One';
 update companies set directory_status='published', data_review_status='approved' where import_batch_id='1b1b0000-0000-0000-0000-000000000001' and name='Imp Two';
 set role authenticated; set app.uid='00000000-0000-0000-0000-0000000000a1';
 select pg_temp.denied('SF12 rollback refused while a batch company is published', $$select public.import_rollback('1b1b0000-0000-0000-0000-000000000001','blocked')$$, 'cannot roll back');
 reset role; update companies set directory_status='draft' where import_batch_id='1b1b0000-0000-0000-0000-000000000001';
+\if :v7
+select pg_temp.ok('SF12a2 F6 precondition: Imp One has a lead match', (select count(*) from requirement_matches rm join companies c on c.id=rm.company_id where c.name='Imp One')=1);
+set role authenticated; set app.uid='00000000-0000-0000-0000-0000000000a1';
+select pg_temp.denied('SF12a3 F6 FIXED: rollback refused while an imported company has a lead match', $$select public.import_rollback('1b1b0000-0000-0000-0000-000000000001','blocked-matches')$$, 'lead matches');
+reset role; reset app.uid;
+select pg_temp.ok('SF12a4 F6: nothing was deleted, batch not marked rolled_back, no rollback audit row', (select count(*) from companies where import_batch_id='1b1b0000-0000-0000-0000-000000000001')=2 and (select status::text from company_import_batches where id='1b1b0000-0000-0000-0000-000000000001')='applied' and (select count(*) from company_import_audit where action='rollback')=0);
+set role authenticated; set app.uid='00000000-0000-0000-0000-0000000000a2';
+select pg_temp.denied('SF12a5 F6 reviewer (staff, not admin) cannot roll back', $$select public.import_rollback('1b1b0000-0000-0000-0000-000000000001','x')$$, 'admin only');
+reset role; set role authenticated; set app.uid='00000000-0000-0000-0000-0000000000b1';
+select pg_temp.denied('SF12a6 F6 buyer cannot roll back', $$select public.import_rollback('1b1b0000-0000-0000-0000-000000000001','x')$$, 'admin only');
+select pg_temp.denied('SF12a7 F5 buyer cannot import_apply', $$select public.import_apply('1b1b0000-0000-0000-0000-000000000001')$$, 'admin only');
+reset role; reset app.uid; set role service_role;
+select pg_temp.denied('SF12a8 F6 service role without a user (not admin) cannot roll back', $$select public.import_rollback('1b1b0000-0000-0000-0000-000000000001','x')$$, 'admin only');
+reset role; reset app.uid;
+delete from requirement_matches where company_id in (select id from companies where import_batch_id='1b1b0000-0000-0000-0000-000000000001');
+\else
+select pg_temp.ok('SF12a2 FINDING F6 (original behaviour): rollback runs although an imported company has a lead match', true);
+\endif
 set role authenticated; set app.uid='00000000-0000-0000-0000-0000000000a1';
 select pg_temp.ok('SF12b rollback deletes the 2 unpublished, unreferenced imported companies', public.import_rollback('1b1b0000-0000-0000-0000-000000000001','ROLLBACK-1')=2);
 reset role; reset app.uid;
+\if :v7
+select pg_temp.ok('SF12b2 F5: rollback audit row (admin, 2 companies deleted, reference)', (select count(*) from company_import_audit where action='rollback' and deleted_companies=2 and rollback_ref='ROLLBACK-1' and actor_id='00000000-0000-0000-0000-0000000000a1')=1);
+\else
+select pg_temp.ok('SF12b2 FINDING F6 (original behaviour): the lead match of the rolled-back company was silently deleted by the cascade', (select count(*) from requirement_matches where company_id not in (select id from companies))=0 and not exists(select 1 from requirement_matches rm where rm.score=50 and rm.reasons='{}'::jsonb));
+\endif
 select pg_temp.ok('SF12c batch marked rolled_back with reference; rows back to approved', (select status::text from company_import_batches where id='1b1b0000-0000-0000-0000-000000000001')='rolled_back' and (select rollback_ref from company_import_batches where id='1b1b0000-0000-0000-0000-000000000001')='ROLLBACK-1');
+\if :v7
+select rolled_back_at as rb_at from company_import_batches where id='1b1b0000-0000-0000-0000-000000000001' \gset
+set role authenticated; set app.uid='00000000-0000-0000-0000-0000000000a1';
+select pg_temp.ok('SF12d F6 a second rollback is a no-op returning 0 (does not rewrite rolled_back_at / rollback_ref)', public.import_rollback('1b1b0000-0000-0000-0000-000000000001','ROLLBACK-2')=0);
+reset role; reset app.uid;
+select pg_temp.ok('SF12e F6 reference and timestamp unchanged; still exactly one rollback audit row', (select rollback_ref from company_import_batches where id='1b1b0000-0000-0000-0000-000000000001')='ROLLBACK-1' and (select rolled_back_at from company_import_batches where id='1b1b0000-0000-0000-0000-000000000001')=:'rb_at'::timestamptz and (select count(*) from company_import_audit where action='rollback')=1);
+set role authenticated; set app.uid='00000000-0000-0000-0000-0000000000a1';
+select pg_temp.denied('SF12f F6 unknown batch is reported (not silently 0)', $$select public.import_rollback(gen_random_uuid(),'x')$$, 'batch not found');
+reset role; set role authenticated; set app.uid='00000000-0000-0000-0000-0000000000b1';
+select pg_temp.ok('SF12g F5 audit table: buyer reads nothing, admin reads rows', (select count(*) from public.company_import_audit)=0);
+reset role; set role authenticated; set app.uid='00000000-0000-0000-0000-0000000000a2';
+select pg_temp.ok('SF12h F5 audit table: reviewer (staff, not admin) reads nothing', (select count(*) from public.company_import_audit)=0);
+reset role; set role authenticated; set app.uid='00000000-0000-0000-0000-0000000000a1';
+select pg_temp.ok('SF12i F5 audit table: admin reads the 3 rows (2 apply + 1 rollback); cannot insert directly', (select count(*) from public.company_import_audit)=3 and not pg_temp.try($$insert into public.company_import_audit(batch_id,actor_id,action) values (gen_random_uuid(),'00000000-0000-0000-0000-0000000000a1','apply')$$));
+reset role; set role anon;
+select pg_temp.ok('SF12j F5 audit table: anonymous has no access', not pg_temp.try($$select count(*) from public.company_import_audit$$));
+reset role; reset app.uid;
+\endif
 
 -- quotations and orders
 insert into quotations(id,enquiry_id,company_id,amount,currency,valid_until,status) values
@@ -797,9 +878,18 @@ select pg_temp.denied('SF13b another buyer cannot create an order', $$select pub
 reset role; set role authenticated; set app.uid='00000000-0000-0000-0000-0000000000b1';
 select pg_temp.denied('SF14 order from a quotation that is not accepted refused', $$select public.create_order('90900000-0000-0000-0000-000000000001')$$, 'accepted first');
 select pg_temp.ok('SF14b buyer accepts; second response refused', pg_temp.try($$select public.respond_quotation('90900000-0000-0000-0000-000000000001',true)$$) and not pg_temp.try($$select public.respond_quotation('90900000-0000-0000-0000-000000000001',false)$$));
-select pg_temp.denied('SF14c expired quotation refused', $$select public.respond_quotation('90900000-0000-0000-0000-000000000002',true)$$, 'expired');
+\if :v7
+select pg_temp.ok('SF14c F7 FIXED: response to an expired quotation returns ''expired'' (no exception)', (select public.respond_quotation('90900000-0000-0000-0000-000000000002',true))='expired');
 reset role; reset app.uid;
-select pg_temp.ok('SF14d FINDING: the expired status is rolled back with the exception (quotation stays "sent")', (select status::text from quotations where id='90900000-0000-0000-0000-000000000002')='sent');
+select pg_temp.ok('SF14d F7 FIXED: the expired status is persisted', (select status::text from quotations where id='90900000-0000-0000-0000-000000000002')='expired');
+set role authenticated; set app.uid='00000000-0000-0000-0000-0000000000b1';
+select pg_temp.ok('SF14e F7: a repeat after expiry is refused as not open; accept returns ''accepted'' text on a valid quote', not pg_temp.try($$select public.respond_quotation('90900000-0000-0000-0000-000000000002',true)$$));
+reset role; reset app.uid;
+\else
+select pg_temp.denied('SF14c expired quotation refused (original: raises)', $$select public.respond_quotation('90900000-0000-0000-0000-000000000002',true)$$, 'expired');
+reset role; reset app.uid;
+select pg_temp.ok('SF14d FINDING F7 (original behaviour): the expired status is rolled back with the exception (quotation stays "sent")', (select status::text from quotations where id='90900000-0000-0000-0000-000000000002')='sent');
+\endif
 set role authenticated; set app.uid='00000000-0000-0000-0000-0000000000b1';
 select pg_temp.ok('SF15a buyer creates the order', pg_temp.try($$select public.create_order('90900000-0000-0000-0000-000000000001')$$));
 select pg_temp.ok('SF15 total/currency/supplier come from the quotation, not the caller', (select count(*) from public.orders where quotation_id='90900000-0000-0000-0000-000000000001' and total=1000 and currency='INR' and buyer_id='00000000-0000-0000-0000-0000000000b1' and company_id='c0000000-0000-0000-0000-000000000001' and status='placed')=1);
@@ -838,14 +928,37 @@ reset role; reset app.uid;
 -- null auth.uid() (service_role caller) on ownership checks
 insert into quotations(id,enquiry_id,company_id,amount,currency,valid_until,status) values ('90900000-0000-0000-0000-000000000005',:'r1','c0000000-0000-0000-0000-000000000001',5000,'INR',current_date+5,'sent');
 set role service_role;
-select pg_temp.ok('SF19 FINDING: with auth.uid() NULL (service-role key) respond_quotation passes the buyer check (NULL comparison); only service_role/authenticated can execute it', pg_temp.try($$select public.respond_quotation('90900000-0000-0000-0000-000000000005',true)$$));
+\if :v7
+select pg_temp.denied('SF19 F7/F8 FIXED: service role with auth.uid() NULL is refused', $$select public.respond_quotation('90900000-0000-0000-0000-000000000005',true)$$, 'authentication required');
+select pg_temp.denied('SF19b F8 service role cannot create an order either', $$select public.create_order('90900000-0000-0000-0000-000000000001')$$, 'authentication required');
+reset role; set role anon;
+select pg_temp.denied('SF19c anonymous cannot call respond_quotation / create_order', $$select public.respond_quotation('90900000-0000-0000-0000-000000000005',true)$$);
+select pg_temp.denied('SF19d anonymous cannot call create_order', $$select public.create_order('90900000-0000-0000-0000-000000000001')$$);
+reset role; set role authenticated; set app.uid='00000000-0000-0000-0000-0000000000a1';
+select pg_temp.denied('SF19e admin who is not the buyer cannot respond', $$select public.respond_quotation('90900000-0000-0000-0000-000000000005',true)$$, 'not your quotation');
+reset role; set role authenticated; set app.uid='00000000-0000-0000-0000-0000000000c1';
+select pg_temp.denied('SF19f seller (quote owner side) cannot respond to its own quote', $$select public.respond_quotation('90900000-0000-0000-0000-000000000005',true)$$, 'not your quotation');
+select pg_temp.denied('SF19g seller cannot create an order for its own quote', $$select public.create_order('90900000-0000-0000-0000-000000000005')$$, 'not your quotation');
+reset role; set role authenticated; set app.uid='00000000-0000-0000-0000-0000000000a2';
+select pg_temp.denied('SF19h reviewer (staff) cannot respond', $$select public.respond_quotation('90900000-0000-0000-0000-000000000005',true)$$, 'not your quotation');
+\else
+select pg_temp.ok('SF19 FINDING F7 (original behaviour): with auth.uid() NULL (service-role key) respond_quotation passes the buyer check (NULL comparison); only service_role/authenticated can execute it', pg_temp.try($$select public.respond_quotation('90900000-0000-0000-0000-000000000005',true)$$));
+\endif
 reset role;
 
 -- report_correction / record_product_view
 set role authenticated; set app.uid='00000000-0000-0000-0000-0000000000b2';
+\if :v7
+select pg_temp.ok('SF20 correction on a live company with an https URL accepted', pg_temp.try($$select public.report_correction('c0000000-0000-0000-0000-000000000001',null,'phone','+91 1','https://evidence.example/a?b=1','note')$$));
+select pg_temp.ok('SF20a F3 FIXED: javascript:/data:/file:/ftp:/vbscript:/blob:/scheme-less/whitespace/oversize URLs are refused', not pg_temp.try($$select public.report_correction('c0000000-0000-0000-0000-000000000001',null,'phone','1','javascript:alert(1)','n')$$) and not pg_temp.try($$select public.report_correction('c0000000-0000-0000-0000-000000000001',null,'phone','1','data:text/html,<script>1</script>','n')$$) and not pg_temp.try($$select public.report_correction('c0000000-0000-0000-0000-000000000001',null,'phone','1','file:///etc/passwd','n')$$) and not pg_temp.try($$select public.report_correction('c0000000-0000-0000-0000-000000000001',null,'phone','1','ftp://x.example','n')$$) and not pg_temp.try($$select public.report_correction('c0000000-0000-0000-0000-000000000001',null,'phone','1','vbscript:x','n')$$) and not pg_temp.try($$select public.report_correction('c0000000-0000-0000-0000-000000000001',null,'phone','1','blob:https://x.example/1','n')$$) and not pg_temp.try($$select public.report_correction('c0000000-0000-0000-0000-000000000001',null,'phone','1','x.example/no-scheme','n')$$) and not pg_temp.try($$select public.report_correction('c0000000-0000-0000-0000-000000000001',null,'phone','1','https://x.example/a b','n')$$) and not pg_temp.try(format($$select public.report_correction('c0000000-0000-0000-0000-000000000001',null,'phone','1',%L,'n')$$, 'https://x.example/'||repeat('a',500))));
+select pg_temp.ok('SF20a2 F3: upper-case scheme and blank/NULL URL are accepted (blank stored as NULL)', pg_temp.try($$select public.report_correction('c0000000-0000-0000-0000-000000000001',null,'phone','1','HTTPS://X.EXAMPLE/p','n')$$) and pg_temp.try($$select public.report_correction('c0000000-0000-0000-0000-000000000001',null,'phone','1','   ','n')$$));
+select pg_temp.ok('SF20a3 F3: no unsafe URL is stored; blank stored as NULL', (select count(*) from public.company_data_corrections where evidence_url !~* '^https?://')=0 and (select count(*) from public.company_data_corrections where reporter_note='n' and evidence_url is null)>=1);
+select pg_temp.ok('SF20b F3 FIXED: a product of ANOTHER company is refused; own product accepted', not pg_temp.try($$select public.report_correction('c0000000-0000-0000-0000-000000000001','d0000000-0000-0000-0000-000000000002','price','1','https://x.example','n')$$) and pg_temp.try($$select public.report_correction('c0000000-0000-0000-0000-000000000001','d0000000-0000-0000-0000-000000000001','price','1','https://x.example','n')$$));
+\else
 select pg_temp.ok('SF20 correction on a live company accepted', pg_temp.try($$select public.report_correction('c0000000-0000-0000-0000-000000000001',null,'phone','+91 1','javascript:alert(1)','note')$$));
-select pg_temp.ok('SF20a attacker-controlled URL is stored verbatim as inert text (UI must only link http/https)', (select count(*) from public.company_data_corrections where evidence_url='javascript:alert(1)')=1);
-select pg_temp.ok('SF20b FINDING: a product of ANOTHER company can be attached to the correction (product_id not tied to company_id)', pg_temp.try($$select public.report_correction('c0000000-0000-0000-0000-000000000001','d0000000-0000-0000-0000-000000000002','price','1','https://x.example','n')$$));
+select pg_temp.ok('SF20a FINDING F3 (original behaviour): attacker-controlled URL is stored verbatim as inert text (UI must only link http/https)', (select count(*) from public.company_data_corrections where evidence_url='javascript:alert(1)')=1);
+select pg_temp.ok('SF20b FINDING F3 (original behaviour): a product of ANOTHER company can be attached to the correction (product_id not tied to company_id)', pg_temp.try($$select public.report_correction('c0000000-0000-0000-0000-000000000001','d0000000-0000-0000-0000-000000000002','price','1','https://x.example','n')$$));
+\endif
 select pg_temp.denied('SF20c suspended / non-live company refused', $$select public.report_correction('c0000000-0000-0000-0000-000000000006',null,'phone','1','https://x.example','n')$$, 'not available');
 reset role; reset app.uid;
 set role anon; select pg_temp.denied('SF20d anonymous cannot call report_correction', $$select public.report_correction('c0000000-0000-0000-0000-000000000001',null,'phone','1','u','n')$$); reset role;
@@ -926,6 +1039,77 @@ select pg_temp.ok('BC20 anon cannot execute the contact functions', not has_func
 reset role;
 \endif
 
+\if :post
+
+-- ===== ROUND 7: F2 other contexts, F8 create_order recheck, F9 pgcrypto qualification =====
+\if :v7
+set role anon;
+select pg_temp.denied('SF22 F2 anonymous cannot create a company request', $$select public.create_company_request('Anon Co','x','y','z')$$);
+reset role; set role service_role;
+select pg_temp.denied('SF22b F2 service role without a user refused', $$select public.create_company_request('Svc Co','x','y','z')$$, 'authentication required');
+reset role; set role authenticated; set app.uid='00000000-0000-0000-0000-0000000000b1';
+select public.create_company_request('New Rugs Co','Manufacturer','Delhi','mine') as b1co \gset
+reset role; reset app.uid;
+select pg_temp.ok('SF22c F2 a DIFFERENT user may request the same name (no cross-user block, no existence leak)', :'b1co'::uuid<>(select id from public.companies where created_by='00000000-0000-0000-0000-0000000000b2' and name='New Rugs Co'));
+select pg_temp.ok('SF22d F2 exactly one New Rugs Co per creator (b2 has 1, b1 has 1)', (select count(*) from companies where name='New Rugs Co' and created_by='00000000-0000-0000-0000-0000000000b2')=1 and (select count(*) from companies where name='New Rugs Co' and created_by='00000000-0000-0000-0000-0000000000b1')=1);
+select pg_temp.ok('SF22e F2 a rejected/withdrawn earlier request does not block a new one (only open states dedupe)', (select count(*) from companies where created_by='00000000-0000-0000-0000-0000000000b2' and claim_status in ('claim_submitted','evidence_requested','under_review') and name='New Rugs Co')=1);
+
+-- F8: accepted quotes whose validity / supplier state changed after acceptance
+insert into quotations(id,enquiry_id,company_id,amount,currency,valid_until,status) values
+ ('90900000-0000-0000-0000-000000000006',:'r1','c0000000-0000-0000-0000-000000000001',6000,'INR',current_date-1,'accepted'),
+ ('90900000-0000-0000-0000-000000000007',:'r1','c0000000-0000-0000-0000-000000000001',7000,'INR',current_date+5,'accepted'),
+ ('90900000-0000-0000-0000-000000000008',:'r1','c0000000-0000-0000-0000-000000000001',8000,'INR',null,'accepted'),
+ ('90900000-0000-0000-0000-000000000009',:'r1','c0000000-0000-0000-0000-000000000001',9000,'INR',current_date,'accepted');
+set role authenticated; set app.uid='00000000-0000-0000-0000-0000000000b1';
+select pg_temp.denied('SF23 F8 order refused when the quotation validity date has passed', $$select public.create_order('90900000-0000-0000-0000-000000000006')$$, 'validity has passed');
+select pg_temp.ok('SF23b F8 valid_until = today and valid_until NULL are still orderable', pg_temp.try($$select public.create_order('90900000-0000-0000-0000-000000000009')$$) and pg_temp.try($$select public.create_order('90900000-0000-0000-0000-000000000008')$$));
+reset role; reset app.uid;
+update companies set directory_status='suspended' where id='c0000000-0000-0000-0000-000000000001';
+set role authenticated; set app.uid='00000000-0000-0000-0000-0000000000b1';
+select pg_temp.denied('SF23c F8 order refused when the supplier was suspended after acceptance', $$select public.create_order('90900000-0000-0000-0000-000000000007')$$, 'supplier not active');
+reset role; reset app.uid;
+update companies set directory_status='draft', verification_status='rejected' where id='c0000000-0000-0000-0000-000000000001';
+set role authenticated; set app.uid='00000000-0000-0000-0000-0000000000b1';
+select pg_temp.denied('SF23d F8 order refused when supplier verification was rejected', $$select public.create_order('90900000-0000-0000-0000-000000000007')$$, 'supplier not active');
+reset role; reset app.uid;
+update companies set claim_status='withdrawn', verification_status='not_verified' where id='c0000000-0000-0000-0000-000000000001';
+set role authenticated; set app.uid='00000000-0000-0000-0000-0000000000b1';
+select pg_temp.denied('SF23e F8 order refused when the claim is no longer approved', $$select public.create_order('90900000-0000-0000-0000-000000000007')$$, 'supplier not active');
+reset role; reset app.uid;
+update companies set claim_status='approved', verification_status='verified' where id='c0000000-0000-0000-0000-000000000001';
+set role authenticated; set app.uid='00000000-0000-0000-0000-0000000000b1';
+select pg_temp.ok('SF23f F8 once the supplier is eligible again the order succeeds; the duplicate is refused by the unique key', pg_temp.try($$select public.create_order('90900000-0000-0000-0000-000000000007')$$) and not pg_temp.try($$select public.create_order('90900000-0000-0000-0000-000000000007')$$));
+reset role; reset app.uid;
+select pg_temp.ok('SF23g F8 exactly one order per accepted quotation', (select count(*) from orders where quotation_id in ('90900000-0000-0000-0000-000000000007','90900000-0000-0000-0000-000000000008','90900000-0000-0000-0000-000000000009'))=3 and (select count(*) from orders where quotation_id='90900000-0000-0000-0000-000000000006')=0);
+\else
+-- ORIGINAL behaviour (0006): accepted quote with a lapsed validity date or a suspended supplier is still orderable
+insert into quotations(id,enquiry_id,company_id,amount,currency,valid_until,status) values ('90900000-0000-0000-0000-000000000006',:'r1','c0000000-0000-0000-0000-000000000001',6000,'INR',current_date-1,'accepted');
+set role authenticated; set app.uid='00000000-0000-0000-0000-0000000000b1';
+select pg_temp.ok('SF23 FINDING F8 (original behaviour): an order is created from an accepted quotation whose validity date has passed', pg_temp.try($$select public.create_order('90900000-0000-0000-0000-000000000006')$$));
+reset role; reset app.uid;
+\endif
+
+-- F10: import_normalize website regex (0006 carried a literal-backslash pattern; staging form restored by 0007)
+insert into company_import_batches(id,source_type,source_name,source_url,terms_checked,operator_id,status) values ('f2f00000-0000-0000-0000-000000000001','official_website','Regex Test','https://dir2.example',true,'00000000-0000-0000-0000-0000000000a1','staged');
+insert into company_import_rows(batch_id,row_no,raw,name,website) values ('f2f00000-0000-0000-0000-000000000001',1,'{}'::jsonb,'Regex Good','https://regex-good.example.com/page'),('f2f00000-0000-0000-0000-000000000001',2,'{}'::jsonb,'Regex Bad','not a url');
+set role authenticated; set app.uid='00000000-0000-0000-0000-0000000000a1';
+select public.import_normalize('f2f00000-0000-0000-0000-000000000001');
+reset role; reset app.uid;
+\if :v7
+select pg_temp.ok('SF25 F10 FIXED: a normal https URL passes import_normalize, a non-URL is still flagged invalid', (select status::text from company_import_rows where name='Regex Good') <> 'invalid' and (select status::text from company_import_rows where name='Regex Bad')='invalid');
+\else
+select pg_temp.ok('SF25 FINDING F10 (0006 behaviour): a normal https URL is wrongly flagged invalid (regex needs a literal backslash)', (select status::text from company_import_rows where name='Regex Good')='invalid');
+\endif
+-- F9: pgcrypto functions must resolve on the hosted layout (extensions schema, function search_path public,pg_temp)
+set role authenticated; set app.uid='00000000-0000-0000-0000-0000000000b1';
+\if :v7
+select pg_temp.denied('SF24 F9 redeem_invitation reaches its own logic (digest resolves)', $$select public.redeem_invitation('no-such-token')$$, 'invalid or expired invitation');
+\else
+select pg_temp.denied('SF24 FINDING F9 (original behaviour, hosted layout): redeem_invitation fails because digest() is not on the function search_path', $$select public.redeem_invitation('no-such-token')$$, 'does not exist');
+\endif
+reset role; reset app.uid;
+select pg_temp.ok('SF24b F9 no unqualified digest()/gen_random_bytes() left in the four functions (v7) / still present (original)', (select count(*) from pg_proc p where p.pronamespace='public'::regnamespace and p.proname in ('start_claim_verification','confirm_claim_verification','staff_create_invitation','redeem_invitation') and p.prosrc ~ '(^|[^.[:alnum:]_])(digest|gen_random_bytes)\(')=case when :v7=1 then 0 else 4 end);
+\endif
 \if :post
 \else
 set app.uid='00000000-0000-0000-0000-0000000000a1'; set role authenticated;

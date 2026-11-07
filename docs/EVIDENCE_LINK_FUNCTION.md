@@ -41,3 +41,6 @@ Accepted limits of this design: a rate-limited or denied row is only written for
 
 ## 5. Tests (local)
 SQL EL1-EL16 (37 assertions): purpose, ttl 0/601/null/600, cross-claim, mixed-claim, unknown id, empty/null/duplicate/null-element/11-id lists, malformed uuid, unknown claim, exact audit contents, immutability, 600-s log cap, non-staff, unassigned (no grant created), probing limit, per-user+claim limit, per-claim and per-user independence, revoked-before-issuance, expired grant. Edge handler: 401/400/403/429/503, defence-in-depth path and id checks, ttl clamp, storage refusal. Expiry of the signed URL itself: not testable locally.
+
+## 6. Round 7 status (local only)
+No change to the evidence design, SQL gate, rate limits or Edge handler in Round 7. Re-validated on the new baseline stack (baseline + 0001–0007, PG 16.15): EL1–EL16 and the audit/rate-limit assertions pass in the real suite (post: 404 pass / 0 fail), handler tests 11/11. Carried-over limits: signed URLs cannot be revoked after issuance; the streaming alternative is documented, not implemented; hosted behaviour (storage signing, Edge runtime, PG 17, role timeouts) is not validated. 0007 F9 qualifies pgcrypto calls in the claim-verification/invitation functions; the evidence functions do not use pgcrypto.
