@@ -1,0 +1,138 @@
+PASS: buyer creates requirement 1 (returns honest status)
+PASS: duplicate requirement within 24h rejected [duplicate requirement]
+PASS: buyer cannot create requirement on another buyer's enquiry [not your requirement]
+PASS: buyer status message does not claim unregistered suppliers received it
+PASS: buyer 2 requirement with no matching supplier goes to unmatched queue
+PASS: buyer 2 cannot read buyer 1 status [not your requirement]
+PASS: S1: verified seller C1 matched direct
+PASS: S2: unclaimed C3 matched to ADMIN not direct
+PASS: S3: claimed-but-unverified C2 is ADMIN route
+PASS: S4: verified but phone not verified C4 is ADMIN route
+PASS: restricted seller C5 is ADMIN route
+PASS: suspended company C6 and no-category C7 are not matched at all
+PASS: lead case queue = unclaimed_matches (unclaimed present)
+PASS: S5: no match -> unmatched queue + no_match event
+PASS: match reasons explain why (category+product present)
+PASS: in-app notification only to eligible seller C1 owner
+PASS: enquiry delivery = visible_to_seller (R1), awaiting_admin (R2)
+PASS: verified seller C1 sees R1 lead
+PASS: C1 sees requirement details of R1
+PASS: C1 does NOT see R2 (not matched to it)
+PASS: C1 cannot read buyer private contact
+PASS: C1 sees own match row only
+PASS: C1 sees own delivery event only
+PASS: C1 sees no lead cases / history / settings
+PASS: NEG: claimed-but-unverified seller C2 sees 0 leads
+PASS: NEG: C2 sees 0 requirement details / matches / events
+PASS: NEG: legacy helper seller_can_see_leads() false for C2
+PASS: NEG: legacy helper lead_matches_my_company(1) false for C2
+PASS: NEG: verified seller with unverified phone C4 sees 0 leads
+PASS: NEG: restricted seller C5 sees 0 leads
+PASS: NEG: suspended-company member C6 sees 0 leads
+PASS: verified-after-the-fact C2 still sees OLD lead only after rematch (route is admin)
+PASS: NEG: reviewer cannot rematch [admin only]
+PASS: admin rematch upgrades C2 to direct
+PASS: S6: C2 now delivered (route direct, 1 event)
+PASS: S6: C2 sees the lead after verification+rematch
+PASS: S7: repeated rematch creates NO duplicate deliveries/events/notifications
+PASS: revocation: admin restriction removes C1 access immediately
+PASS: stale (400 day) phone verification removes C1 access
+PASS: verification withdrawn removes C1 access
+PASS: access restored when conditions are met again
+PASS: NEG: unassigned staff S1 sees 0 enquiries/cases/private/matches
+PASS: NEG: staff cannot assign leads [admin only]
+PASS: NEG: cannot assign to a non-staff user [assignee is not staff]
+PASS: admin overview returns metrics
+PASS: S1 sees exactly its assigned lead (enquiry + buyer private)
+PASS: S1 does NOT see unrelated R2 / its private contact
+PASS: S1 staff_my_leads lists 1
+PASS: S1 sees match explanation for its lead
+PASS: NEG: staff S2 (not assigned) sees nothing and has no leads
+PASS: NEG: S2 cannot update S1's lead [not assigned to you]
+PASS: NEG: S2 cannot update S1 lead by raw id [not assigned to you]
+PASS: status history keeps assignment + update entries
+PASS: NEG: staff cannot modify history [permission denied for table lead_status_history]
+PASS: NEG: staff cannot write lead_cases directly [permission denied for table lead_cases]
+PASS: history immutable even for superuser (trigger) [immutable]
+PASS: delivery events immutable [immutable]
+PASS: NEG: staff direct SELECT on vault returns 0 rows
+PASS: NEG: staff cannot INSERT into vault directly [permission denied for table company_contacts]
+PASS: S1 reads C3 contacts for assigned case with purpose
+PASS: NEG: S1 cannot read C3 contacts without case context [not authorised for this supplier]
+PASS: NEG: S1 cannot read contacts of a company not matched admin-route (C1 is direct) [not authorised for this supplier]
+PASS: NEG: S1 cannot read unrelated company C7 contacts [not authorised for this supplier]
+PASS: purpose is mandatory [purpose required]
+PASS: manual call logged (no contact value returned) as logged_manual
+PASS: NEG: S1 cannot log a call on unrelated company [not authorised for this supplier]
+PASS: NEG: staff cannot read audit log (0 rows)
+PASS: NEG: S2 cannot use S1's case for contacts [not authorised for this supplier]
+PASS: NEG: S2 with a guessed case id [not authorised for this supplier]
+PASS: audit: view logged with actor, company, purpose, related lead case
+PASS: audit: denied attempts create no view rows
+PASS: audit log immutable (update) [immutable]
+PASS: audit log immutable (delete) [immutable]
+PASS: admin can read the audit log and any assigned company
+PASS: admin vault read is itself logged
+PASS: DNC value withheld afterwards
+PASS: NEG: logging a call blocked for do-not-contact supplier [supplier is marked do-not-contact]
+PASS: NEG: staff cannot clear DNC [only admin can clear do-not-contact]
+PASS: NEG: invitation to do-not-contact supplier contact refused [contact not usable for an invitation]
+PASS: invitation created (draft), token shown once
+PASS: NEG: second active invitation for same company blocked (no spam) [duplicate key value violates unique constraint "claim_invita]
+PASS: NEG: cannot mark sent before admin approval [invitation must be approved by an admin first]
+PASS: NEG: staff cannot approve invitations [admin only]
+PASS: NEG: other staff cannot mark someone else's invitation sent [not authorised]
+PASS: NEG: other staff cannot read invitations
+PASS: invitation sent manually: delivery logged_manual (no provider), outreach event logged, lead status moved
+PASS: sent state cannot claim external delivery without provider ref
+PASS: no message was sent by any function (outbox empty, delivery never sent)
+PASS: NEG: wrong token cannot redeem [invalid or expired invitation]
+PASS: valid token redeems to the company id (approves nothing)
+PASS: NEG: token cannot be reused [invalid or expired invitation]
+PASS: redeeming did not change claim/verification status
+PASS: claim verification email starts without exposing the code
+PASS: NEG: claimant cannot read the outbox [permission denied for table claim_verification_outbox]
+PASS: NEG: claimant cannot read verification rows (hashes) [permission denied for table claim_verifications]
+PASS: outbox holds code for the (unapproved) delivery provider; nothing sent
+PASS: email domain matches website recorded as evidence only
+PASS: incorrect token rejected
+PASS: NEG: claimant cannot self-approve (no UPDATE policy: 0 rows changed)
+PASS: NEG: review_claim(approve) blocked until email verified [claim cannot be approved: claimant email not verified]
+PASS: service role can read queued code
+PASS: correct token verifies email
+PASS: summary shows email verified + domain match
+PASS: outbox row removed after verification
+PASS: after 5 wrong OTPs even the right OTP is refused
+PASS: expired OTP rejected
+PASS: NEG: verification start is rate limited (5/hour) [rate limit]
+PASS: NEG: another user cannot start/verify on someone else's claim [not your open claim]
+PASS: NEG: another user cannot confirm on someone else's claim [not your claim]
+PASS: NEG: another user cannot read summary [not authorised]
+PASS: NEG: conflicting open claim blocks approval [claim cannot be approved: conflicting open claim needs separ]
+PASS: claim approved after gates; verification_status still NOT verified; company still not lead-eligible
+PASS: reviewer sees only OPEN claims (approved one hidden)
+PASS: NEG: buyer cannot insert requirement_matches [permission denied for table requirement_matches]
+PASS: NEG: buyer cannot insert lead_cases [permission denied for table lead_cases]
+PASS: NEG: buyer cannot update routing settings directly [permission denied for table lead_routing_settings]
+PASS: NEG: buyer cannot call admin_set_routing_settings [admin only]
+PASS: NEG: buyer cannot call internal eligibility fn [permission denied for function _company_lead_eligible]
+PASS: NEG: buyer cannot call internal matcher [permission denied for function _match_requirement]
+PASS: NEG: buyer cannot call staff_get_contacts [staff only]
+PASS: NEG: buyer cannot call staff_create_invitation [not authorised for this supplier]
+PASS: buyer sees own requirement details only
+PASS: no new function is executable by anon
+PASS: internal functions not executable by authenticated
+PASS: all new SECURITY DEFINER functions pin search_path
+PASS: NEG: anon cannot read any new table [permission denied for table requirement_matches]
+PASS: NEG: anon cannot read vault [permission denied for table company_contacts]
+PASS: NEG: anon cannot read enquiries [permission denied for table enquiries]
+PASS: NEG: anon cannot call create_requirement [permission denied for function create_requirement]
+PASS: public_companies exposes exactly the recorded public columns
+PASS: no public view exposes new/private columns
+PASS: anon can still read the public view
+PASS: claimant sees only own verification docs
+PASS: NEG: another claimant sees only own docs (rejected claim)
+PASS: NEG: reviewer cannot read docs of decided (approved/rejected) claims
+PASS: admin sees all verification docs
+PASS: reviewer sees an OPEN claim and its document only
+PASS: reviewer can read claim verification summary for open claim

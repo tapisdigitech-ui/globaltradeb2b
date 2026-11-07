@@ -1,28 +1,33 @@
 # TEST REPORT
 
-Legend: **Local (stub)** = scratch Postgres 16 with a minimal stand-in baseline, not the real schema. **Staging** = not yet executed for any migration.
+## Environment (exact)
+* PostgreSQL 16.15 (Ubuntu 24.04 package), disposable local cluster, port 5544. **Not Supabase, not staging.**
+* Baseline = `supabase/tests/baseline_reconstructed.sql`: rebuilt from the read-only catalog queries run on staging on 2026-11-07 (columns, enums, function signatures, the recorded policy predicates, grants, storage policy names). Real bodies were used for `is_admin`, `is_staff`, `seller_can_see_leads`, `lead_matches_my_company`, `staff_mark_enquiry`. Everything marked `GUESS` in that file (other helper functions, `submit_claim`/`review_claim` bodies, view definitions, several policy predicates, storage table shape, absence of existing triggers/constraints/indexes) is a stand-in.
+* Run: `supabase/tests/run_all.sh` (fresh DB → baseline → migrations 0001–0005 → `0002_full_test.sql`); rollback/diff: `supabase/tests/compare_and_rollback.sh`; raw output: `supabase/reports/test_run_output.txt`.
 
-## Migration 0001 — Phase 1 supplier foundation (contact vault v2, profile extensions, subcategories)
-Run: `supabase/tests/stub_baseline.sql` → `migrations_draft/0001_…sql` → `tests/0001_test.sql` (Postgres 16.15). **24/24 assertions passed. Status: Implemented + Locally tested (stub). NOT staging tested. NOT applied.**
+## Result
+**138 assertions PASS, 0 FAIL** (58 are explicit negative controls, marked `NEG`). Status for all of it: **Implemented + locally tested against a reconstructed baseline. NOT staging verified. NOT applied anywhere.** These results say nothing about the real staging schema until the migration-compatibility run on the real schema-only dump (blocker B1).
 
-| Area | Result |
-|---|---|
-| Contact privacy: anon cannot SELECT vault; anon cannot execute staff RPCs | pass |
-| Buyer sees 0 contacts; seller sees only own company's; seller cannot call staff RPC | pass |
-| Staff cannot read vault directly (0 rows) — only via audited RPC with mandatory purpose | pass |
-| Staff cannot read the access log; admin can | pass |
-| Do-not-contact value withheld; reviewer cannot clear it; admin can, and it is logged | pass |
-| Invalid email / invalid phone / missing source / case-insensitive duplicate rejected | pass |
-| Access log update and delete blocked by trigger | pass |
-| Multiple business types stored; invalid type rejected; `is_demo` defaults false; subcategory link | pass |
+| Requirement area | Examples of what was executed | Result |
+|---|---|---|
+| Verified-only routing | S1 verified seller → direct; S3 claimed-not-verified, S4 verified-but-phone-unverified, restricted seller → admin route; suspended / no-category companies not matched | pass |
+| Negative: unverified sellers | C2/C4/C5/C6 members see 0 enquiries, 0 details, 0 matches, 0 events; legacy helpers `seller_can_see_leads()` / `lead_matches_my_company()` return false | pass |
+| Unclaimed → admin | unclaimed supplier only in admin route + `unclaimed_matches` lead case; never delivered | pass |
+| Unmatched queue | no supplier ≥ min score → `unmatched` case + `no_match` event; buyer message says no supplier has received it | pass |
+| Scenario 6 | company verified later: no access until admin rematch, then delivered and visible | pass |
+| Revocation | admin restriction, withdrawn verification, 400-day-old contact verification each remove access immediately; restored when conditions met | pass |
+| Scenario 7 / duplicates | repeated rematch → no extra deliveries, events or notifications; duplicate requirement within 24 h rejected | pass |
+| Staff assignment isolation | unassigned staff see 0 enquiries/cases/buyer-private rows; assigned staff see exactly their lead; second staff cannot update/read it; only admin assigns | pass |
+| Contact vault | direct SELECT/INSERT denied; read needs purpose + assignment (case matched via *admin route*) + logs actor, company, purpose, related case/claim; denied attempts log nothing; do-not-contact value withheld, only admin clears; log immutable (update/delete blocked even for superuser) | pass |
+| Claim verification | token/OTP hashed; code never returned; outbox service-role only; wrong code, 5-attempt lockout, expiry, rate limit, other user denied, approval blocked until email verified, conflicting open claim blocks approval, approval ≠ verification | pass |
+| Invitations | one active per company, DNC refused, needs admin approval, manual delivery stays `logged_manual`, other staff denied, token single use, redeem approves nothing | pass |
+| Reviewer scope | reviewers see only open claims and their verification documents (storage policy); decided claims hidden; admin sees all | pass |
+| Privilege escalation / grants | buyer cannot insert matches/cases, change settings, call admin/staff/internal functions; anon cannot read any new table or execute any new function; internal functions not executable by authenticated; all new SECURITY DEFINER functions pin `search_path` | pass |
+| Public surface | `public_companies` columns identical to recorded list; no public view exposes new/private columns | pass (stand-in view) |
+| Rollback | up 0001–0005 then down 0005–0001 → `pg_dump --schema-only` identical to baseline | pass |
 
-### Known limits of this test (do not read as staging proof)
-* The stub baseline omits real triggers on `companies` (e.g. `guard_company_columns`), the six `public_*` views, and real RLS on `companies`. Before staging apply: run against a schema-only copy of staging, and confirm the new `companies` columns are not exposed by any view and that the guard trigger permits the intended writes.
-* "Staff" is still role-wide (admin/reviewer). Assignment scoping is Phase 5.
-* No frontend is connected to any of this.
+## Not tested / cannot be tested without the real schema
+Real triggers (`guard_*`, `notify_on_enquiry`, `audit_changes`), real `submit_claim`/`review_claim`/`reveal_buyer_contact`/`respond_to_lead`/`submit_enquiry` bodies, the six real `public_*` view definitions, real constraints/indexes, `cev_read` policy, profile role-escalation guard (`guard_profile_role`), real Storage behaviour, Supabase Auth integration, concurrency/load. No frontend is connected to any of this. No staging or production SQL was executed in this phase.
 
-## Frontend (prototype) — executed earlier in this project
-Playwright, 360–2560 px, views home/seller/admin/enquiries/signin/buy: zero horizontal overflow; For Buyers flow (select → quantities → submit → My Enquiries) executed on desktop and mobile. Demonstration data only; localStorage.
-
-## Not yet executed
-Claim workflow, lead-routing scenarios 1–7, staff assignment tests, ingestion tests, SEO, Vercel preview checks for this branch.
+## Frontend (prototype) — executed earlier
+Playwright 360–2560 px, zero horizontal overflow; For Buyers flow desktop + mobile. Demonstration data only.
