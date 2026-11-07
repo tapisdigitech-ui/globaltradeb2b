@@ -1,6 +1,6 @@
 #!/bin/bash
 # Usage: run_proposal_admin_audit.sh control|proposal|rollback — LOCAL PG16 only. The proposal is NEVER part of run_real.sh / the standard suites.
-export PGHOST=/tmp/pgt PGPORT=5544 PGUSER=postgres; cd "$(dirname "$0")/.."
+export PGHOST=${PGHOST:-/tmp/pgt} PGPORT=${PGPORT:-5544} PGUSER=postgres; cd "$(dirname "$0")/.."
 M=$1; D=prop_$M; bash baseline/load_baseline.sh $D >/dev/null || exit 1
 for f in migrations_draft/000[1-7]_*.sql; do psql -q -d $D -v ON_ERROR_STOP=1 -f $f >/dev/null 2>&1 || { echo "MIGRATION FAILED $f"; exit 1; }; done
 PROP=0

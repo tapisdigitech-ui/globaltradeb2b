@@ -1,0 +1,13 @@
+bucket|5|214e6b8c4e25a543537d5c27bb059ea6
+column|473|d0874ee7f7aea9c8718b0727b778a2b2
+constraint|176|e8af304ed76b8c486c4b47074fed4610
+enum|24|e979b3b6c243454ef6d7562ee07177bb
+function_acl|70|275c79b70ecc26ec744c4f661e631bda
+function_body|70|1f7b039c4944bb0dc49a56b39b150b6b
+index|80|b281e5d0f29194ab851de2f2fd5bb82f
+policy|107|5bf0338ceab901c6f08beaf8d1a7e733
+relation_acl|61|947ccfc2d6a09f905b1d0e52c84f9ce3
+sequence|7|bbcbb182a50dbe90d3d8e5b91744c5c3
+table_flags|61|2d3cf4fee5acbb8e9cf03ece04440af7
+trigger|43|e5a77be72fea089783c156d0f248a33f
+view_def|6|54d2e5989dd4b5a81b37054f9629b9e6

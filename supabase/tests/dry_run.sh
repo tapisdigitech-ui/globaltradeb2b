@@ -1,7 +1,7 @@
 #!/bin/bash
 # ISOLATED DRY-RUN (LOCAL PostgreSQL 16 clone built from the read-only staging schema extract). Touches NO Supabase project.
 # Steps: environment guard -> fresh clone -> baseline dump -> apply 0001-0006 -> suites -> rollback 0006..0001 -> diff vs baseline.
-export PGHOST=/tmp/pgt PGPORT=5544 PGUSER=postgres; cd "$(dirname "$0")/.."
+export PGHOST=${PGHOST:-/tmp/pgt} PGPORT=${PGPORT:-5544} PGUSER=postgres; cd "$(dirname "$0")/.."
 case "$PGHOST" in /tmp/*) ;; *) echo "REFUSING: not the local scratch cluster"; exit 2;; esac
 echo "ENV: local socket $PGHOST port $PGPORT, server $(psql -Atc 'show server_version') ; data_directory $(psql -Atc 'show data_directory')"
 psql -Atc "select 'supabase-hosted markers: '||count(*) from pg_settings where name ilike '%supabase%'" 

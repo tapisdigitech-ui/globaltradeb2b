@@ -1,6 +1,6 @@
 #!/bin/bash
 # ROUND 7 ISOLATED DRY-RUN on a LOCAL PostgreSQL clone (baseline -> 0001-0006 -> 0007 -> down 0007 -> re-apply -> down 0007..0001). Touches NO Supabase project.
-export PGHOST=/tmp/pgt PGPORT=5544 PGUSER=postgres; cd "$(dirname "$0")/.."
+export PGHOST=${PGHOST:-/tmp/pgt} PGPORT=${PGPORT:-5544} PGUSER=postgres; cd "$(dirname "$0")/.."
 case "$PGHOST" in /tmp/*) ;; *) echo "REFUSING: not the local scratch cluster"; exit 2;; esac
 echo "ENV: server $(psql -Atc 'show server_version') (LOCAL PG16, hosted staging is PG17)"
 D=dry7; bash baseline/load_baseline.sh $D >/dev/null || exit 1

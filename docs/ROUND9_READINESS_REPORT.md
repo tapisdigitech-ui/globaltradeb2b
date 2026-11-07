@@ -72,3 +72,6 @@ Total of the Round 9.1 additions is included above; a second regression after th
 
 ## 11. Verdict
 **Ready for an approved, isolated-branch trial – not ready to touch staging, production-candidate or TAPIS KASA.** B1–B5 are resolved to the extent a local PostgreSQL 16 replica can show; B6 is open and external. Blockers before any hosted action: **B6** (plan/cost confirmation and explicit approval to create a branch); and, on that branch, items 2–4 above must pass before anything is promoted. Nothing was created or applied hosted; waiting for explicit approval.
+
+## Update — Free-plan strategy (supersedes the branching path)
+The organisation stays on Supabase Free; hosted branching is not used and blocker B6 is resolved accordingly. See `docs/FREE_PLAN_DEPLOYMENT_STRATEGY.md` (environment ladder, limits, backup/restore, staged migration, rollback, risks). Local PG17.11 validation is fully green; no hosted write has been performed.

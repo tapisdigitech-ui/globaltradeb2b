@@ -4,3 +4,10 @@ supabase/staging_schema/
 *.env
 .env*
 supabase/.temp/
+
+# backups / dumps must never be committed (may contain personal data)
+*.dump
+*.dump.enc
+*.sql.enc
+*.age
+supabase/ops/backups/

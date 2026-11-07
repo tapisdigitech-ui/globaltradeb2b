@@ -21,8 +21,12 @@ bash tests/run_sequence_roles.sh default > $LOG/seqrole_default.txt 2>&1;      e
 bash tests/run_sequence_roles.sh classic > $LOG/seqrole_classic.txt 2>&1;      echo "6e genuine-role sequence tests (classic platform): $(grep 'SEQUENCE ROLE TESTS' $LOG/seqrole_classic.txt)"
 bash tests/run_sequence_mutations.sh > $LOG/seqmut.txt 2>&1;                   echo "6f mutation control: $(grep -c '^DETECTED' $LOG/seqmut.txt) detected / $(grep -c '^MISSED' $LOG/seqmut.txt) missed"
 (cd functions/evidence-link && node --test 2>&1 | grep -E '^# (tests|pass|fail)' | tr '\n' ' ' | sed 's/^/7  Edge Function node tests: /'); echo
+if [ "${NO_PG_DUMP:-0}" = 1 ]; then   # client tools older than the server (PG16 client vs PG17 server): pg_dump cannot be used
+bash tests/rollback_fingerprint.sh > $LOG/rbfp.txt 2>&1;                       echo "8  rollback/re-apply (fingerprint-only):"; grep -v NOTICE $LOG/rbfp.txt | cut -c1-200 | sed 's/^/     /'
+else
 bash tests/dry_run_0008.sh > $LOG/dry8.txt 2>&1;                               echo "8  0008 rollback/re-apply:"; grep -E "APPLY|ROLLBACK|diff|NORMALISED" $LOG/dry8.txt | sed 's/^/     /'
 bash tests/dry_run_0007.sh > $LOG/dry7.txt 2>&1;                               echo "8b 0007 rollback/re-apply:"; grep -E "diff|NORMALISED" $LOG/dry7.txt | sed 's/^/     /'
+fi
 SUPABASE_BIN=${SUPABASE_BIN:-supabase} bash packaging/run_cli_chain.sh > $LOG/cli.txt 2>&1; echo "9  Supabase CLI chain: $(tail -1 $LOG/cli.txt) / $(grep -c Applying $LOG/cli.txt) migrations applied / $(grep IDENTICAL $LOG/cli.txt)"
 bash tests/run_proposal_admin_audit.sh control > $LOG/p_aa_c.txt 2>&1; bash tests/run_proposal_admin_audit.sh proposal > $LOG/p_aa_p.txt 2>&1; cnt "10 proposal admin-audit control" $LOG/p_aa_c.txt; cnt "10b proposal admin-audit" $LOG/p_aa_p.txt
 bash tests/run_proposal_invitation.sh control > $LOG/p_i_c.txt 2>&1; bash tests/run_proposal_invitation.sh proposal > $LOG/p_i_p.txt 2>&1; cnt "11 proposal invitation control" $LOG/p_i_c.txt; cnt "11b proposal invitation" $LOG/p_i_p.txt

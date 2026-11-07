@@ -1,7 +1,7 @@
 #!/bin/bash
 # ROUND 7 concurrency checks on a LOCAL PG16 copy of the post-suite database (real_post: baseline + 0001-0007 + fixtures). Real parallel psql sessions.
 # Requires: bash tests/run_real.sh post   (builds real_post)
-export PGHOST=/tmp/pgt PGPORT=5544 PGUSER=postgres; cd "$(dirname "$0")/.."
+export PGHOST=${PGHOST:-/tmp/pgt} PGPORT=${PGPORT:-5544} PGUSER=postgres; cd "$(dirname "$0")/.."
 case "$PGHOST" in /tmp/*) ;; *) echo "REFUSING"; exit 2;; esac
 psql -qc "drop database if exists conc" -c "create database conc template real_post" >/dev/null || exit 1
 Q(){ psql -d conc -Atq "$@"; }
