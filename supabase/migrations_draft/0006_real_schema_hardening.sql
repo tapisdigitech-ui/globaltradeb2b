@@ -356,7 +356,7 @@ create function public.staff_assigned_to_company(p_company uuid) returns boolean
 $$;
 create table public.review_recommendations (
   id uuid primary key default gen_random_uuid(),
-  target_type text not null check (target_type in ('company','product')),
+  target_type text not null check (target_type in ('company','product','product_image')),
   target_id uuid not null, company_id uuid not null,
   recommendation text not null check (recommendation in ('approve','reject','needs_changes','publish','unpublish')),
   note text not null check (length(trim(note)) >= 5),
@@ -368,12 +368,13 @@ begin
   if not public.is_staff() then raise exception 'staff only' using errcode = '42501'; end if;
   if p_target = 'company' then cid := p_id;
   elsif p_target = 'product' then select company_id into cid from public.products where id = p_id;
+  elsif p_target = 'product_image' then select p.company_id into cid from public.product_images i join public.products p on p.id = i.product_id where i.id = p_id;
   else raise exception 'unknown target'; end if;
   if cid is null or not exists(select 1 from public.companies where id = cid) then raise exception 'target not found'; end if;
   if not public.staff_assigned_to_company(cid) then raise exception 'not assigned to this record' using errcode = '42501'; end if;
   insert into public.review_recommendations(target_type, target_id, company_id, recommendation, note, reviewer_id)
     values (p_target, p_id, cid, p_recommendation, trim(p_note), auth.uid()) returning id into rid;
-  insert into public.moderation_actions(target_type, target_id, action, reason, admin_id) values (p_target, p_id::text, 'recommendation:' || p_recommendation, left(p_note, 500), auth.uid());
+  insert into public.moderation_actions(target_type, target_id, action, reason, admin_id) values (case when p_target = 'product_image' then 'image' else p_target end, p_id::text, 'recommendation:' || p_recommendation, left(p_note, 500), auth.uid());
   return rid;
 end $$;
 alter table public.review_recommendations enable row level security; alter table public.review_recommendations force row level security;
@@ -418,6 +419,165 @@ begin
   insert into public.audit_log(actor_id, actor_role, action, entity, entity_id, new_value) values (auth.uid(), current_user, 'claim_reviewer_unassigned', 'company_claims', p_claim::text, '{}'::jsonb);
 end $$;
 revoke all on function public.admin_unassign_claim_reviewer(uuid) from public, anon, authenticated; grant execute on function public.admin_unassign_claim_reviewer(uuid) to authenticated;
+
+-- =====================================================================================================================
+-- ROUND 4 (A) the remaining staff-wide policies: assignment-scoped (staff_assigned_to_company = admin OR assigned staff) or admin-only.
+-- Decision table: docs/STAFF_POLICY_DECISIONS.md. Kept staff-wide with documented reason: categories_read_auth, cms_read_auth,
+-- profiles_self_read (staff directory, no buyer data), cinv_read (already scoped to creator/admin by 0004).
+-- =====================================================================================================================
+drop policy audit_read on public.audit_log;                 create policy audit_read on public.audit_log for select using (is_admin());
+drop policy bro_read on public.brochures;                   create policy bro_read on public.brochures for select using (is_company_member(company_id) or public.staff_assigned_to_company(company_id));
+drop policy companies_read on public.companies;             create policy companies_read on public.companies for select using (is_company_member(id) or user_is_claimant(id) or public.staff_assigned_to_company(id));
+drop policy companies_staff_update on public.companies;     create policy companies_staff_update on public.companies for update using (public.staff_assigned_to_company(id)) with check (public.staff_assigned_to_company(id));
+drop policy cacq_staff on public.company_acquisition;       create policy cacq_staff on public.company_acquisition for all using (public.staff_assigned_to_company(company_id)) with check (public.staff_assigned_to_company(company_id));
+drop policy ccat_read on public.company_categories;         create policy ccat_read on public.company_categories for select using (company_is_live(company_id) or is_company_member(company_id) or public.staff_assigned_to_company(company_id));
+drop policy ccat_write on public.company_categories;        create policy ccat_write on public.company_categories for all using (has_company_role(company_id, array['owner'::member_role,'manager'::member_role]) or is_admin()) with check (has_company_role(company_id, array['owner'::member_role,'manager'::member_role]) or is_admin());
+drop policy corr_read on public.company_data_corrections;   create policy corr_read on public.company_data_corrections for select using (reporter_id = auth.uid() or public.staff_assigned_to_company(company_id) or has_company_role(company_id, array['owner'::member_role,'manager'::member_role]));
+drop policy corr_staff_upd on public.company_data_corrections; create policy corr_staff_upd on public.company_data_corrections for update using (public.staff_assigned_to_company(company_id)) with check (public.staff_assigned_to_company(company_id) and reviewed_by = auth.uid());
+drop policy cfu_staff on public.company_follow_ups;         create policy cfu_staff on public.company_follow_ups for all using (public.staff_assigned_to_company(company_id)) with check (public.staff_assigned_to_company(company_id));
+drop policy cimg_del on public.company_images;              create policy cimg_del on public.company_images for delete using (has_company_role(company_id, array['owner'::member_role,'manager'::member_role,'catalogue_editor'::member_role]) or public.staff_assigned_to_company(company_id));
+drop policy cimg_ins on public.company_images;              create policy cimg_ins on public.company_images for insert with check (has_company_role(company_id, array['owner'::member_role,'manager'::member_role,'catalogue_editor'::member_role]) or public.staff_assigned_to_company(company_id));
+drop policy cimg_read on public.company_images;             create policy cimg_read on public.company_images for select using (is_company_member(company_id) or public.staff_assigned_to_company(company_id));
+drop policy cimg_upd on public.company_images;              create policy cimg_upd on public.company_images for update using (has_company_role(company_id, array['owner'::member_role,'manager'::member_role,'catalogue_editor'::member_role]) or public.staff_assigned_to_company(company_id)) with check (has_company_role(company_id, array['owner'::member_role,'manager'::member_role,'catalogue_editor'::member_role]) or public.staff_assigned_to_company(company_id));
+drop policy cimp_b on public.company_import_batches;        create policy cimp_b on public.company_import_batches for all using (is_admin()) with check (is_admin() and operator_id = auth.uid());
+drop policy cimp_r on public.company_import_rows;           create policy cimp_r on public.company_import_rows for all using (is_admin()) with check (is_admin());
+drop policy cnote_ins on public.company_internal_notes;     create policy cnote_ins on public.company_internal_notes for insert with check (is_staff() and author_id = auth.uid() and public.staff_assigned_to_company(company_id));
+drop policy cnote_read on public.company_internal_notes;    create policy cnote_read on public.company_internal_notes for select using (public.staff_assigned_to_company(company_id));
+drop policy members_read on public.company_members;         create policy members_read on public.company_members for select using (user_id = auth.uid() or is_company_member(company_id) or public.staff_assigned_to_company(company_id));
+drop policy cma_read on public.company_membership_audit;    create policy cma_read on public.company_membership_audit for select using (is_admin());
+drop policy cout_insert on public.company_outreach_events;  create policy cout_insert on public.company_outreach_events for insert with check (is_staff() and recorded_by = auth.uid() and public.staff_assigned_to_company(company_id));
+drop policy cout_read on public.company_outreach_events;    create policy cout_read on public.company_outreach_events for select using (public.staff_assigned_to_company(company_id));
+drop policy csrc_staff on public.company_sources;           create policy csrc_staff on public.company_sources for all using (public.staff_assigned_to_company(company_id)) with check (public.staff_assigned_to_company(company_id));
+drop policy cvr_read on public.company_verification_reviews; create policy cvr_read on public.company_verification_reviews for select using (public.staff_assigned_to_company(company_id));
+drop policy eca_read on public.enquiry_contact_access;      create policy eca_read on public.enquiry_contact_access for select using (is_admin());
+drop policy lr_read on public.lead_responses;               create policy lr_read on public.lead_responses for select using (is_company_member(company_id) or enquiry_buyer(enquiry_id) = auth.uid() or public.staff_can_see_enquiry(enquiry_id));
+drop policy media_admin on public.media_assets;             create policy media_admin on public.media_assets for all using (is_admin()) with check (is_admin());
+drop policy mod_read on public.moderation_actions;          create policy mod_read on public.moderation_actions for select using (is_admin() or admin_id = auth.uid());
+drop policy pimg_del on public.product_images;              create policy pimg_del on public.product_images for delete using (has_company_role(product_company(product_id), array['owner'::member_role,'manager'::member_role,'catalogue_editor'::member_role]) or public.staff_assigned_to_company(product_company(product_id)));
+drop policy pimg_read on public.product_images;             create policy pimg_read on public.product_images for select using (is_company_member(product_company(product_id)) or public.staff_assigned_to_company(product_company(product_id)));
+drop policy views_read on public.product_view_events;       create policy views_read on public.product_view_events for select using (is_company_member(company_id) or is_admin());
+drop policy products_read on public.products;               create policy products_read on public.products for select using (is_company_member(company_id) or public.staff_assigned_to_company(company_id));
+drop policy products_staff_upd on public.products;          create policy products_staff_upd on public.products for update using (public.staff_assigned_to_company(company_id)) with check (public.staff_assigned_to_company(company_id));
+drop policy fb_staff on public.seller_feedback;             create policy fb_staff on public.seller_feedback for select using (is_admin());
+drop policy supp_staff on public.suppression_list;          create policy supp_staff on public.suppression_list for all using (is_admin()) with check (is_admin());
+-- storage policies that also used bare is_staff()
+drop policy bro_obj_read on storage.objects;  create policy bro_obj_read on storage.objects for select to authenticated using (bucket_id = 'brochures' and (is_company_member(safe_uuid((storage.foldername(name))[1])) or public.staff_assigned_to_company(safe_uuid((storage.foldername(name))[1]))));
+drop policy bro_obj_write on storage.objects; create policy bro_obj_write on storage.objects for all to authenticated using (bucket_id = 'brochures' and (has_company_role(safe_uuid((storage.foldername(name))[1]), array['owner'::member_role,'manager'::member_role]) or public.staff_assigned_to_company(safe_uuid((storage.foldername(name))[1])))) with check (bucket_id = 'brochures' and (has_company_role(safe_uuid((storage.foldername(name))[1]), array['owner'::member_role,'manager'::member_role]) or public.staff_assigned_to_company(safe_uuid((storage.foldername(name))[1]))));
+drop policy cap_write on storage.objects;     create policy cap_write on storage.objects for all to authenticated using (bucket_id = 'company-assets-public' and (has_company_role(safe_uuid((storage.foldername(name))[1]), array['owner'::member_role,'manager'::member_role,'catalogue_editor'::member_role]) or is_admin())) with check (bucket_id = 'company-assets-public' and (has_company_role(safe_uuid((storage.foldername(name))[1]), array['owner'::member_role,'manager'::member_role,'catalogue_editor'::member_role]) or is_admin()));
+drop policy pmp_pending_rw on storage.objects; create policy pmp_pending_rw on storage.objects for all to authenticated using (bucket_id = 'product-media-pending' and (has_company_role(safe_uuid((storage.foldername(name))[1]), array['owner'::member_role,'manager'::member_role,'catalogue_editor'::member_role]) or public.staff_assigned_to_company(safe_uuid((storage.foldername(name))[1])))) with check (bucket_id = 'product-media-pending' and (has_company_role(safe_uuid((storage.foldername(name))[1]), array['owner'::member_role,'manager'::member_role,'catalogue_editor'::member_role]) or public.staff_assigned_to_company(safe_uuid((storage.foldername(name))[1]))));
+drop policy pmp_public_staff on storage.objects; create policy pmp_public_staff on storage.objects for all to authenticated using (bucket_id = 'product-media-public' and is_admin()) with check (bucket_id = 'product-media-public' and is_admin());
+-- import_normalize: same body as staging, guard is_staff() -> is_admin() (import tables are now admin-only)
+create or replace function public.import_normalize(p_batch uuid) returns jsonb language plpgsql security definer set search_path to 'public','pg_temp' as $$
+declare r record; errs text[]; m uuid; supp boolean; k text; cnt jsonb;
+begin
+  if not is_admin() then raise exception 'admin only' using errcode='42501'; end if;
+  for r in select * from company_import_rows where batch_id=p_batch and status in ('staged','invalid','duplicate_review','suppressed') order by row_no loop
+    errs := '{}';
+    if coalesce(trim(r.name),'')='' then errs := array_append(errs,'name missing'); end if;
+    if r.website is not null and r.website !~* '^https?://[^ ]+\\.[^ ]+$' then errs := array_append(errs,'website not a valid http(s) URL'); end if;
+    k := case when norm_domain(r.website) is not null then 'd:'||norm_domain(r.website)
+              else 'n:'||coalesce(norm_name(r.name),'')||'|'||lower(coalesce(trim(r.city),'')) end;
+    select exists(select 1 from suppression_list s where (s.domain is not null and s.domain=norm_domain(r.website))
+                  or (s.normalized_name is not null and s.normalized_name=norm_name(r.name))) into supp;
+    select c.id into m from companies c
+     where c.dedupe_key = k or (norm_domain(r.website) is not null and norm_domain(c.website)=norm_domain(r.website))
+        or (norm_name(c.name)=norm_name(r.name) and lower(coalesce(c.city,''))=lower(coalesce(r.city,''))) limit 1;
+    if m is null and exists(select 1 from company_import_rows o where o.batch_id=p_batch and o.dedupe_key=k and o.row_no<r.row_no) then
+      errs := array_append(errs,'duplicate of an earlier row in this batch'); end if;
+    update company_import_rows set normalized_name=norm_name(r.name), domain=norm_domain(r.website), dedupe_key=k, match_company_id=m,
+      errors=errs, status=case when supp then 'suppressed' when cardinality(errs)>0 and errs<>array['duplicate of an earlier row in this batch'] then 'invalid'
+                               when m is not null or cardinality(errs)>0 then 'duplicate_review' else 'staged' end::import_row_status
+     where id=r.id;
+  end loop;
+  select jsonb_object_agg(status, n) into cnt from (select status, count(*) n from company_import_rows where batch_id=p_batch group by status) s;
+  update company_import_batches set status='validated', counts=coalesce(cnt,'{}'), validation_report=jsonb_build_object('validated_at',now(),'by',auth.uid()) where id=p_batch;
+  return cnt;
+end $$;
+
+-- ===== ROUND 4 (B) product image approval: admin-only, provenance + licence + representation, immutable audit =====
+alter table public.product_images add column representation text check (representation in ('actual_product','illustrative'));
+drop function public.approve_product_image(uuid, text);
+create function public.approve_product_image(p_image uuid, p_public_path text, p_representation text, p_note text) returns void
+language plpgsql security definer set search_path to 'public','pg_temp' as $$
+declare im product_images; has_url boolean; has_ev boolean;
+begin
+  if not is_admin() then raise exception 'admin only: reviewers may recommend, not approve' using errcode='42501'; end if;
+  if coalesce(length(trim(p_note)),0) < 5 then raise exception 'approval note required (basis for the decision)'; end if;
+  select * into im from product_images where id = p_image for update;
+  if not found then raise exception 'image not found'; end if;
+  if p_representation is distinct from 'actual_product' then
+    raise exception 'only images showing the actual supplier product can be published; illustrative images are not publishable' using errcode='23514'; end if;
+  if im.rights_status not in ('owned','licensed','permission_granted','public_domain') then raise exception 'image rights not cleared'; end if;
+  has_url := coalesce(trim(im.image_source_url),'') <> '';
+  has_ev  := coalesce(trim(im.permission_evidence),'') <> '';
+  if not has_url and not has_ev then raise exception 'provenance required: source URL or permission evidence'; end if;
+  if has_url and im.image_source_url !~* '^https?://[^ ]+\.[^ ]+$' then raise exception 'source URL is not a valid http(s) URL'; end if;
+  if im.rights_status in ('licensed','permission_granted') and not has_ev then raise exception 'licence or supplier authorisation evidence required'; end if;
+  if im.rights_status = 'public_domain' and not has_url then raise exception 'public-domain claim needs a source URL'; end if;
+  if p_public_path is null or p_public_path !~ '^[a-z0-9][a-z0-9/_.-]{3,200}$' or p_public_path like '%..%' then raise exception 'invalid public path'; end if;
+  update product_images set review_status='approved', public_path=p_public_path, representation=p_representation, reviewed_by=auth.uid(), reviewed_at=now() where id = p_image;
+  insert into moderation_actions(target_type,target_id,action,reason,admin_id)
+    values ('image', p_image::text, 'image_approved:' || im.rights_status::text || ':' || p_representation, left(trim(p_note),500), auth.uid());
+end $$;
+revoke all on function public.approve_product_image(uuid,text,text,text) from public, anon, authenticated;
+grant execute on function public.approve_product_image(uuid,text,text,text) to authenticated;
+
+-- ===== ROUND 4 (C) buyer contact: purpose-required, audited, expiring access (no direct table bypass) =====
+create table public.buyer_contact_access_log (
+  id bigint generated always as identity primary key,
+  actor_id uuid not null, actor_role text not null, enquiry_id uuid not null, buyer_id uuid not null,   -- no FKs: audit rows survive deletions
+  action text not null check (action in ('open_contact')),
+  purpose text not null check (length(trim(purpose)) >= 5), at timestamptz not null default now());
+create trigger bcal_immutable before update or delete on public.buyer_contact_access_log for each row execute function public.block_mutation();
+create table public.buyer_contact_grants (enquiry_id uuid not null, staff_id uuid not null, expires_at timestamptz not null, primary key (enquiry_id, staff_id));
+-- recheck at EVERY read: admin, or staff whose assigned lead case for this enquiry is still open; plus an unexpired grant
+create function public.buyer_contact_grant_active(p_enq uuid) returns boolean language sql stable security definer set search_path = public, pg_temp as $$
+  select p_enq is not null and public.is_staff()
+    and (public.is_admin() or exists(select 1 from public.lead_cases lc where lc.enquiry_id = p_enq and lc.assigned_to = auth.uid() and lc.status <> 'closed'))
+    and exists(select 1 from public.buyer_contact_grants g where g.enquiry_id = p_enq and g.staff_id = auth.uid() and g.expires_at > now())
+$$;
+create function public.staff_open_buyer_contact(p_enquiry uuid, p_purpose text) returns table(buyer_name text, buyer_phone text, buyer_email text, buyer_company text, access_expires_at timestamptz)
+language plpgsql security definer set search_path = public, pg_temp as $$
+declare exp timestamptz := now() + interval '10 minutes'; bid uuid;
+begin
+  select buyer_id into bid from public.enquiries where id = p_enquiry;
+  if bid is null then raise exception 'enquiry not found'; end if;
+  if not public.is_staff() or not (public.is_admin() or exists(select 1 from public.lead_cases lc where lc.enquiry_id = p_enquiry and lc.assigned_to = auth.uid() and lc.status <> 'closed')) then
+    raise exception 'not authorised for this enquiry' using errcode = '42501'; end if;
+  if coalesce(length(trim(p_purpose)),0) < 5 then raise exception 'purpose required (min 5 characters)'; end if;
+  perform public.check_rate('buyer_contact_open', 100, interval '1 day');
+  insert into public.buyer_contact_access_log(actor_id, actor_role, enquiry_id, buyer_id, action, purpose) values (auth.uid(), current_user, p_enquiry, bid, 'open_contact', trim(p_purpose));
+  insert into public.buyer_contact_grants(enquiry_id, staff_id, expires_at) values (p_enquiry, auth.uid(), exp)
+    on conflict (enquiry_id, staff_id) do update set expires_at = excluded.expires_at;
+  return query select ep.buyer_name, ep.buyer_phone, ep.buyer_email, ep.buyer_company, exp from public.enquiry_private ep where ep.enquiry_id = p_enquiry;
+end $$;
+create function public.admin_revoke_buyer_contact_access(p_enquiry uuid) returns void language plpgsql security definer set search_path = public, pg_temp as $$
+begin
+  if not public.is_admin() then raise exception 'admin only' using errcode = '42501'; end if;
+  delete from public.buyer_contact_grants where enquiry_id = p_enquiry;
+  insert into public.audit_log(actor_id, actor_role, action, entity, entity_id, new_value) values (auth.uid(), current_user, 'buyer_contact_grants_revoked', 'enquiries', p_enquiry::text, '{}'::jsonb);
+end $$;
+drop policy epriv_read on public.enquiry_private;
+create policy epriv_read on public.enquiry_private for select using (enquiry_buyer(enquiry_id) = auth.uid() or public.buyer_contact_grant_active(enquiry_id));
+alter table public.buyer_contact_access_log enable row level security; alter table public.buyer_contact_access_log force row level security;
+alter table public.buyer_contact_grants enable row level security; alter table public.buyer_contact_grants force row level security;
+revoke all on public.buyer_contact_access_log, public.buyer_contact_grants from public, anon, authenticated;
+grant select on public.buyer_contact_access_log to authenticated;
+create policy bcal_admin_read on public.buyer_contact_access_log for select to authenticated using (public.is_admin());
+revoke all on function public.buyer_contact_grant_active(uuid), public.staff_open_buyer_contact(uuid,text), public.admin_revoke_buyer_contact_access(uuid) from public, anon, authenticated;
+grant execute on function public.buyer_contact_grant_active(uuid), public.staff_open_buyer_contact(uuid,text), public.admin_revoke_buyer_contact_access(uuid) to authenticated;
+
+-- ===== ROUND 4 (D) evidence-link service: audit that signed links were issued (called by the Edge Function with the staff JWT) =====
+create function public.staff_record_evidence_links(p_claim uuid, p_evidence_ids uuid[], p_ttl integer) returns void language plpgsql security definer set search_path = public, pg_temp as $$
+declare cid uuid;
+begin
+  if not public.evidence_grant_active(p_claim) then raise exception 'no active evidence grant' using errcode = '42501'; end if;
+  if p_ttl is null or p_ttl < 1 or p_ttl > 600 then raise exception 'signed URL lifetime must be 1..600 seconds'; end if;
+  select company_id into cid from public.company_claims where id = p_claim;
+  insert into public.claim_evidence_access_log(actor_id, claim_id, company_id, purpose, evidence_count) values (auth.uid(), p_claim, cid, 'signed links issued (ttl ' || p_ttl || 's)', coalesce(cardinality(p_evidence_ids),0));
+end $$;
+revoke all on function public.staff_record_evidence_links(uuid,uuid[],integer) from public, anon, authenticated;
+grant execute on function public.staff_record_evidence_links(uuid,uuid[],integer) to authenticated;
 
 revoke all on function public.admin_assign_claim_reviewer(uuid,uuid), public.evidence_grant_active(uuid), public.staff_open_claim_evidence(uuid,text), public.seller_product_enquiry_visible(uuid) from public, anon;
 grant execute on function public.admin_assign_claim_reviewer(uuid,uuid), public.evidence_grant_active(uuid), public.staff_open_claim_evidence(uuid,text), public.seller_product_enquiry_visible(uuid) to authenticated;

@@ -43,3 +43,6 @@ Pre-0006 42 pass (controls exposed); post-0006 107 pass / 0 fail; rollback diff 
 
 ## Update (round 3) — LOCAL clone of real schema, PG16
 Pre-0006: 54 pass, 15 exposure controls. Post-0006: 157 pass / 0 fail / 0 exposed. Rollback (with and without data): 0 diff lines. Not Supabase, not staging. See REAL_STAGING_AUDIT.md Revision 3.
+
+## Round 4 (local replica, not Supabase)
+Legacy 138 PASS; real-schema post 258 PASS/0 FAIL; pre 54 PASS, 40 exposed controls; Edge Function unit tests 9/9; rollback 0006 diff 0 lines.

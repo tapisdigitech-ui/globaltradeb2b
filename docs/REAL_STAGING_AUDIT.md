@@ -195,3 +195,11 @@ Limits: U3 (no overwrite) passes in the clone because the stub grants no UPDATE 
 
 ## R3-9. Remaining blockers
 Supabase-branch validation (cost approval pending); signed-URL TTL and Storage-service behaviour; the 39 staff-wide policies above; `approve_product_image`; edge function for evidence URLs and the admin/reviewer UI changes required by decisions 1–3 (reviewer screens for messages/orders will be empty by design).
+
+## Revision 4 (local validation only; nothing applied to staging)
+- R3-6 closed in draft: all 39 remaining staff-wide policies decided and replaced (`STAFF_POLICY_DECISIONS.md`), plus `import_normalize` admin-only.
+- `approve_product_image` is admin-only; requires provenance, licence/permission evidence, `representation = actual_product`, safe path, note; writes immutable `moderation_actions`. Reviewers recommend only (tests IMG1-IMG20).
+- Buyer contact: purpose-required audited 10-minute grants with assignment re-check on every read (`BUYER_CONTACT_ACCESS.md`, BC0-BC20).
+- Evidence-link Edge Function written and unit-tested locally; hosted Storage behaviour unverified (`EVIDENCE_LINK_FUNCTION.md`).
+- Results (local PG 16.15 replica): legacy suite 138 PASS; real-schema post 258 PASS / 0 FAIL; pre 54 PASS / 40 EXPOSED controls / 0 FAIL; rollback of 0006 = 0-line diff, re-apply ok; full 0006..0001 rollback differs only by whitespace in 3 function bodies; Edge Function node tests 9/9.
+- Remaining hosted blockers: signed-URL/TTL and storage RLS with real JWTs, Edge Function deployment, auth.users/triggers behaviour, 14 stubbed unrelated RPC bodies, admin RLS reads not individually logged, denied attempts not logged, no separate audit-personnel role.

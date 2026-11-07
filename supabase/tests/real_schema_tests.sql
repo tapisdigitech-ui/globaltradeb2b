@@ -454,4 +454,254 @@ select pg_temp.ok('N10 notification totals still equal actual delivered_direct e
 select pg_temp.ok('N11 no email/SMS mechanism is invoked: no pg_net/http extension installed and no trigger calls one', not exists(select 1 from pg_extension where extname in ('pg_net','http')) and not exists(select 1 from pg_proc where prosrc ~* '(net\.http|http_post|smtp|sendgrid|twilio)' and pronamespace='public'::regnamespace));
 \endif
 
+
+-- =====================================================================================================================
+-- ROUND 4 tests. a1 = admin, a2 = reviewer ASSIGNED to the r1 lead (matches C1), a3 = reviewer NOT assigned to anything open.
+-- =====================================================================================================================
+-- ---- fixtures (superuser) ----
+set app.uid='00000000-0000-0000-0000-0000000000a1';
+insert into company_internal_notes(company_id,body,author_id) values ('c0000000-0000-0000-0000-000000000001','internal note about C1','00000000-0000-0000-0000-0000000000a1');
+insert into company_outreach_events(company_id,event_type,summary,recorded_by) values ('c0000000-0000-0000-0000-000000000001','note','outreach note','00000000-0000-0000-0000-0000000000a1');
+insert into company_acquisition(company_id,acquisition_status) values ('c0000000-0000-0000-0000-000000000001','not_contacted') on conflict do nothing;
+insert into company_follow_ups(company_id,due_at,created_by) values ('c0000000-0000-0000-0000-000000000001',now()+interval '1 day','00000000-0000-0000-0000-0000000000a1');
+insert into company_data_corrections(company_id,field_name,proposed_value,reporter_id) values ('c0000000-0000-0000-0000-000000000001','city','Varanasi','00000000-0000-0000-0000-0000000000b1');
+insert into brochures(company_id,path,file_name) values ('c0000000-0000-0000-0000-000000000001','c0000000-0000-0000-0000-000000000001'||'/b.pdf','b.pdf');
+insert into company_images(company_id,path,rights_status) values ('c0000000-0000-0000-0000-000000000001','c0000000-0000-0000-0000-000000000001'||'/i.jpg','owned');
+insert into company_verification_reviews(company_id,subject,decision,reason,reviewer_id) values ('c0000000-0000-0000-0000-000000000001','verification','verified','docs ok','00000000-0000-0000-0000-0000000000a1');
+insert into company_membership_audit(company_id,member_user_id,action,actor_id) values ('c0000000-0000-0000-0000-000000000001','00000000-0000-0000-0000-0000000000c1','add','00000000-0000-0000-0000-0000000000a1');
+insert into media_assets(scope,key,path,source_note,rights_status) values ('category','rugs','m/rugs.jpg','own photo','owned');
+insert into product_view_events(product_id,company_id,viewer_hash) values ('d0000000-0000-0000-0000-000000000001','c0000000-0000-0000-0000-000000000001','0123456789abcdef0123');
+insert into seller_feedback(user_id,company_id,body) values ('00000000-0000-0000-0000-0000000000c1','c0000000-0000-0000-0000-000000000001','platform feedback');
+insert into suppression_list(domain,reason) values ('blocked.example','requested removal');
+insert into company_import_batches(id,source_type,source_name,source_url,terms_checked,operator_id) values ('f1f00000-0000-0000-0000-000000000001','official_website','test batch','https://x.example',true,'00000000-0000-0000-0000-0000000000a1');
+insert into company_import_rows(batch_id,row_no,raw,name) values ('f1f00000-0000-0000-0000-000000000001',1,'{}'::jsonb,'Imp Co');
+reset app.uid;
+create or replace function pg_temp.vis(t text) returns bigint language plpgsql as $$ declare n bigint; begin execute format('select count(*) from %s', t) into n; return n; exception when others then return -1; end $$;
+create or replace function pg_temp.pol(t text, a2_ok boolean, a3_ok boolean, adm_ok boolean) returns void language plpgsql as $$
+declare x2 bigint; x3 bigint; xa bigint;
+begin
+  perform set_config('role','authenticated',true);
+  perform set_config('app.uid','00000000-0000-0000-0000-0000000000a2',true); x2 := pg_temp.vis(t);
+  perform set_config('app.uid','00000000-0000-0000-0000-0000000000a3',true); x3 := pg_temp.vis(t);
+  perform set_config('app.uid','00000000-0000-0000-0000-0000000000a1',true); xa := pg_temp.vis(t);
+  perform set_config('role','postgres',true);
+  if (xa>0)<>adm_ok then raise exception 'FAIL: POL % admin visibility %', t, xa; end if;
+  if current_setting('t.phase')='pre' then
+     raise notice '%: POL % unassigned reviewer sees % row(s), assigned reviewer %', case when x3>0 and not a3_ok then 'EXPOSED (pre-0006 control)' else 'not exposed (pre-0006)' end, t, x3, x2;
+  else
+     if (x2>0)<>a2_ok then raise exception 'FAIL: POL % assigned reviewer visibility % (expected %)', t, x2, a2_ok; end if;
+     if (x3>0)<>a3_ok then raise exception 'FAIL: POL % unassigned reviewer visibility % (expected %)', t, x3, a3_ok; end if;
+     raise notice 'PASS: POL % -> assigned reviewer % / unassigned reviewer % / admin %', t, x2, x3, xa;
+  end if;
+end $$;
+-- ---- 1. read policies: assignment-scoped (a2 yes, a3 no) ----
+select pg_temp.pol('public.company_internal_notes',true,false,true);
+select pg_temp.pol('public.company_outreach_events',true,false,true);
+select pg_temp.pol('public.company_acquisition',true,false,true);
+select pg_temp.pol('public.company_follow_ups',true,false,true);
+select pg_temp.pol('public.company_data_corrections',true,false,true);
+select pg_temp.pol('public.company_sources',true,false,true);
+select pg_temp.pol('public.brochures',true,false,true);
+select pg_temp.pol('public.company_images',true,false,true);
+select pg_temp.pol('public.company_verification_reviews',true,false,true);
+select pg_temp.pol('public.lead_responses',true,false,true);
+select pg_temp.pol('public.products',true,false,true);
+-- ---- 2. admin-only reads (a2 no, a3 no) ----
+select pg_temp.pol('public.audit_log',false,false,true);
+select pg_temp.pol('public.company_membership_audit',false,false,true);
+select pg_temp.pol('public.enquiry_contact_access',false,false,true);
+select pg_temp.pol('public.media_assets',true,true,true);   -- read is public by design (separate public-read policy); WRITE is admin-only, see W18
+select pg_temp.pol('public.product_view_events',false,false,true);
+select pg_temp.pol('public.seller_feedback',false,false,true);
+select pg_temp.pol('public.suppression_list',false,false,true);
+select pg_temp.pol('public.company_import_batches',false,false,true);
+select pg_temp.pol('public.company_import_rows',false,false,true);
+-- companies: scoped visibility of one specific record (rows of the whole directory are visible to admin only)
+set role authenticated; set app.uid='00000000-0000-0000-0000-0000000000a3';
+select pg_temp.gap('POL companies: unassigned reviewer reads C1 company row', (select count(*) from public.companies where slug='c1')>0);
+select pg_temp.gap('POL company_members: unassigned reviewer lists C1 members', (select count(*) from public.company_members where company_id='c0000000-0000-0000-0000-000000000001')>0);
+reset role; reset app.uid;
+\if :post
+set role authenticated; set app.uid='00000000-0000-0000-0000-0000000000a2';
+select pg_temp.ok('POL companies/company_members: assigned reviewer reads C1 and its members', (select count(*) from public.companies where slug='c1')=1 and (select count(*) from public.company_members where company_id='c0000000-0000-0000-0000-000000000001')>=1);
+select pg_temp.ok('POL moderation_actions: reviewer sees only own entries', (select count(*) from public.moderation_actions)>=1 and (select count(*) from public.moderation_actions where admin_id<>'00000000-0000-0000-0000-0000000000a2')=0);
+reset role; reset app.uid;
+set role authenticated; set app.uid='00000000-0000-0000-0000-0000000000a3';
+select pg_temp.ok('POL moderation_actions: other reviewer sees none', (select count(*) from public.moderation_actions)=0);
+reset role; reset app.uid;
+-- ---- 3. writes ----
+set role authenticated; set app.uid='00000000-0000-0000-0000-0000000000a3';
+select pg_temp.denied('POL W1 unassigned reviewer cannot add an internal note', $$insert into public.company_internal_notes(company_id,body,author_id) values ('c0000000-0000-0000-0000-000000000001','x','00000000-0000-0000-0000-0000000000a3')$$);
+select pg_temp.denied('POL W2 unassigned reviewer cannot log an outreach event', $$insert into public.company_outreach_events(company_id,event_type,summary,recorded_by) values ('c0000000-0000-0000-0000-000000000001','note','x','00000000-0000-0000-0000-0000000000a3')$$);
+select pg_temp.ok('POL W3 unassigned reviewer cannot update a company (0 rows)', pg_temp.affected($$update public.companies set about='hijack' where slug='c1'$$)=0);
+select pg_temp.ok('POL W4 unassigned reviewer cannot update a product (0 rows)', pg_temp.affected($$update public.products set description='hijack' where name='Rug A'$$)=0);
+select pg_temp.ok('POL W5 unassigned reviewer cannot touch acquisition/follow-ups (0 rows)', pg_temp.affected($$update public.company_acquisition set acquisition_status='declined'$$)=0 and pg_temp.affected($$update public.company_follow_ups set status='done'$$)=0);
+reset role; reset app.uid;
+set role authenticated; set app.uid='00000000-0000-0000-0000-0000000000a2';
+select pg_temp.ok('POL W6 assigned reviewer adds an internal note and an outreach event', pg_temp.try($$insert into public.company_internal_notes(company_id,body,author_id) values ('c0000000-0000-0000-0000-000000000001','my call note','00000000-0000-0000-0000-0000000000a2')$$) and pg_temp.try($$insert into public.company_outreach_events(company_id,event_type,summary,recorded_by) values ('c0000000-0000-0000-0000-000000000001','call','spoke to owner','00000000-0000-0000-0000-0000000000a2')$$));
+select pg_temp.denied('POL W7 ...but not in someone else''s name', $$insert into public.company_internal_notes(company_id,body,author_id) values ('c0000000-0000-0000-0000-000000000001','forged','00000000-0000-0000-0000-0000000000a1')$$);
+select pg_temp.ok('POL W8 assigned reviewer updates descriptive fields of the assigned company and product', pg_temp.affected($$update public.companies set about='verified wording' where slug='c1'$$)=1 and pg_temp.affected($$update public.products set description='clean text' where name='Rug A'$$)=1);
+select pg_temp.denied('POL W9 ...but protected columns stay guarded (cannot publish/verify)', $$update public.companies set verification_status='verified', directory_status='suspended' where slug='c1'$$);
+select pg_temp.denied('POL W10 assigned reviewer cannot change suppression list', $$insert into public.suppression_list(domain,reason) values ('x.example','nope')$$);
+select pg_temp.denied('POL W11 assigned reviewer cannot create import batches', $$insert into public.company_import_batches(source_type,source_name,source_url,terms_checked,operator_id) values ('official_website','x','https://x.example',true,'00000000-0000-0000-0000-0000000000a2')$$);
+select pg_temp.denied('POL W12 reviewer cannot rewrite company categories (affects lead matching)', $$insert into public.company_categories(company_id,category_id) values ('c0000000-0000-0000-0000-000000000001',2)$$);
+select pg_temp.denied('POL W18 reviewer cannot write media_assets (admin-only write policy)', $$insert into public.media_assets(scope,key,path,source_note,rights_status) values ('category','x','m/x.jpg','n','owned')$$);
+select pg_temp.denied('POL W13 reviewer cannot call import_normalize', $$select public.import_normalize('f1f00000-0000-0000-0000-000000000001')$$, 'admin only');
+select pg_temp.denied('POL W14 reviewer cannot write the public media bucket', $$insert into storage.objects(bucket_id,name) values ('product-media-public','c0000000-0000-0000-0000-000000000001/x.jpg')$$);
+select pg_temp.ok('POL W15 assigned reviewer can use the pending-media and brochure folders of the assigned company', pg_temp.try($$insert into storage.objects(bucket_id,name) values ('product-media-pending','c0000000-0000-0000-0000-000000000001/p.jpg')$$) and pg_temp.try($$insert into storage.objects(bucket_id,name) values ('brochures','c0000000-0000-0000-0000-000000000001/b2.pdf')$$));
+reset role; reset app.uid;
+set role authenticated; set app.uid='00000000-0000-0000-0000-0000000000a3';
+select pg_temp.denied('POL W16 unassigned reviewer cannot use the company brochure folder', $$insert into storage.objects(bucket_id,name) values ('brochures','c0000000-0000-0000-0000-000000000001/evil.pdf')$$);
+reset role; reset app.uid;
+set role authenticated; set app.uid='00000000-0000-0000-0000-0000000000a1';
+select pg_temp.ok('POL W17 admin keeps full operational access (notes, suppression, import, categories, public media, normalize)', pg_temp.try($$insert into public.company_internal_notes(company_id,body,author_id) values ('c0000000-0000-0000-0000-000000000001','admin note','00000000-0000-0000-0000-0000000000a1')$$) and pg_temp.try($$insert into public.suppression_list(domain,reason) values ('y.example','admin adds')$$) and pg_temp.try($$insert into public.company_categories(company_id,category_id) values ('c0000000-0000-0000-0000-000000000001',2)$$) and pg_temp.try($$insert into storage.objects(bucket_id,name) values ('product-media-public','c0000000-0000-0000-0000-000000000001/ok.jpg')$$) and pg_temp.try($$select public.import_normalize('f1f00000-0000-0000-0000-000000000001')$$));
+reset role; reset app.uid;
+-- kept staff-wide by decision (documented): taxonomy/CMS drafts, staff directory
+set role authenticated; set app.uid='00000000-0000-0000-0000-0000000000a3';
+select pg_temp.ok('POL K1 kept staff-wide by decision: hidden categories/CMS drafts readable, staff directory limited to staff roles', (select count(*) from public.profiles where app_role not in ('admin','reviewer') and id<>auth.uid())=0);
+reset role; reset app.uid;
+\else
+set role authenticated; set app.uid='00000000-0000-0000-0000-0000000000a3';
+select pg_temp.gap('POL W-pre unassigned reviewer can add an internal note', pg_temp.try($$insert into public.company_internal_notes(company_id,body,author_id) values ('c0000000-0000-0000-0000-000000000001','x','00000000-0000-0000-0000-0000000000a3')$$));
+select pg_temp.gap('POL W-pre unassigned reviewer can add suppression-list entries', pg_temp.try($$insert into public.suppression_list(domain,reason) values ('z.example','x')$$));
+select pg_temp.gap('POL W-pre reviewer can run import_normalize', pg_temp.try($$select public.import_normalize('f1f00000-0000-0000-0000-000000000001')$$));
+reset role; reset app.uid;
+\endif
+
+
+-- ===== ROUND 4: product image approval =====
+insert into product_images(id,product_id,pending_path,image_source_url,rights_status,permission_evidence) values
+ ('a0a00000-0000-0000-0000-000000000001','d0000000-0000-0000-0000-000000000001','c1/pending1.jpg','https://c1.example/rug-a.jpg','owned',null),
+ ('a0a00000-0000-0000-0000-000000000002','d0000000-0000-0000-0000-000000000001','c1/pending2.jpg','https://c1.example/rug-a2.jpg','permission_granted',null),
+ ('a0a00000-0000-0000-0000-000000000003','d0000000-0000-0000-0000-000000000001','c1/pending3.jpg',null,'licensed','Licence #123 from photographer, signed 2026-10-01'),
+ ('a0a00000-0000-0000-0000-000000000004','d0000000-0000-0000-0000-000000000001','c1/pending4.jpg',null,'public_domain','looks free'),
+ ('a0a00000-0000-0000-0000-000000000005','d0000000-0000-0000-0000-000000000001','c1/pending5.jpg',null,'owned',null),
+ ('a0a00000-0000-0000-0000-000000000006','d0000000-0000-0000-0000-000000000001','c1/pending6.jpg','https://c1.example/x.jpg','unknown',null),
+ ('a0a00000-0000-0000-0000-000000000007','d0000000-0000-0000-0000-000000000001','c1/pending7.jpg','not a url','owned','supplier email attached');
+\if :post
+set role authenticated; set app.uid='00000000-0000-0000-0000-0000000000a2';
+select pg_temp.denied('IMG1 assigned reviewer cannot approve an image', $$select public.approve_product_image('a0a00000-0000-0000-0000-000000000001','rugs/a1.jpg','actual_product','looks fine to me')$$, 'admin only');
+select pg_temp.ok('IMG2 ...but can inspect it and recommend', (select count(*) from public.product_images where id='a0a00000-0000-0000-0000-000000000001')=1 and pg_temp.try($$select public.staff_recommend_review('product_image','a0a00000-0000-0000-0000-000000000001','approve','source url resolves to the supplier site')$$));
+select pg_temp.ok('IMG3 direct UPDATE cannot publish an image either (blocked or 0 rows)', coalesce((select false where pg_temp.try($$update public.product_images set review_status='approved', public_path='rugs/hack.jpg' where id='a0a00000-0000-0000-0000-000000000001'$$) and pg_temp.cnt($$select 1 from public.product_images where id='a0a00000-0000-0000-0000-000000000001' and review_status='approved'$$)>0),true));
+reset role; reset app.uid;
+set role authenticated; set app.uid='00000000-0000-0000-0000-0000000000a3';
+select pg_temp.denied('IMG4 unassigned reviewer cannot approve', $$select public.approve_product_image('a0a00000-0000-0000-0000-000000000001','rugs/a1.jpg','actual_product','trying anyway')$$, 'admin only');
+select pg_temp.ok('IMG5 unassigned reviewer cannot inspect or recommend on it', (select count(*) from public.product_images)=0 and not pg_temp.try($$select public.staff_recommend_review('product_image','a0a00000-0000-0000-0000-000000000001','approve','not assigned')$$));
+reset role; reset app.uid;
+set role authenticated; set app.uid='00000000-0000-0000-0000-0000000000c1';
+select pg_temp.denied('IMG6 supplier owner cannot self-approve', $$select public.approve_product_image('a0a00000-0000-0000-0000-000000000001','rugs/a1.jpg','actual_product','my own image')$$, 'admin only');
+select pg_temp.denied('IMG6b supplier cannot set a public path directly', $$update public.product_images set public_path='rugs/self.jpg', review_status='approved' where id='a0a00000-0000-0000-0000-000000000001'$$);
+reset role; reset app.uid;
+set role authenticated; set app.uid='00000000-0000-0000-0000-0000000000a1';
+select pg_temp.denied('IMG7 illustrative images cannot be published as actual product images', $$select public.approve_product_image('a0a00000-0000-0000-0000-000000000001','rugs/a1.jpg','illustrative','stock photo')$$, 'illustrative');
+select pg_temp.denied('IMG7b representation must be stated', $$select public.approve_product_image('a0a00000-0000-0000-0000-000000000001','rugs/a1.jpg',null,'no representation given')$$, 'illustrative');
+select pg_temp.denied('IMG8 approval note (decision basis) required', $$select public.approve_product_image('a0a00000-0000-0000-0000-000000000001','rugs/a1.jpg','actual_product','')$$, 'note');
+select pg_temp.denied('IMG9 licence/authorisation evidence required for permission_granted', $$select public.approve_product_image('a0a00000-0000-0000-0000-000000000002','rugs/a2.jpg','actual_product','permission claimed')$$, 'evidence');
+select pg_temp.denied('IMG10 provenance required (no source URL and no evidence)', $$select public.approve_product_image('a0a00000-0000-0000-0000-000000000005','rugs/a5.jpg','actual_product','no provenance')$$, 'provenance');
+select pg_temp.denied('IMG11 public-domain claim needs a source URL', $$select public.approve_product_image('a0a00000-0000-0000-0000-000000000004','rugs/a4.jpg','actual_product','public domain claim')$$, 'source URL');
+select pg_temp.denied('IMG12 uncleared rights refused', $$select public.approve_product_image('a0a00000-0000-0000-0000-000000000006','rugs/a6.jpg','actual_product','rights unknown')$$, 'rights');
+select pg_temp.denied('IMG13 malformed source URL refused', $$select public.approve_product_image('a0a00000-0000-0000-0000-000000000007','rugs/a7.jpg','actual_product','url malformed')$$, 'URL');
+select pg_temp.denied('IMG14 path traversal / unsafe public path refused', $$select public.approve_product_image('a0a00000-0000-0000-0000-000000000001','../secret/a1.jpg','actual_product','bad path')$$, 'path');
+select pg_temp.ok('IMG15 admin approves a valid owned image with provenance', pg_temp.try($$select public.approve_product_image('a0a00000-0000-0000-0000-000000000001','rugs/a1.jpg','actual_product','source URL is the supplier website; supplier owns photo')$$));
+select pg_temp.ok('IMG16 admin approves a licensed image backed by licence evidence', pg_temp.try($$select public.approve_product_image('a0a00000-0000-0000-0000-000000000003','rugs/a3.jpg','actual_product','licence document on file')$$));
+reset role; reset app.uid;
+select pg_temp.ok('IMG17 approved rows carry path, reviewer and representation; refused rows stay pending', (select count(*) from product_images where review_status='approved' and representation='actual_product' and reviewed_by='00000000-0000-0000-0000-0000000000a1')=2 and (select count(*) from product_images where review_status='pending')=5);
+select pg_temp.ok('IMG18 moderation audit rows written (2 approvals, 1 recommendation)', (select count(*) from moderation_actions where target_type='image' and action like 'image_approved:%')=2 and (select count(*) from moderation_actions where target_type='image' and action like 'recommendation:%')=1);
+select pg_temp.denied('IMG19 audit record is immutable', $$update moderation_actions set reason='tampered' where target_type='image'$$);
+select pg_temp.denied('IMG19b audit record cannot be deleted', $$delete from moderation_actions where target_type='image'$$);
+select pg_temp.ok('IMG20 pending/refused images never appear in the public view', (select count(*) from public_product_images where id not in (select id from product_images where review_status='approved' and public_path is not null))=0);
+\else
+set role authenticated; set app.uid='00000000-0000-0000-0000-0000000000a3';
+select pg_temp.gap('IMG-pre unassigned reviewer approves a product image (staging behaviour)', pg_temp.try($$select public.approve_product_image('a0a00000-0000-0000-0000-000000000005','anything.jpg')$$));
+reset role; reset app.uid;
+\endif
+
+-- ===== ROUND 4: evidence-link audit (Edge Function support) =====
+\if :post
+insert into companies(id,slug,name,city,country,directory_status,claim_status,verification_status,data_review_status) values ('c0000000-0000-0000-0000-0000000000f7','c7','C7 Claim Co','Pune','India','draft','claim_submitted','not_verified','pending');
+insert into company_claims(id,company_id,claimant_id,statement,status) values ('a1a00000-0000-0000-0000-000000000007','c0000000-0000-0000-0000-0000000000f7','00000000-0000-0000-0000-0000000000b1','claim seven','claim_submitted');
+set app.uid='00000000-0000-0000-0000-0000000000b1';
+insert into company_claim_evidence(id,claim_id,storage_path,uploaded_by) values ('e7e00000-0000-0000-0000-000000000001','a1a00000-0000-0000-0000-000000000007','a1a00000-0000-0000-0000-000000000007/e.pdf','00000000-0000-0000-0000-0000000000b1');
+set app.uid='00000000-0000-0000-0000-0000000000a1'; select public.admin_assign_claim_reviewer('a1a00000-0000-0000-0000-000000000007','00000000-0000-0000-0000-0000000000a2'); reset app.uid;
+set role authenticated; set app.uid='00000000-0000-0000-0000-0000000000a2';
+select pg_temp.denied('EL1 link issuance cannot be recorded without an active grant', $$select public.staff_record_evidence_links('a1a00000-0000-0000-0000-000000000007', array['e7e00000-0000-0000-0000-000000000001']::uuid[], 120)$$, 'grant');
+select pg_temp.ok('EL2 open (audited) then record issuance of 120 s links', (select count(*) from public.staff_open_claim_evidence('a1a00000-0000-0000-0000-000000000007','review identity document'))=1);
+select pg_temp.ok('EL3 issuance recorded for ttl 120', pg_temp.try($$select public.staff_record_evidence_links('a1a00000-0000-0000-0000-000000000007', array['e7e00000-0000-0000-0000-000000000001']::uuid[], 120)$$));
+select pg_temp.denied('EL4 ttl above 600 s refused', $$select public.staff_record_evidence_links('a1a00000-0000-0000-0000-000000000007', array['e7e00000-0000-0000-0000-000000000001']::uuid[], 601)$$, '600');
+select pg_temp.denied('EL5 ttl 0 refused', $$select public.staff_record_evidence_links('a1a00000-0000-0000-0000-000000000007', array['e7e00000-0000-0000-0000-000000000001']::uuid[], 0)$$, '600');
+reset role; reset app.uid;
+select pg_temp.ok('EL6 audit shows open + issuance rows with actor', (select count(*) from claim_evidence_access_log where claim_id='a1a00000-0000-0000-0000-000000000007' and actor_id='00000000-0000-0000-0000-0000000000a2')=2 and exists(select 1 from claim_evidence_access_log where purpose='signed links issued (ttl 120s)'));
+set role authenticated; set app.uid='00000000-0000-0000-0000-0000000000a3';
+select pg_temp.denied('EL7 unassigned reviewer cannot record or open', $$select public.staff_record_evidence_links('a1a00000-0000-0000-0000-000000000007', array['e7e00000-0000-0000-0000-000000000001']::uuid[], 60)$$, 'grant');
+reset role; reset app.uid;
+\endif
+
+-- ===== ROUND 4: buyer contact access (purpose-required, audited, expiring, assignment re-checked) =====
+select case_r1 from (select id as case_r1 from lead_cases where enquiry_id=:'r1') q \gset
+select id as case_r2 from lead_cases where enquiry_id=:'r2' \gset
+set role authenticated; set app.uid='00000000-0000-0000-0000-0000000000a2';
+select pg_temp.gap('BC0 assigned reviewer reads buyer-private row directly, no purpose or log', (select count(*) from public.enquiry_private where enquiry_id=:'r1')>0);
+reset role; reset app.uid;
+\if :post
+set role authenticated; set app.uid='00000000-0000-0000-0000-0000000000a2';
+select pg_temp.ok('BC1 assigned reviewer has NO direct table access before opening', (select count(*) from public.enquiry_private)=0);
+select pg_temp.denied('BC2 purpose is required', format($$select * from public.staff_open_buyer_contact(%L,'')$$, :'r1'), 'purpose');
+select pg_temp.denied('BC3 cross-enquiry: cannot open an enquiry that is not assigned to them', format($$select * from public.staff_open_buyer_contact(%L,'looking at another lead')$$, :'r2'), 'not authorised');
+select pg_temp.ok('BC4 opens the assigned enquiry: gets the contact and an expiry', (select count(*) from public.staff_open_buyer_contact(:'r1','call buyer about quantity'))=1);
+select pg_temp.ok('BC5 after opening, only the assigned enquiry''s contact is readable', (select count(*) from public.enquiry_private)=1 and (select count(*) from public.enquiry_private where enquiry_id=:'r2')=0);
+reset role; reset app.uid;
+select pg_temp.ok('BC6 audit row: staff identity, role, enquiry, buyer reference, action, purpose, timestamp', (select count(*) from buyer_contact_access_log where actor_id='00000000-0000-0000-0000-0000000000a2' and actor_role is not null and enquiry_id=:'r1' and buyer_id='00000000-0000-0000-0000-0000000000b1' and action='open_contact' and purpose='call buyer about quantity' and at is not null)=1);
+select pg_temp.denied('BC7 audit log is immutable', $$update buyer_contact_access_log set purpose='tampered purpose'$$);
+select pg_temp.ok('BC7b grant lifetime is at most 10 minutes', (select max(expires_at) <= now()+interval '10 minutes 5 seconds' from buyer_contact_grants));
+update buyer_contact_grants set expires_at = now() - interval '1 minute';
+set role authenticated; set app.uid='00000000-0000-0000-0000-0000000000a2';
+select pg_temp.ok('BC8 expired grant: direct access gone again', (select count(*) from public.enquiry_private)=0);
+reset role; reset app.uid;
+set role authenticated; set app.uid='00000000-0000-0000-0000-0000000000a3';
+select pg_temp.denied('BC9 unassigned reviewer cannot open', format($$select * from public.staff_open_buyer_contact(%L,'curious about buyer')$$, :'r1'), 'not authorised');
+reset role; reset app.uid;
+insert into buyer_contact_grants(enquiry_id,staff_id,expires_at) values (:'r1','00000000-0000-0000-0000-0000000000a3',now()+interval '10 minutes');
+set role authenticated; set app.uid='00000000-0000-0000-0000-0000000000a3';
+select pg_temp.ok('BC10 planted grant without assignment is useless', (select count(*) from public.enquiry_private)=0);
+reset role; reset app.uid;
+set role authenticated; set app.uid='00000000-0000-0000-0000-0000000000a2';
+select pg_temp.ok('BC11 re-open, then admin revokes access', (select count(*) from public.staff_open_buyer_contact(:'r1','second call to buyer'))=1);
+reset role; reset app.uid;
+set role authenticated; set app.uid='00000000-0000-0000-0000-0000000000a1';
+select pg_temp.ok('BC12 admin has oversight but also opens through the audited function (no unrestricted table read)', (select count(*) from public.enquiry_private)=0 and (select count(*) from public.staff_open_buyer_contact(:'r1','admin oversight check'))=1 and (select count(*) from public.enquiry_private)>=0);
+select pg_temp.ok('BC12b admin revokes grants for the enquiry', pg_temp.try(format($$select public.admin_revoke_buyer_contact_access(%L)$$, :'r1')));
+reset role; reset app.uid;
+set role authenticated; set app.uid='00000000-0000-0000-0000-0000000000a2';
+select pg_temp.ok('BC13 revoked: reviewer loses access immediately', (select count(*) from public.enquiry_private)=0);
+select pg_temp.ok('BC13b reviewer reopening after revocation is a new audited call', (select count(*) from public.staff_open_buyer_contact(:'r1','reopen after admin revoke'))=1);
+reset role; reset app.uid;
+set role authenticated; set app.uid='00000000-0000-0000-0000-0000000000a1';
+select pg_temp.ok('BC14 admin reassigns the lead to a3', pg_temp.try(format($$select public.admin_assign_lead(%L,'00000000-0000-0000-0000-0000000000a3')$$, :'case_r1')));
+reset role; reset app.uid;
+set role authenticated; set app.uid='00000000-0000-0000-0000-0000000000a2';
+select pg_temp.ok('BC15 reassignment is re-checked at access time: previous assignee''s unexpired grant stops working', (select count(*) from public.enquiry_private)=0);
+select pg_temp.denied('BC15b previous assignee can no longer open', format($$select * from public.staff_open_buyer_contact(%L,'still trying')$$, :'r1'), 'not authorised');
+reset role; reset app.uid;
+set role authenticated; set app.uid='00000000-0000-0000-0000-0000000000a3';
+select pg_temp.ok('BC16 new assignee can open', (select count(*) from public.staff_open_buyer_contact(:'r1','new assignee follow-up'))=1);
+reset role; reset app.uid;
+update lead_cases set status='closed' where id=:'case_r1';
+set role authenticated; set app.uid='00000000-0000-0000-0000-0000000000a3';
+select pg_temp.ok('BC17 closed lead: even an unexpired grant no longer reads buyer data', (select count(*) from public.enquiry_private)=0);
+select pg_temp.denied('BC17b ...and a closed lead cannot be opened by staff', format($$select * from public.staff_open_buyer_contact(%L,'after closing')$$, :'r1'), 'not authorised');
+reset role; reset app.uid;
+set role authenticated; set app.uid='00000000-0000-0000-0000-0000000000b1';
+select pg_temp.ok('BC18 buyer still reads own contact record', (select count(*) from public.enquiry_private where enquiry_id=:'r1')=1);
+reset role; reset app.uid;
+set role authenticated; set app.uid='00000000-0000-0000-0000-0000000000a2';
+select pg_temp.ok('BC19 reviewers cannot read the contact access log; admin can', (select count(*) from public.buyer_contact_access_log)=0);
+reset role; reset app.uid;
+set role authenticated; set app.uid='00000000-0000-0000-0000-0000000000a1';
+select pg_temp.ok('BC19b admin reads the access log', (select count(*) from public.buyer_contact_access_log)>=5);
+reset role; reset app.uid;
+set role anon;
+select pg_temp.ok('BC20 anon cannot execute the contact functions', not has_function_privilege('anon','public.staff_open_buyer_contact(uuid,text)','execute') and not has_function_privilege('anon','public.admin_revoke_buyer_contact_access(uuid)','execute'));
+reset role;
+\endif
+
 \echo ALL REAL-SCHEMA TESTS COMPLETED (phase=:phase) ON LOCAL REPLICA
