@@ -3,3 +3,4 @@
 supabase/staging_schema/
 *.env
 .env*
+supabase/.temp/

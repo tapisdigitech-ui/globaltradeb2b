@@ -26,7 +26,11 @@ export async function handle(req, deps) {
   //    BEFORE any URL exists. Denials/rate limits are audited inside the database (non-raising), the response is deliberately generic.
   let rows;
   try { rows = await deps.requestLinks(req.jwt, claimId, evidenceIds, purpose.trim(), ttl); }
-  catch (e) { return json(e?.kind === 'not_staff' ? 403 : 503, { error: e?.kind === 'not_staff' ? 'not authorised' : 'service unavailable' }); }
+  catch (e) {
+    // 'unauthenticated': the database layer (PostgREST) rejected the token itself (bad signature / expired) -> 401, nothing is signed.
+    if (e?.kind === 'unauthenticated') return json(401, { error: 'authentication required' });
+    return json(e?.kind === 'not_staff' ? 403 : 503, { error: e?.kind === 'not_staff' ? 'not authorised' : 'service unavailable' });
+  }
   const outcome = rows?.[0]?.outcome;
   if (outcome === 'rate_limited') return json(429, { error: 'too many requests, try later' });
   if (outcome === 'invalid') return json(400, { error: 'invalid request' });

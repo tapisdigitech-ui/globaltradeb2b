@@ -2,14 +2,16 @@
 -- Context: 0007 (F1) made accept_invitation treat NULL expires_at as expired and added company_members_invite_has_expiry (NOT VALID).
 -- Facts (local catalogue): the guard trigger forces expires_at := now()+14 days on every invite created by a non-trusted session, and my_invitations()
 -- already hid NULL-expiry rows. NULL-expiry pending invites can therefore only come from trusted-session inserts (service role / SQL editor).
+-- IDEMPOTENT (Round 9): safe to run twice - the table/trigger are re-creatable, the UPDATE only touches rows that STILL have a NULL expiry (none on a second run), VALIDATE is a no-op when already valid.
 -- Rule applied retroactively (no new rule, no extension beyond the normal 14-day lifetime): expires_at := created_at + 14 days.
 --   invites younger than 14 days keep their remaining normal lifetime; older ones are expired (row kept, owner re-invites). Rows are never activated or deleted.
 begin;
-create table public.legacy_invitation_transition_log (
+create table if not exists public.legacy_invitation_transition_log (
   member_id uuid primary key, previous_expires_at timestamptz, new_expires_at timestamptz not null, transitioned_at timestamptz not null default now()
 );
 alter table public.legacy_invitation_transition_log enable row level security; alter table public.legacy_invitation_transition_log force row level security;
 revoke all on public.legacy_invitation_transition_log from public, anon, authenticated;   -- no policy: internal, trusted sessions only
+drop trigger if exists lit_immutable on public.legacy_invitation_transition_log;
 create trigger lit_immutable before update or delete on public.legacy_invitation_transition_log for each row execute function public.block_mutation();
 
 with moved as (

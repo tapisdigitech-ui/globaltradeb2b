@@ -28,3 +28,19 @@ Time-bounded: after the 14-day window every transitioned row has expired by itse
 `0007a_…_DOWN.sql` restores NULL expiries for the transitioned rows from the log and re-adds the constraint as `NOT VALID` (state left by 0007). That restores the pre-transition state in which those invites are unusable under 0007; it does **not** reintroduce the vulnerability (the function still fails closed). A validated constraint cannot be "un-validated", so the down drops and re-adds it. Accepted invitations remain active.
 
 ## Not applied to hosted staging.
+
+---
+
+# Round 9 review (H) – decision record
+
+Still a **proposal**: not in `migrations_draft/`, not in `migrations/`, not applied anywhere; no staging invitation rows were queried (the affected count remains UNKNOWN until the aggregate above is run by an authorised person on an isolated branch).
+
+| Question | Answer (evidence: `bash tests/run_proposal_invitation.sh control|proposal`, 2 + 14 checks pass) |
+|---|---|
+| Which states are affected? | Only `company_members` rows with `status='invited' AND user_id IS NULL AND expires_at IS NULL`. Active members, invites that already have an expiry, and accepted invitees are untouched (IT3). Staff `claim_invitations` are a different table and are not touched. |
+| How is expiry calculated? | `created_at + 14 days` – the same rule the guard trigger applies to every new invite; no extension beyond the normal lifetime. Invites younger than 14 days keep their remaining normal lifetime; older ones become expired (row kept, owner re-invites) (IT2). |
+| Idempotent? | **Yes (made so in Round 9):** `create table if not exists`, trigger re-creatable, the UPDATE only matches rows that still have a NULL expiry, `VALIDATE CONSTRAINT` is a no-op when already valid. A second run changes no member row and no log row (IT12). |
+| Do legitimate pending invitations remain usable? | Yes. Without the transition, 0007 alone makes even a 3-day-old legacy invite unusable (control IC1/IC2). With it, the young invite is listed and acceptable (IT5); the 20-day-old one is refused until re-issued (IT6). New NULL-expiry invites stay refused (IT10). |
+| Auditable? | Yes: immutable `legacy_invitation_transition_log` (member id, previous NULL, new expiry, time; not readable by buyers/anon – IT4, IT7, IT8) **and** the existing `company_membership_audit` trail records each expiry update (IT9). No communication is sent; no invitation is activated or deleted. |
+| Rollback? | `0007a…_DOWN.sql` drops the constraint, sets expiry back to NULL **only for rows that still hold the transition value**, restores the NOT VALID constraint and drops the log. It deliberately restores the unsafe state for those rows. A row an owner has since re-invited (new expiry) keeps its fresh expiry (IT13); accepted invitees stay active (IT11). |
+| Decision | Recommend applying it once, from a trusted session, on the hosted branch **after** the count is known and only if the count is non-zero; if the count is 0 the transition is unnecessary and the constraint can simply be validated. Requires explicit approval. |

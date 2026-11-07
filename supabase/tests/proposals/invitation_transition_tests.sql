@@ -22,23 +22,30 @@ select pg_temp.ok('IT1 no pending invite without expiry remains; constraint now 
 select pg_temp.ok('IT2 young invites (3 days, 0 days) get created_at+14d (normal rule, not longer); the 20-day-old one is already expired', (select expires_at from company_members where id='b1b00000-0000-0000-0000-00000000000a')=(select created_at+interval '14 days' from company_members where id='b1b00000-0000-0000-0000-00000000000a') and (select expires_at from company_members where id='b1b00000-0000-0000-0000-00000000000b')<now() and (select expires_at from company_members where id='b1b00000-0000-0000-0000-00000000000c')<=now()+interval '14 days');
 select pg_temp.ok('IT3 untouched rows: invite that had an expiry, and the active member', (select expires_at from company_members where id='b1b00000-0000-0000-0000-00000000000e')=:'e_keep'::timestamptz and (select expires_at from company_members where id='b1b00000-0000-0000-0000-00000000000d') is null and (select status::text from company_members where id='b1b00000-0000-0000-0000-00000000000d')='active');
 select pg_temp.ok('IT4 transition log: 3 rows, previous NULL; rows immutable', (select count(*) from legacy_invitation_transition_log where previous_expires_at is null)=3 and not pg_temp.try($$delete from legacy_invitation_transition_log$$));
-set role authenticated; set app.uid='00000000-0000-0000-0000-0000000000d1';
+set role authenticated; set request.jwt.claims='{"sub":"00000000-0000-0000-0000-0000000000d1","role":"authenticated","aud":"authenticated"}';
 select pg_temp.ok('IT5 invitee of the young legacy invite can now accept it and the invite is listed', (select count(*) from public.my_invitations())=1 and pg_temp.try($$select public.accept_invitation('b1b00000-0000-0000-0000-00000000000a')$$));
-reset role; set role authenticated; set app.uid='00000000-0000-0000-0000-0000000000d2';
+reset role; set role authenticated; set request.jwt.claims='{"sub":"00000000-0000-0000-0000-0000000000d2","role":"authenticated","aud":"authenticated"}';
 select pg_temp.denied('IT6 invitee of the expired legacy invite is refused (owner must re-invite)', $$select public.accept_invitation('b1b00000-0000-0000-0000-00000000000b')$$, 'expired');
-reset role; set role authenticated; set app.uid='00000000-0000-0000-0000-0000000000b1';
+reset role; set role authenticated; set request.jwt.claims='{"sub":"00000000-0000-0000-0000-0000000000b1","role":"authenticated","aud":"authenticated"}';
 select pg_temp.ok('IT7 buyer / other roles cannot read the log table', not pg_temp.try($$select * from legacy_invitation_transition_log$$));
 reset role; set role anon;
 select pg_temp.ok('IT8 anonymous cannot read the log table', not pg_temp.try($$select * from legacy_invitation_transition_log$$));
-reset role; reset app.uid;
+reset role; reset request.jwt.claims;
 select pg_temp.ok('IT9 membership audit trail recorded the expiry updates (3 update rows)', (select count(*) from company_membership_audit where action='update' and old_status='invited' and new_status='invited')=3);
 select pg_temp.ok('IT10 new NULL-expiry pending invite still refused after validation', not pg_temp.try($$insert into company_members(company_id,invite_email,role,status,expires_at) values ('c0000000-0000-0000-0000-000000000001','n@t.example','viewer','invited',null)$$));
+create temp table it_snap as select id, status, expires_at, user_id from company_members;
+create temp table it_log_snap as select * from legacy_invitation_transition_log;
+\i proposals/0007a_legacy_invitation_transition_PROPOSAL.sql
+select pg_temp.ok('IT12 idempotent: a second run changes no member row, adds/changes no log row, and still validates', not exists(select 1 from (select id,status,expires_at,user_id from company_members except select * from it_snap) x) and not exists(select 1 from (select * from it_snap except select id,status,expires_at,user_id from company_members) x) and not exists(select 1 from (select * from legacy_invitation_transition_log except select * from it_log_snap) x) and (select count(*) from legacy_invitation_transition_log)=3 and (select convalidated from pg_constraint where conname='company_members_invite_has_expiry'));
+-- an owner re-invites the expired one (new expiry) BEFORE a rollback: rollback must not clobber that fresh, legitimate expiry
+update company_members set expires_at = now() + interval '14 days' where id='b1b00000-0000-0000-0000-00000000000b';
 \i proposals/0007a_legacy_invitation_transition_DOWN.sql
 select pg_temp.ok('IT11 DOWN: constraint back to NOT VALID and log dropped (rows of the accepted invitee stay active)', not (select convalidated from pg_constraint where conname='company_members_invite_has_expiry') and to_regclass('public.legacy_invitation_transition_log') is null);
+select pg_temp.ok('IT13 DOWN only reverts rows still holding the transition value: the re-invited row keeps its new expiry; untouched still-pending young invite is back to NULL (unsafe state restored knowingly)', (select expires_at > now() + interval '13 days' from company_members where id='b1b00000-0000-0000-0000-00000000000b') and (select count(*) from company_members where status='invited' and user_id is null and expires_at is null)>=1);
 \else
 select pg_temp.ok('IC1 CONTROL (0007 only): legacy NULL-expiry invites are refused by accept_invitation', (select count(*) from company_members where status='invited' and expires_at is null)=3);
-set role authenticated; set app.uid='00000000-0000-0000-0000-0000000000d1';
+set role authenticated; set request.jwt.claims='{"sub":"00000000-0000-0000-0000-0000000000d1","role":"authenticated","aud":"authenticated"}';
 select pg_temp.denied('IC2 CONTROL: even the 3-day-old legitimate legacy invite is refused until re-issued', $$select public.accept_invitation('b1b00000-0000-0000-0000-00000000000a')$$, 'expired');
-reset role; reset app.uid;
+reset role; reset request.jwt.claims;
 \endif
 \echo ALL INVITATION-TRANSITION TESTS COMPLETED (prop=:prop)

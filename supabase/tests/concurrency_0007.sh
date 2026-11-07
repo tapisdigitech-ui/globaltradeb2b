@@ -7,7 +7,7 @@ psql -qc "drop database if exists conc" -c "create database conc template real_p
 Q(){ psql -d conc -Atq "$@"; }
 P=0; F=0; chk(){ if [ "$2" = "$3" ]; then echo "PASS: $1 (got $2)"; P=$((P+1)); else echo "FAIL: $1 (expected $3, got $2)"; F=$((F+1)); fi; }
 B1=00000000-0000-0000-0000-0000000000b1; B2=00000000-0000-0000-0000-0000000000b2; A1=00000000-0000-0000-0000-0000000000a1
-as(){ echo "set role authenticated; set app.uid='$1';"; }
+as(){ echo "set role authenticated; set request.jwt.claims='{\"sub\":\"$1\",\"role\":\"authenticated\",\"aud\":\"authenticated\"}';"; }
 R1=$(Q -c "select id from enquiries where subject='Rugs 500 pcs'")
 # C1: 8 parallel identical create_company_request from a fresh user -> exactly one company
 U=00000000-0000-0000-0000-0000000000e1; Q -c "insert into auth.users(id,email,email_confirmed_at) values ('$U','e1@t.example',now())"
