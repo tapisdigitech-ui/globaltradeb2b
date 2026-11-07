@@ -31,3 +31,7 @@ Real triggers (`guard_*`, `notify_on_enquiry`, `audit_changes`), real `submit_cl
 
 ## Frontend (prototype) — executed earlier
 Playwright 360–2560 px, zero horizontal overflow; For Buyers flow desktop + mobile. Demonstration data only.
+
+
+## Update 2026-11-07 — real-schema replica (LOCAL, not staging)
+See `REAL_STAGING_AUDIT.md`. Legacy suite still 138 PASS (reconstructed baseline). New `tests/run_real.sh pre|post` runs on a local PG16 replica built from a read-only staging schema extract: pre-0006 = 35 PASS with ten exposure controls recorded; post-0006 = 61 PASS / 0 FAIL. Rollback of 0006 verified by zero schema+grant diff. None of this ran on staging.

@@ -1,3 +1,5 @@
+> **Update 2026-11-07:** real schema obtained read-only and replicated locally; 0001–0005 apply cleanly there; 9 real-schema gaps found and drafted as 0006. Still NOT applied to staging. See REAL_STAGING_AUDIT.md.
+
 # Staging Compatibility Checklist — migrations 0001–0005
 
 > **Real staging compatibility has NOT been verified.** Nothing here has been run against the real staging schema (`lhmexhafyuzojrmcbtbz`). All passing tests so far ran on a scratch PostgreSQL 16 database built from a *reconstructed* baseline (`supabase/tests/baseline_reconstructed.sql`) that contains guessed stand-ins for objects whose real definitions were not available. No migration may be applied to staging until every box below is ticked against an **actual schema-only dump** and the user approves.

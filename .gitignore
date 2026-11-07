@@ -1,0 +1,5 @@
+
+# real staging schema extract (read-only catalog queries); keep local, never commit
+supabase/staging_schema/
+*.env
+.env*

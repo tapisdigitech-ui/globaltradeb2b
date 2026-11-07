@@ -49,3 +49,6 @@ Sending or receiving verification codes, any email/SMS/WhatsApp, real contact re
 ## Known demo limits
 - Assignment scoping is only enforced by the page; real enforcement is RLS/functions tested locally on a reconstructed baseline, **not** on the real staging schema.
 - Seed scores are illustrative and not produced by `_match_requirement`.
+
+## Update — evidence opening (demo)
+Claim detail now requires a purpose (min 5 characters) before an evidence file can be "opened"; each simulated open adds a line to a per-claim access log shown in the panel (mirrors the audited-RPC model in 0006). Still purely local demo state, no backend call.
