@@ -1729,6 +1729,54 @@ h1,h2,h3{letter-spacing:-.01em}
 @media (max-width:560px){.bnav button{font-size:12px}}
 
 @media (max-width:560px){.tabs2 button{padding:12px 9px;font-size:14px}.tabs2 button span{margin-left:4px;padding:1px 6px}}
+
+/* ===== v5: compact seller Home ===== */
+#vDash{padding-top:14px}
+#vDash .top-row h1{font-size:22px}#vDash .top-row p{font-size:13.5px}
+.hm-bar{display:flex;flex-wrap:wrap;gap:8px 16px;align-items:center;justify-content:space-between;margin-top:10px}
+.hm-bar .strip,.hm-bar .shortcuts{margin:0}
+.chip2{padding:6px 12px;min-height:36px;font-size:13.5px}.shortcuts button{padding:6px 12px;min-height:36px;font-size:13.5px}
+.hm-top{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:14px;margin-top:12px;align-items:stretch}
+#vDash .pnl{padding:12px 14px 8px;margin:0}.pnl-w{margin-top:14px}
+#vDash .pnl .sec-h{margin-bottom:6px}#vDash .pnl h2{font-size:15px}
+.pl-list{gap:0}
+.pl-list>*{border-top:1px solid var(--line)}.pl-list>*:first-child{border-top:0}
+.hmt{display:grid;grid-template-columns:34px minmax(0,1fr) auto;gap:10px;align-items:center;width:100%;text-align:left;border:0;background:transparent;padding:8px 4px;min-height:58px;border-radius:8px}
+.hmt:hover{background:var(--surface-2)}
+.hmt .av{width:34px;height:34px;font-size:14px}
+.hmt-b{min-width:0;display:grid;gap:1px}.hmt-b b{display:flex;align-items:center;gap:6px;font-size:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.hmt-b small{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12.5px;color:var(--muted)}.hmt-t{color:var(--fg)!important;font-weight:600}
+.hmt.un .hmt-s{color:var(--fg);font-weight:600}.hmt-d{align-self:start;font-size:12px;color:var(--muted);white-space:nowrap}
+.hmt .dot{width:8px;height:8px;border-radius:50%;background:var(--blue);flex:none}
+#vDash .lc-s{border:0;border-radius:8px;padding:8px 4px;background:transparent;grid-template-columns:minmax(0,1fr) auto;gap:10px;min-height:58px}
+#vDash .lc-s:hover{background:var(--surface-2)}
+#vDash .lc-s .lc-t b{font-size:14px}#vDash .lc-s .lc-m{margin-top:2px;font-size:12.5px;color:var(--muted);gap:2px 12px}
+#vDash .lc-s .lc-d{font-size:12.5px;margin-top:1px}
+.vr-btn.sm{min-height:34px;padding:6px 14px;font-size:13.5px;font-weight:700;display:inline-flex;align-items:center}
+.hl{display:grid;grid-template-columns:minmax(0,2.2fr) minmax(0,.9fr) minmax(0,1.3fr) minmax(0,1.3fr) minmax(0,1fr) auto;gap:12px;align-items:center}
+.hl-h{padding:6px 4px;border-bottom:1px solid var(--line);font:700 11.5px var(--font-display);letter-spacing:.04em;text-transform:uppercase;color:var(--muted)}.hl-h span:last-child{width:84px}
+.hl-rows>.hl{border-top:1px solid var(--line);font-size:13.5px}.hl-rows>.hl:first-child{border-top:0}
+#vDash .hl.lc-s{grid-template-columns:minmax(0,2.2fr) minmax(0,.9fr) minmax(0,1.3fr) minmax(0,1.3fr) minmax(0,1fr) auto}
+.hl-p b{font-size:14px;display:inline}.hl-p small{display:block;color:var(--muted);font-size:12.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.hl-c{display:inline-flex;align-items:center;gap:6px}.hl-c .flag{width:16px;height:11px;border-radius:2px;border:1px solid var(--line);display:inline-block;flex:none}
+.hl-b,.hl-d{color:var(--fg);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.hl-d{color:var(--muted)}
+.hl .vr-btn{min-width:84px;justify-content:center}
+@media (max-width:1000px){.hm-top{grid-template-columns:minmax(0,1fr)}}
+@media (max-width:820px){
+ .hm-bar{align-items:flex-start}.hm-bar .shortcuts{width:100%}
+ .hl-h{display:none}
+ #vDash .hl.lc-s{grid-template-columns:minmax(0,1fr) auto;grid-template-areas:"p b" "m b";gap:2px 10px;padding:10px 4px}
+ .hl-p{grid-area:p}.hl .vr-btn{grid-area:b;align-self:center}
+ .hl-q,.hl-c,.hl-b,.hl-d{display:inline-flex;font-size:12.5px;color:var(--muted)}
+ .hl-q::before,.hl-b::before,.hl-d::before{content:none}
+ #vDash .hl.lc-s{display:flex;flex-wrap:wrap;align-items:center;gap:2px 12px}.hl-p{flex:1 1 100%}.hl .vr-btn{margin-left:auto;order:9}
+ #vDash .lc-s .lc-d{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+}
+.hl-h{border:0!important;border-bottom:1px solid var(--line)!important;border-radius:0!important;background:transparent!important}
+#vDash .hl.lc-s{min-height:0;padding:6px 4px}
+#vDash .hl-rows .vr-btn.sm{min-height:32px}
+@media (max-width:820px){#vDash .hl.lc-s{padding:8px 4px}}
+@media (max-width:820px){.hm-bar .strip,.hm-bar .shortcuts{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;margin-inline:-14px;padding-inline:14px;width:calc(100% + 28px)}.hm-bar .chip2,.hm-bar .shortcuts button{flex:none}.hm-bar{gap:8px}}
 </style><div class="sroot">
 
 <header class="hd">
@@ -1754,13 +1802,14 @@ h1,h2,h3{letter-spacing:-.01em}
   <div class="crumb" id="crumb" hidden><button type="button" data-sv="more"><svg class="i" viewBox="0 0 24 24"><path d="m12 19-7-7 7-7" /> <path d="M19 12H5" /></svg>Account / More</button></div>
 <main class="main" id="vDash">
     <div class="top-row"><div><h1 id="welcomeH">Namaste</h1><p>Your latest messages and buy leads. <span class="demo-tag">Demonstration data</span></p></div></div>
-    <div class="strip" id="hmStrip"></div>
-    <div class="shortcuts" id="qaBtns"></div>
-    <div class="hm3">
-      <section class="cd pnl"><div class="sec-h"><h2>Recent messages</h2><button type="button" class="lnk" data-sv="msgs">View all <path d="m9 18 6-6-6-6" /></button></div><div class="pl-list" id="hmMsgs"></div></section>
-      <section class="cd pnl"><div class="sec-h"><h2>Relevant buy leads</h2><button type="button" class="lnk" data-sv="leads">View all <path d="m9 18 6-6-6-6" /></button></div><p class="pl-s">Match your live products</p><div class="pl-list" id="hmRel"></div></section>
-      <section class="cd pnl"><div class="sec-h"><h2>Recent buy leads</h2><button type="button" class="lnk" data-sv="leads">View all <path d="m9 18 6-6-6-6" /></button></div><p class="pl-s">Newest requirements</p><div class="pl-list" id="hmRec"></div></section>
+    <div class="hm-bar"><div class="strip" id="hmStrip"></div><div class="shortcuts" id="qaBtns"></div></div>
+    <div class="hm-top">
+      <section class="cd pnl"><div class="sec-h"><h2>Recent Messages</h2><button type="button" class="lnk" data-sv="msgs">View all <path d="m9 18 6-6-6-6" /></button></div><div class="pl-list" id="hmMsgs"></div></section>
+      <section class="cd pnl"><div class="sec-h"><h2>Relevant Buy Leads</h2><button type="button" class="lnk" data-sv="leads">View all <path d="m9 18 6-6-6-6" /></button></div><div class="pl-list" id="hmRel"></div></section>
     </div>
+    <section class="cd pnl pnl-w"><div class="sec-h"><h2>Recent Buy Leads</h2><button type="button" class="lnk" data-sv="leads">View all <path d="m9 18 6-6-6-6" /></button></div>
+      <div class="hl hl-h" aria-hidden="true"><span>Requirement</span><span>Quantity</span><span>Location</span><span>Buyer</span><span>Posted</span><span></span></div>
+      <div class="hl-rows" id="hmRec"></div></section>
     <select id="range" hidden aria-hidden="true"><option value="7">7</option><option value="30" selected>30</option><option value="90">90</option></select>
   </main>
   <main class="main" id="vMore" hidden>
@@ -3798,8 +3847,16 @@ function recentRows(){return leadRows().map(function(o,k){o.k=k;return o}).sort(
 function leadRow(o){
  var r=o.r,g=gstat(r.st);
  return '<article class="lc lc-s" data-t="1" data-i="'+o.i+'"><div class="lc-b"><div class="lc-t"><b>'+esc(r.t)+'</b>'+(g==='New'?'':'<span class="bdg b-con">Replied</span>')+'</div>'
- +'<div class="lc-m"><span class="m-q">'+ic('box')+esc(r.qty)+'</span><span class="m-l">'+flag(r.co)+esc((r.city?r.city+', ':'')+r.co)+'</span><span class="m-t">'+ic('clock')+esc(r.dt)+'</span></div>'
- +'<p class="lc-d">'+esc(r.d)+' &middot; '+esc(r.by)+'</p></div><button type="button" class="vr-btn" data-a="reply">'+ic('send')+'Respond</button></article>';
+ +'<div class="lc-m"><span class="m-q">'+esc(r.qty)+'</span><span class="m-l">'+flag(r.co)+esc((r.city?r.city+', ':'')+r.co)+'</span><span class="m-t">'+esc(r.dt)+'</span></div>'
+ +'<p class="lc-d">'+esc(r.by)+' &middot; '+esc(r.d)+'</p></div><button type="button" class="vr-btn sm" data-a="reply">Respond</button></article>';
+}
+function leadWide(o){
+ var r=o.r,g=gstat(r.st);
+ return '<article class="lc lc-s hl" data-t="1" data-i="'+o.i+'"><div class="hl-p"><b>'+esc(r.t)+'</b>'+(g==='New'?'':' <span class="bdg b-con">Replied</span>')+'<small>'+esc(r.d)+'</small></div><span class="hl-q" data-l="Quantity">'+esc(r.qty)+'</span><span class="hl-c" data-l="Location">'+flag(r.co)+esc((r.city?r.city+', ':'')+r.co)+'</span><span class="hl-b" data-l="Buyer">'+esc(r.by)+'</span><span class="hl-d" data-l="Posted">'+esc(r.dt)+'</span><button type="button" class="vr-btn sm" data-a="reply">Respond</button></article>';
+}
+function homeThread(t){
+ var l=t.msgs[t.msgs.length-1],who=t.who.replace(/^Demo buyer:\s*/,'');
+ return '<button type="button" class="hmt'+(t.unread?' un':'')+'" data-mt="'+esc(t.id)+'"><span class="av" aria-hidden="true">'+esc((who||'B').charAt(0).toUpperCase())+'</span><span class="hmt-b"><b>'+(t.unread?'<span class="dot" aria-label="Unread"></span>':'')+esc(who)+'</b><small class="hmt-t">'+esc(t.title)+'</small><small class="hmt-s">'+(l.me?'You: ':'')+esc(l.text)+'</small></span><small class="hmt-d">'+esc(ago(t.last))+'</small></button>';
 }
 /* ===== Home ===== */
 function renderKpis(){renderHome()}
@@ -3811,11 +3868,11 @@ function favs(){if(!Array.isArray(SS.favs))SS.favs=[];return SS.favs}
 function renderHome(){
  var c=navCounts(),A=null;
  $('hmStrip').innerHTML=[['mail',c.enq+' new '+(c.enq===1?'enquiry':'enquiries'),'enq','New'],['clock',c.fu+' follow-up'+(c.fu===1?'':'s')+' due','enq','due'],['find',c.leads+' new buy lead'+(c.leads===1?'':'s'),'leads','']].map(function(k){return '<button type="button" class="chip2" data-hs="'+k[2]+'" data-hf="'+k[3]+'">'+ic(k[0])+'<b>'+k[1]+'</b></button>'}).join('');
- var th=[];try{th=Store.inbox.threads().slice(0,4)}catch(x){}
- $('hmMsgs').innerHTML=th.length?th.map(function(t){return threadRow(t,false)}).join(''):'<p class="mr-empty">No messages yet. Buyer enquiries appear here as conversations.</p>';
- var rel=relevantRows().slice(0,4),rec=recentRows().slice(0,4);
+ var th=[];try{th=Store.inbox.threads().slice(0,5)}catch(x){}
+ $('hmMsgs').innerHTML=th.length?th.map(homeThread).join(''):'<p class="mr-empty">No messages yet. Buyer enquiries appear here as conversations.</p>';
+ var rel=relevantRows().slice(0,4),rec=recentRows().slice(0,5);
  $('hmRel').innerHTML=rel.length?rel.map(leadRow).join(''):'<p class="mr-empty">No new leads match your products right now.</p>';
- $('hmRec').innerHTML=rec.length?rec.map(leadRow).join(''):'<p class="mr-empty">No buy leads yet.</p>';
+ $('hmRec').innerHTML=rec.length?rec.map(leadWide).join(''):'<p class="mr-empty">No buy leads yet.</p>';
 }
 var QA=[['plus','Add product','add'],['mail','My enquiries','enq'],['share','Share catalogue','catalogue'],['bld','Update profile','profile']];
 $('qaBtns').innerHTML=QA.map(function(q){return '<button type="button" data-qa="'+q[2]+'">'+ic(q[0])+'<span>'+q[1]+'</span></button>'}).join('');
