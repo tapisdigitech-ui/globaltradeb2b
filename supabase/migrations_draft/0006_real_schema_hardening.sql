@@ -96,11 +96,16 @@ end $$;
 create table public.claim_evidence_access_log (
   id bigint generated always as identity primary key,
   actor_id uuid not null,
-  claim_id uuid not null,            -- deliberately NO foreign key: audit rows must survive deletions
+  claim_id uuid,                     -- deliberately NO foreign key: audit rows must survive deletions (null only if the caller sent a null claim)
   company_id uuid not null,
-  purpose text not null check (length(trim(purpose)) >= 5),
+  purpose text not null,
   evidence_count integer not null,
-  at timestamptz not null default now()
+  at timestamptz not null default now(),
+  outcome text not null default 'granted' check (outcome in ('granted','denied','rate_limited','invalid')),
+  evidence_ids uuid[] not null default '{}',   -- exact evidence ids opened / for which links were issued
+  ttl_seconds integer check (ttl_seconds is null or ttl_seconds between 1 and 600),
+  denial_reason text,
+  constraint ceal_purpose_when_granted check (outcome <> 'granted' or length(trim(purpose)) >= 5)
 );
 create trigger ceal_immutable before update or delete on public.claim_evidence_access_log for each row execute function public.block_mutation();
 create table public.claim_evidence_grants (
@@ -110,19 +115,65 @@ create function public.evidence_grant_active(p_claim uuid) returns boolean langu
   select p_claim is not null and exists(select 1 from public.claim_evidence_grants g where g.claim_id = p_claim and g.staff_id = auth.uid() and g.expires_at > now())
     and public.staff_can_review_claim(p_claim)
 $$;
+-- Shared gate for both evidence entry points. NON-RAISING for staff on purpose: a raised exception would roll back the
+-- audit row, so denials / rate limits / invalid requests are logged and reported as an outcome. Non-staff get a plain error and no log row.
+create function public._evidence_gate(p_claim uuid, p_purpose text, p_ids uuid[], p_ttl integer, p_listing boolean) returns text
+language plpgsql security definer set search_path = public, pg_temp as $$
+declare uid uuid := auth.uid(); cid uuid; pur text := left(trim(coalesce(p_purpose,'')),500); ids uuid[] := coalesce(p_ids,'{}'); outcome text; reason text; logged uuid[] := '{}';
+begin
+  if uid is null or not public.is_staff() then raise exception 'staff only' using errcode = '42501'; end if;
+  select company_id into cid from public.company_claims where id = p_claim;
+  cid := coalesce(cid, '00000000-0000-0000-0000-000000000000'::uuid);
+  if (select count(*) from public.claim_evidence_access_log l where l.actor_id = uid and l.outcome in ('denied','invalid') and l.at > now() - interval '1 hour') >= 20
+     or (select count(*) from public.claim_evidence_access_log l where l.actor_id = uid and l.claim_id = p_claim and l.outcome = 'granted' and l.at > now() - interval '1 hour') >= 10
+     or (select count(*) from public.claim_evidence_access_log l where l.actor_id = uid and l.outcome = 'granted' and l.at > now() - interval '1 day') >= 100 then
+    outcome := 'rate_limited'; reason := 'rate limit';
+  elsif p_claim is null or not public.staff_can_review_claim(p_claim) then
+    outcome := 'denied'; reason := 'not assigned or claim closed';
+  elsif length(pur) < 5 then
+    outcome := 'invalid'; reason := 'purpose required';
+  elsif not p_listing and (cardinality(ids) not between 1 and 10 or exists(select 1 from unnest(ids) x where x is null) or (select count(distinct x) from unnest(ids) x) <> cardinality(ids)) then
+    outcome := 'invalid'; reason := 'bad evidence id list';
+  elsif not p_listing and (p_ttl is null or p_ttl not between 1 and 600) then
+    outcome := 'invalid'; reason := 'bad lifetime';
+  elsif not p_listing and (select count(*) from public.company_claim_evidence e where e.claim_id = p_claim and e.id = any(ids)) <> cardinality(ids) then
+    outcome := 'denied'; reason := 'evidence not on this claim';
+  else
+    outcome := 'ok';
+  end if;
+  if outcome = 'ok' then
+    if p_listing then select coalesce(array_agg(e.id order by e.created_at), '{}') into ids from public.company_claim_evidence e where e.claim_id = p_claim; end if;
+    insert into public.claim_evidence_access_log(actor_id, claim_id, company_id, purpose, evidence_count, outcome, evidence_ids, ttl_seconds)
+      values (uid, p_claim, cid, pur, cardinality(ids), 'granted', ids, case when p_listing then null else p_ttl end);
+    insert into public.claim_evidence_grants(claim_id, staff_id, expires_at) values (p_claim, uid, now() + interval '10 minutes')
+      on conflict (claim_id, staff_id) do update set expires_at = excluded.expires_at;
+  elsif not (outcome = 'rate_limited' and exists(select 1 from public.claim_evidence_access_log l where l.actor_id = uid and l.outcome = 'rate_limited' and l.at > now() - interval '1 minute')) then
+    -- requested ids are logged only if they are well-formed uuids (they always are: the parameter is uuid[]); never returned to the caller
+    insert into public.claim_evidence_access_log(actor_id, claim_id, company_id, purpose, evidence_count, outcome, evidence_ids, ttl_seconds, denial_reason)
+      values (uid, p_claim, cid, pur, cardinality(ids), outcome, coalesce(ids,'{}'), case when p_ttl between 1 and 600 then p_ttl end, reason);
+  end if;
+  return outcome;
+end $$;
 create function public.staff_open_claim_evidence(p_claim uuid, p_purpose text) returns table(evidence_id uuid, storage_path text, description text, uploaded_at timestamptz, access_expires_at timestamptz, max_signed_url_seconds integer)
 language plpgsql security definer set search_path = public, pg_temp as $$
-declare cid uuid; n int; exp timestamptz := now() + interval '10 minutes';
 begin
-  if not public.staff_can_review_claim(p_claim) then raise exception 'not authorised for this claim' using errcode = '42501'; end if;
-  if coalesce(length(trim(p_purpose)),0) < 5 then raise exception 'purpose required (min 5 characters)'; end if;
-  perform public.check_rate('evidence_open', 100, interval '1 day');
-  select company_id into cid from public.company_claims where id = p_claim;
-  select count(*) into n from public.company_claim_evidence e where e.claim_id = p_claim;
-  insert into public.claim_evidence_access_log(actor_id, claim_id, company_id, purpose, evidence_count) values (auth.uid(), p_claim, cid, trim(p_purpose), n);
-  insert into public.claim_evidence_grants(claim_id, staff_id, expires_at) values (p_claim, auth.uid(), exp)
-    on conflict (claim_id, staff_id) do update set expires_at = excluded.expires_at;
-  return query select e.id, e.storage_path, e.description, e.created_at, exp, 600 from public.company_claim_evidence e where e.claim_id = p_claim order by e.created_at;
+  if public._evidence_gate(p_claim, p_purpose, null, null, true) <> 'ok' then return; end if;   -- empty result; reason is in the audit log only
+  return query select e.id, e.storage_path, e.description, e.created_at, g.expires_at, 600
+    from public.company_claim_evidence e join public.claim_evidence_grants g on g.claim_id = e.claim_id and g.staff_id = auth.uid()
+    where e.claim_id = p_claim order by e.created_at;
+end $$;
+-- Edge Function entry point: validates, audits (BEFORE any URL exists) and grants in one step. Returns outcome 'ok'|'denied'|'rate_limited'|'invalid';
+-- paths are returned only with 'ok'. Unauthorised callers learn nothing about ids or paths.
+create function public.staff_request_evidence_links(p_claim uuid, p_evidence_ids uuid[], p_purpose text, p_ttl integer default 120)
+returns table(outcome text, evidence_id uuid, storage_path text, access_expires_at timestamptz, ttl_seconds integer)
+language plpgsql security definer set search_path = public, pg_temp as $$
+declare o text;
+begin
+  o := public._evidence_gate(p_claim, p_purpose, p_evidence_ids, p_ttl, false);
+  if o <> 'ok' then return query select o, null::uuid, null::text, null::timestamptz, null::integer; return; end if;
+  return query select 'ok'::text, e.id, e.storage_path, g.expires_at, p_ttl
+    from public.company_claim_evidence e join public.claim_evidence_grants g on g.claim_id = e.claim_id and g.staff_id = auth.uid()
+    where e.claim_id = p_claim and e.id = any(p_evidence_ids) order by e.created_at;
 end $$;
 drop policy cev_read on public.company_claim_evidence;
 create policy cev_read on public.company_claim_evidence for select using (public.claim_claimant(claim_id) = auth.uid());
@@ -567,17 +618,10 @@ create policy bcal_admin_read on public.buyer_contact_access_log for select to a
 revoke all on function public.buyer_contact_grant_active(uuid), public.staff_open_buyer_contact(uuid,text), public.admin_revoke_buyer_contact_access(uuid) from public, anon, authenticated;
 grant execute on function public.buyer_contact_grant_active(uuid), public.staff_open_buyer_contact(uuid,text), public.admin_revoke_buyer_contact_access(uuid) to authenticated;
 
--- ===== ROUND 4 (D) evidence-link service: audit that signed links were issued (called by the Edge Function with the staff JWT) =====
-create function public.staff_record_evidence_links(p_claim uuid, p_evidence_ids uuid[], p_ttl integer) returns void language plpgsql security definer set search_path = public, pg_temp as $$
-declare cid uuid;
-begin
-  if not public.evidence_grant_active(p_claim) then raise exception 'no active evidence grant' using errcode = '42501'; end if;
-  if p_ttl is null or p_ttl < 1 or p_ttl > 600 then raise exception 'signed URL lifetime must be 1..600 seconds'; end if;
-  select company_id into cid from public.company_claims where id = p_claim;
-  insert into public.claim_evidence_access_log(actor_id, claim_id, company_id, purpose, evidence_count) values (auth.uid(), p_claim, cid, 'signed links issued (ttl ' || p_ttl || 's)', coalesce(cardinality(p_evidence_ids),0));
-end $$;
-revoke all on function public.staff_record_evidence_links(uuid,uuid[],integer) from public, anon, authenticated;
-grant execute on function public.staff_record_evidence_links(uuid,uuid[],integer) to authenticated;
+-- ===== ROUND 6 evidence-link service: staff_request_evidence_links (defined with the evidence section above) =====
+revoke all on function public._evidence_gate(uuid,text,uuid[],integer,boolean) from public, anon, authenticated;
+revoke all on function public.staff_request_evidence_links(uuid,uuid[],text,integer) from public, anon, authenticated;
+grant execute on function public.staff_request_evidence_links(uuid,uuid[],text,integer) to authenticated;
 
 revoke all on function public.admin_assign_claim_reviewer(uuid,uuid), public.evidence_grant_active(uuid), public.staff_open_claim_evidence(uuid,text), public.seller_product_enquiry_visible(uuid) from public, anon;
 grant execute on function public.admin_assign_claim_reviewer(uuid,uuid), public.evidence_grant_active(uuid), public.staff_open_claim_evidence(uuid,text), public.seller_product_enquiry_visible(uuid) to authenticated;

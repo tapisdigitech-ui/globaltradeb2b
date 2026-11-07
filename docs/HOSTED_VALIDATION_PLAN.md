@@ -9,6 +9,7 @@ Preconditions (all need explicit approval): a temporary Supabase branch of `glob
 - Delete the branch the same day validation finishes.
 
 ## Checklist (run in order; stop on first failure)
+0. **Baseline migration first** (staging has 0 recorded migrations, so a branch would be empty): apply the reconstructed baseline, then compare catalogue with staging read-only. See `SUPABASE_BRANCH_COST_REPORT.md` (supersedes the cost numbers below with 48 h figures and plan caveats).
 1. **Branch + baseline**: verify branch ref; dump schema/policies/grants/functions; compare with the local replica extract (catalogue diff must be 0 apart from known stubs).
 2. **Apply 0001-0006** to the branch only; record errors; re-run local catalogue diff (policy/grant/trigger/setting equality).
 3. **SQL suites** on the branch: legacy 138 + real-schema (post) 258; note which tests depend on stubbed functions.

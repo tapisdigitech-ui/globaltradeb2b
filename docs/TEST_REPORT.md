@@ -49,3 +49,11 @@ Legacy 138 PASS; real-schema post 258 PASS/0 FAIL; pre 54 PASS, 40 exposed contr
 
 ## Round 5
 Rollback 0006..0001: statement-level comparison after whitespace normalisation = identical (1302 statements, 0 only-in-either); the 25 raw diff lines were newline/indent differences in three function bodies. BC0 reproduced on original replica (`supabase/tests/bc0_original_policy_repro.sql`). Edge Function tests 13/13. Real-schema post 258 PASS/0 FAIL.
+
+## Round 6 (local PostgreSQL 16.15 replica; NOT Supabase; staging is PG 17)
+- Legacy suite (`tests/run_all.sh`, fresh): 138 PASS, 0 FAIL.
+- Real-schema post (0001-0006): 355 PASS, 0 FAIL (new: EL1-EL16 evidence ownership/audit/rate limits, SF1-SF21 for the 12 mirrored functions, BC0b/c pre controls).
+- Real-schema pre (0001-0005): 55 PASS, 41 EXPOSED controls, 0 FAIL.
+- Edge Function handler: 11/11.
+- Rollback: 0006 only = 0-line diff, re-apply ok; full 0006..0001 normalised comparison = identical (1429 statements, ordered; raw diff 25 lines = whitespace in 3 function bodies); rollback with 57 audit rows present ok, re-apply ok.
+- Not verified: signed-URL expiry, Storage RLS with real JWTs, Edge Function runtime, PG 17 behaviour.

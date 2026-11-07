@@ -203,3 +203,6 @@ Supabase-branch validation (cost approval pending); signed-URL TTL and Storage-s
 - Evidence-link Edge Function written and unit-tested locally; hosted Storage behaviour unverified (`EVIDENCE_LINK_FUNCTION.md`).
 - Results (local PG 16.15 replica): legacy suite 138 PASS; real-schema post 258 PASS / 0 FAIL; pre 54 PASS / 40 EXPOSED controls / 0 FAIL; rollback of 0006 = 0-line diff, re-apply ok; full 0006..0001 rollback differs only by whitespace in 3 function bodies; Edge Function node tests 9/9.
 - Remaining hosted blockers: signed-URL/TTL and storage RLS with real JWTs, Edge Function deployment, auth.users/triggers behaviour, 14 stubbed unrelated RPC bodies, admin RLS reads not individually logged, denied attempts not logged, no separate audit-personnel role.
+
+## Revision 5 (local validation only)
+Evidence access: single audited entry point with exact evidence ids, claim-ownership validation, per-user/claim rate limits and audited denials (`EVIDENCE_LINK_FUNCTION.md`). Signed URLs cannot be revoked after issue. The 12 formerly stubbed functions were read from staging (catalogue SELECT only) and mirrored locally; findings F1-F8 in `STUBBED_FUNCTIONS_REPORT.md`. Audit decisions in `AUDIT_DECISIONS.md`. Branch cost and the empty-migration-history blocker in `SUPABASE_BRANCH_COST_REPORT.md`.

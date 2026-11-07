@@ -22,30 +22,30 @@ export async function handle(req, deps) {
     return json(400, { error: 'evidenceIds must be 1-10 uuids' });
   if (!Number.isInteger(ttl) || ttl < 1 || ttl > MAX_TTL) return json(400, { error: `ttlSeconds must be 1..${MAX_TTL}` });
   if (typeof purpose !== 'string' || purpose.trim().length < 5) return json(400, { error: 'purpose (min 5 chars) required' });
-  // 3. authorisation + grant: SQL function re-checks staff role, reviewer assignment, open claim; logs purpose; creates 10-min grant
+  // 3. ONE database call performs authorisation (assignment), rate limiting, id-ownership validation, grant creation and audit
+  //    BEFORE any URL exists. Denials/rate limits are audited inside the database (non-raising), the response is deliberately generic.
   let rows;
-  try { rows = await deps.openEvidence(req.jwt, claimId, purpose.trim()); }
-  catch (e) { return json(403, { error: 'not authorised for this claim' }); }   // no detail leaked
-  // storage path must be exactly <claimId>/<plain file name>: no traversal, no other claim's folder
+  try { rows = await deps.requestLinks(req.jwt, claimId, evidenceIds, purpose.trim(), ttl); }
+  catch (e) { return json(e?.kind === 'not_staff' ? 403 : 503, { error: e?.kind === 'not_staff' ? 'not authorised' : 'service unavailable' }); }
+  const outcome = rows?.[0]?.outcome;
+  if (outcome === 'rate_limited') return json(429, { error: 'too many requests, try later' });
+  if (outcome === 'invalid') return json(400, { error: 'invalid request' });
+  if (outcome !== 'ok') return json(403, { error: 'not authorised' });            // no ids, paths or reasons
+  // 4. defence in depth: the returned set must be exactly what was asked for, and paths must be <claimId>/<plain name>
   const okPath = p => typeof p === 'string' && p.startsWith(claimId + '/') && SAFE_NAME.test(p.slice(claimId.length + 1)) && !p.includes('..');
-  const allowed = new Map(rows.filter(r => okPath(r.storage_path)).map(r => [r.evidence_id, r.storage_path]));
-  // link lifetime may never outlive the audited grant (signed URLs are NOT re-checked when used)
-  const grantLeft = Math.floor((Date.parse(rows[0]?.access_expires_at) - (deps.now?.() ?? Date.now())) / 1000);
-  if (Number.isFinite(grantLeft)) ttl = Math.min(ttl, grantLeft);
-  if (ttl < 1) return json(403, { error: 'grant expired' });
-  const unknown = evidenceIds.filter(i => !allowed.has(i));
-  if (unknown.length) return json(404, { error: 'evidence not found on this claim' });  // cross-claim ids rejected
-  // 4. signed URLs generated with the CALLER's JWT so Storage RLS (grant + assignment re-check) is the enforcement point
+  if (rows.length !== evidenceIds.length || !rows.every(r => evidenceIds.includes(r.evidence_id) && okPath(r.storage_path)))
+    return json(502, { error: 'unexpected response' });
+  // link lifetime never exceeds the audited grant (a signed URL is NOT re-checked when used)
+  const grantLeft = Math.floor((Date.parse(rows[0].access_expires_at) - (deps.now?.() ?? Date.now())) / 1000);
+  ttl = Math.min(ttl, rows[0].ttl_seconds ?? ttl, MAX_TTL, Number.isFinite(grantLeft) ? grantLeft : ttl);
+  if (ttl < 1) return json(403, { error: 'not authorised' });
+  // 5. signed URLs are created with the CALLER's JWT, so Storage policy (grant + assignment) is evaluated at creation
   const links = [];
-  for (const id of evidenceIds) {
+  for (const r of rows) {
     let url;
-    try { url = await deps.sign(req.jwt, allowed.get(id), ttl); }
-    catch (e) { return json(502, { error: 'could not create link' }); }   // fail closed, nothing partial returned
-    if (!url) return json(403, { error: 'storage refused (grant expired or revoked)' });
-    links.push({ evidenceId: id, url, expiresInSeconds: ttl });
+    try { url = await deps.sign(req.jwt, r.storage_path, ttl); } catch (e) { return json(502, { error: 'could not create link' }); }
+    if (!url) return json(403, { error: 'not authorised' });
+    links.push({ evidenceId: r.evidence_id, url, expiresInSeconds: ttl });
   }
-  // 5. audit issuance (grant must still be active; SQL function enforces ttl<=600)
-  try { await deps.recordIssued(req.jwt, claimId, evidenceIds, ttl); }
-  catch (e) { return json(403, { error: 'grant no longer active' }); }       // links are discarded, not returned
-  return json(200, { links, note: 'links expire; reopening requires a new audited call' });
+  return json(200, { links, note: 'links expire and cannot be revoked once issued; reopening requires a new audited call' });
 }

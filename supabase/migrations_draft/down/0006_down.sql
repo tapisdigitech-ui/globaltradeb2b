@@ -128,6 +128,7 @@ update public.lead_cases set queue='unverified_matches' where queue='product_enq
 alter table public.lead_cases drop constraint lead_cases_queue_check;
 alter table public.lead_cases add constraint lead_cases_queue_check check (queue in ('unclaimed_matches','unverified_matches','capped_eligible','unmatched'));
 -- 4. functions created by 0006 (dropped before the tables they use)
+drop function public._evidence_gate(p_claim uuid, p_purpose text, p_ids uuid[], p_ttl integer, p_listing boolean);
 drop function public.admin_assign_claim_reviewer(p_claim uuid, p_reviewer uuid);
 drop function public.admin_revoke_buyer_contact_access(p_enquiry uuid);
 drop function public.admin_unassign_claim_reviewer(p_claim uuid);
@@ -141,7 +142,7 @@ drop function public.staff_open_buyer_contact(p_enquiry uuid, p_purpose text);
 drop function public.staff_open_claim_evidence(p_claim uuid, p_purpose text);
 drop function public.staff_open_enquiry_comms(p_enquiry uuid, p_purpose text);
 drop function public.staff_recommend_review(p_target text, p_id uuid, p_recommendation text, p_note text);
-drop function public.staff_record_evidence_links(p_claim uuid, p_evidence_ids uuid[], p_ttl integer);
+drop function public.staff_request_evidence_links(p_claim uuid, p_evidence_ids uuid[], p_purpose text, p_ttl integer);
 drop function public.staff_thread_comms_ok(p_thread uuid);
 -- 5. tables created by 0006
 drop table public.buyer_contact_access_log;

@@ -1,26 +1,43 @@
-# evidence-link Edge Function and reviewer UI design
+# evidence-link Edge Function, evidence audit design and signed-URL security (round 6)
 
-STATUS: written and unit-tested locally with injected dependencies (`node --test supabase/functions/evidence-link/handler.test.mjs`, 9/9). **Not deployed. Hosted Supabase Storage behaviour (signed URL creation, expiry enforcement, RLS on storage.objects with a real JWT) is NOT verified.** Not connected to the demo or any supplier data.
+STATUS: SQL and handler are implemented and tested on a LOCAL PostgreSQL 16.15 replica / with injected dependencies only. **Not deployed. Hosted Supabase Storage behaviour (createSignedUrl, expiry enforcement, storage RLS with real JWTs, `verify_jwt`) is NOT verified.** Not connected to the demo or any real supplier data.
 
-Flow (`handler.mjs`; Deno wiring in `index.ts`):
-1. Authentication: the caller's JWT is required (401 otherwise) and forwarded; only the anon key is used, no service role.
-2. Validation: claimId and 1-10 evidence uuids, purpose >= 5 chars, ttlSeconds integer 1..600 (default 120) else 400.
-3. Authorisation + grant: RPC `staff_open_claim_evidence` runs as the caller; it checks staff role and reviewer assignment on an open claim, logs the purpose, creates a 10-minute grant. Any refusal returns a generic 403.
-4. Evidence ids not belonging to that claim return 404 and nothing is signed.
-5. Signed URLs: `createSignedUrl` with the caller's JWT, so storage policy (grant + assignment) is evaluated when the link is CREATED. Correction: a signed URL is a bearer link and is not re-checked when used; failure returns 502/403, no partial output.
-6. Audit: RPC `staff_record_evidence_links` (requires an active grant, ttl <= 600) logs "signed links issued (ttl Ns)". If auditing fails, links are discarded.
-7. Revocation: assignment change, claim closure, grant expiry or admin revoke stop new links and storage reads; an already-issued URL stays valid until its own expiry (max 600 s) - an inherent limit of signed URLs.
+## 1. Database design (migration 0006)
+Single entry point for the Edge Function: `staff_request_evidence_links(claim, evidence_ids uuid[], purpose, ttl default 120)`; `staff_open_claim_evidence(claim, purpose)` (metadata listing) shares the same gate `_evidence_gate` (not executable by clients).
 
-Audit events: open (purpose), links issued (ttl), all in the immutable `claim_evidence_access_log`.
+Order of checks inside the gate (every outcome except "not staff" is logged, because the functions do NOT raise for staff - a raised exception would roll the audit row back):
+1. caller must be staff (otherwise plain `staff only` error and no log row, so ordinary users cannot flood the log);
+2. rate limits (below) -> `rate_limited`;
+3. assignment: admin or reviewer assigned to the OPEN claim -> else `denied`;
+4. purpose >= 5 chars; 1..10 distinct non-null evidence ids; ttl 1..600 -> else `invalid`;
+5. every id must belong to THAT claim (mixed-claim, other-claim and non-existent ids all -> `denied`);
+6. success: immutable `granted` log row with actor, claim, company, purpose, **exact evidence ids**, **requested ttl**, timestamp; 10-minute grant row (unchanged maximum).
+Callers only ever receive `outcome` plus, on `ok`, paths for exactly the ids they asked for. Denied/invalid/rate-limited responses contain no ids, paths or reasons; the reason (`denial_reason`) and the attempted ids are in the audit log only (admin-readable, immutable). The log CHECKs ttl to 1..600.
 
-UI design (not built into live data): reviewer opens a claim, must type a purpose, sees evidence names, presses Open, gets links with a visible countdown, and a banner that access is logged. Admin sees the access log and a Revoke button. The existing Lead Desk demo in `index.html` stays simulated.
+Rate limits (counted from the audit log itself, so they cannot drift from it): 10 granted requests per hour per user+claim; 100 granted per day per user; 20 denied/invalid attempts per hour per user (probing control). A `rate_limited` row is written at most once per minute per user, so flooding cannot grow the log unboundedly. Limits are per user, so one reviewer's limit does not affect another, and per claim, so a busy claim does not block the same reviewer's other claims.
 
+Accepted limits of this design: a rate-limited or denied row is only written for staff; a non-staff caller gets a generic error; direct-table RLS denials (PostgREST returns an empty set) cannot be logged by Postgres.
 
-## Production-readiness review (round 5)
-Fixed in code (13 local tests pass): anon-key/expired/malformed JWT rejected (401; signature itself must be verified by the platform with `verify_jwt=true`); storage path must be exactly `<claimId>/<plain file name>`; link lifetime clamped to the remaining 10-minute grant (previously a link issued at minute 9 could live to minute 19).
+## 2. Edge Function (`handler.mjs`, `index.ts`)
+401 for missing/anon-key/expired/malformed JWT (signature itself verified by the platform with `verify_jwt=true` and by `auth.uid()` in the RPC); 400 for malformed input (no DB call); one RPC; 403 generic for denied, 429 for rate limit, 400 for invalid, 503 for database errors; the returned rows must equal the request and every path must be `<claimId>/<plain file name>` (no `..`, no sub-folders) before anything is signed; ttl = min(requested, 600, remaining grant); signing uses the caller's JWT (anon key only, no service role). Audit is written BEFORE any URL exists. 11 unit tests pass.
 
-Open items (need approval, not changed):
-1. `staff_record_evidence_links` logs only a count and ttl, not evidence ids, and does not verify the ids belong to the claim (the function does). Log ids and validate in SQL; would require regenerating the down script and re-running tests.
-2. Signed URLs cannot be revoked after issue (max 600 s, now clamped to grant). For identity documents consider streaming through the function with a per-request grant check instead.
-3. No rate limit on opening evidence; no request-size/CORS policy; all RPC errors map to 403 (infra errors should be 5xx with a request id); audit is written after signing (move to before, or write intent first).
-4. Storage behaviour, `verify_jwt`, and signed URL expiry are unverified until the hosted run (see `HOSTED_VALIDATION_PLAN.md`).
+## 3. Signed URL security assessment
+- **A signed URL is a bearer credential. Revoking the database grant, unassigning the reviewer or closing the claim does NOT invalidate a URL that was already issued.** Storage checks the policy when the URL is created, not each time it is used. Until it expires (<= 600 s, and clamped to the remaining 10-minute grant) anyone holding the URL can fetch the file, including after a forward/copy/log leak.
+- What revocation does stop: any NEW link, any storage read through the user's own session, and the metadata listing - immediately (tested: EL15, EL16, R5-R7).
+- Mitigations in place: short default (120 s), hard maximum 600 s, per-user/claim rate limits, exact-id audit, `no-store` responses, links never logged by the function. Residual risk window = ttl.
+- Not verifiable locally: actual expiry enforcement by Storage, clock skew, CDN caching of signed responses, whether Storage honours a revoked JWT. These are steps 6-8 of the hosted plan.
+
+## 4. Optional alternative: stream through the Edge Function (NOT implemented)
+| | Signed URL (current) | Stream via Edge Function |
+|---|---|---|
+| Revocation | none after issue (window = ttl) | immediate: every byte request re-checks grant + assignment |
+| Leak impact | link works for anyone until expiry | none (no bearer link; needs the staff JWT each time) |
+| Audit granularity | issuance | each download (and byte count) |
+| Security extras | - | can force `Content-Disposition`, watermark, deny range requests |
+| Cost | Storage egress only | adds Edge invocations + function egress (double hop); document-sized files, negligible at this scale (few reviewers) |
+| Performance | direct CDN download | extra hop, function memory/time limits (large PDFs/scans must stream, not buffer) |
+| Operational complexity | low | higher: streaming code, timeouts, error handling, tests under load |
+**Recommendation:** keep signed URLs with ttl <= 120 s as default for the validation phase; implement streaming only for identity documents if the hosted tests show URL leakage or the reviewer count grows. Streaming is not clearly justified yet.
+
+## 5. Tests (local)
+SQL EL1-EL16 (37 assertions): purpose, ttl 0/601/null/600, cross-claim, mixed-claim, unknown id, empty/null/duplicate/null-element/11-id lists, malformed uuid, unknown claim, exact audit contents, immutability, 600-s log cap, non-staff, unassigned (no grant created), probing limit, per-user+claim limit, per-claim and per-user independence, revoked-before-issuance, expired grant. Edge handler: 401/400/403/429/503, defence-in-depth path and id checks, ttl clamp, storage refusal. Expiry of the signed URL itself: not testable locally.

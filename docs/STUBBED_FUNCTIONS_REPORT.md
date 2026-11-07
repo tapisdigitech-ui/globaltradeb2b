@@ -45,3 +45,26 @@ Actual count: **12** (not 14). Of the original 16, `set_data_review`, `set_direc
 | respond_quotation | Required later; **security-sensitive** | quotations | Mirror body; buyer-own, open-quote-only test |
 
 If orders/quotations are out of launch scope, consider revoking EXECUTE from `authenticated` on the order functions until that phase (recommendation only; not applied). Next step for all 12: mirror real bodies by read-only catalogue SELECT (as done in round 3) before the hosted run; the hosted run then covers them natively.
+
+
+---
+## Round 6: real definitions mirrored and reviewed (supersedes the Round 5 classification where they differ)
+Source: read-only catalogue SELECT (`pg_get_functiondef`, `proacl`) against `globaltradeb2b-staging` (ref `lhmexhafyuzojrmcbtbz`, verified with get_project before reading; no function replaced or executed there). Mirrored into the local replica (git-ignored `staging_schema/real_02_functions.sql`), no stubs remain for these 12. Staging runs PostgreSQL 17; the replica is 16.15 (a caveat for hosted validation). All 12 are SECURITY DEFINER with `search_path = public, pg_temp`. Tests: `real_schema_tests.sql` block SF1-SF21 (run in the post phase; 38 assertions).
+
+| Function | Auth / role | RLS & assignment interaction | Contact exposure | Duplicates / consequences | Findings |
+|---|---|---|---|---|---|
+| accept_invitation | login + confirmed e-mail, 10/day (successes only) | definer; creates active member; profile -> seller; eligibility is re-checked at access time elsewhere | none | second accept refused (SF5b); no enumeration (SF2); unclaimed workspace refused (SF4) | **F1** NULL `expires_at` = never expires (SF7). Failed attempts are not rate-counted (exception rolls the event back) |
+| decline_invitation | confirmed e-mail only | own invite only | none | not found on repeat | none |
+| my_invitations | confirmed e-mail; approved company only | no leakage (SF1) | none | - | none |
+| create_company_request | login, 3/day | new company is claim_submitted, owned by nobody, invisible to unrelated users and to unassigned reviewers (SF9f-g) | none | **F2** same name can be created repeatedly (SF9c); approval impossible without evidence (SF9h) | add duplicate check (name+city) and admin dedupe review |
+| report_correction | login, 10/day, company must be live | writes only `company_data_corrections` (assigned staff / owners read) | none | **F3** `p_product` not tied to `p_company` (SF20b); `evidence_url` stored raw, e.g. `javascript:` (SF20a) | validate product belongs to company; UI must link http/https only |
+| record_product_view | service_role only | no PII, 1 h de-dupe | none | **F4** unbounded rows if a caller varies the hash (service-side hashing must be trusted) | keep server-side; add retention job later |
+| import_apply | admin only; terms confirmed; batch validated | creates unpublished companies + sources, no contacts, not public (SF11d) | none | idempotent (SF11c); duplicate rows flagged (SF11e) | **F5** no import-specific audit/applied_by (SF11f) |
+| import_rollback | admin only | refuses published/claimed/enquired companies (SF12) | none | **F6** `requirement_matches` is ON DELETE CASCADE, rollback silently deletes matches of imported companies (SF12a) | add a guard for matches/lead cases |
+| respond_quotation | buyer who owns the enquiry | row lock; open + not expired | none | repeat refused (SF14b) | **F7** the expiry update is rolled back by its own exception (quote stays `sent`, SF14d); `e.buyer_id <> auth.uid()` is NULL when uid is NULL (service role passes the owner check, SF19) - use `is distinct from` |
+| create_order | buyer, accepted quote, supplier claimed, 20/day | no staff path | none | unique(quotation_id) blocks duplicate orders (SF15b); amount/currency/supplier taken from the quote (SF15) | **F8** does not re-check quote validity date, supplier verification/restriction, or NULL uid |
+| advance_order | supplier owner/manager/sales | reviewers and admins refused (SF16, SF16c); strict state machine (SF17) | none | repeat -> illegal transition | status changes audited by `trg_audit_orders` with actor (SF17d); no reason/notes field |
+| cancel_order | buyer, own, `placed` only | - | none | repeat refused | none |
+
+Classification (unchanged where not mentioned): Required for launch - accept_invitation, create_company_request, import_apply, import_rollback (if the directory is import-seeded); Required later - decline_invitation, my_invitations, report_correction, record_product_view, orders/quotation functions (create_order, advance_order, cancel_order, respond_quotation); security-sensitive - accept_invitation, create_company_request, import_*, all four order functions; none proven unused/obsolete (nothing in this repo calls them).
+Recommended migration items (proposed only, NOT written or applied; need approval): F1 invitation expiry NOT NULL/default; F2 duplicate detection; F3 product/company check; F5 import audit; F6 rollback guard; F7/F8 `is distinct from`, order-time validity checks, expiry persistence (write the expired status without raising). These replace real staging functions, so each needs its own approved migration and test.

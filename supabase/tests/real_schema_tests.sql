@@ -173,14 +173,14 @@ reset role; reset app.uid;
 set role authenticated; set app.uid='00000000-0000-0000-0000-0000000000a2';
 select pg_temp.ok('assigned reviewer a2 reads claim 1 evidence through audited RPC', (select count(*) from public.staff_open_claim_evidence('a1a00000-0000-0000-0000-000000000001','verify docs'))=1);
 select pg_temp.ok('assigned reviewer a2 reads storage object only after grant', (select count(*) from storage.objects where bucket_id='verification-docs' and name like 'a1a00000-0000-0000-0000-000000000001/%')=1);
-select pg_temp.denied('assigned reviewer a2 cannot open claim 2 (not assigned)', $$select * from public.staff_open_claim_evidence('a1a00000-0000-0000-0000-000000000002','peek')$$);
+select pg_temp.ok('assigned reviewer a2 cannot open claim 2 (not assigned): empty result, no paths', (select count(*) from public.staff_open_claim_evidence('a1a00000-0000-0000-0000-000000000002','peek'))=0);
 select pg_temp.ok('a2 cannot read claim 2 storage object', (select count(*) from storage.objects where bucket_id='verification-docs' and name like 'a1a00000-0000-0000-0000-000000000002/%')=0);
-select pg_temp.denied('purpose required', $$select * from public.staff_open_claim_evidence('a1a00000-0000-0000-0000-000000000001','')$$, 'purpose');
+select pg_temp.ok('purpose required: empty result', (select count(*) from public.staff_open_claim_evidence('a1a00000-0000-0000-0000-000000000001',''))=0);
 select pg_temp.ok('a2 sees only its assigned claim', (select count(*) from public.company_claims where company_id='c0000000-0000-0000-0000-0000000000f1')=1);
 select pg_temp.denied('audit log is not writable by staff', $$insert into public.claim_evidence_access_log(actor_id,claim_id,company_id,purpose,evidence_count) values (auth.uid(),gen_random_uuid(),gen_random_uuid(),'forged entry',0)$$, 'permission denied');
 reset role; reset app.uid;
 set role authenticated; set app.uid='00000000-0000-0000-0000-0000000000a3';
-select pg_temp.denied('unassigned reviewer a3 denied RPC on claim 1', $$select * from public.staff_open_claim_evidence('a1a00000-0000-0000-0000-000000000001','peek')$$);
+select pg_temp.ok('unassigned reviewer a3 denied on claim 1: empty result', (select count(*) from public.staff_open_claim_evidence('a1a00000-0000-0000-0000-000000000001','peek'))=0);
 select pg_temp.ok('a3 sees zero contested claims', (select count(*) from public.company_claims where company_id='c0000000-0000-0000-0000-0000000000f1')=0);
 reset role; reset app.uid;
 set role authenticated; set app.uid='00000000-0000-0000-0000-0000000000a1';
@@ -237,7 +237,7 @@ select pg_temp.ok('R6 admin revokes the reviewer assignment', pg_temp.try($$sele
 reset role; reset app.uid;
 select pg_temp.ok('R6b grants for that claim deleted', (select count(*) from claim_evidence_grants where claim_id='a1a00000-0000-0000-0000-000000000001')=0);
 set role authenticated; set app.uid='00000000-0000-0000-0000-0000000000a2';
-select pg_temp.ok('R7 revoked reviewer: storage read denied and RPC denied immediately', (select count(*) from storage.objects where bucket_id='verification-docs')=0 and not pg_temp.try($$select * from public.staff_open_claim_evidence('a1a00000-0000-0000-0000-000000000001','still trying')$$));
+select pg_temp.ok('R7 revoked reviewer: storage read denied and RPC denied immediately', (select count(*) from storage.objects where bucket_id='verification-docs')=0 and (select count(*) from public.staff_open_claim_evidence('a1a00000-0000-0000-0000-000000000001','still trying'))=0);
 reset role; reset app.uid;
 \endif
 
@@ -616,24 +616,246 @@ select pg_temp.gap('IMG-pre unassigned reviewer approves a product image (stagin
 reset role; reset app.uid;
 \endif
 
--- ===== ROUND 4: evidence-link audit (Edge Function support) =====
+-- ===== ROUND 6: evidence-link audit, ownership, rate limits (Edge Function support) =====
 \if :post
-insert into companies(id,slug,name,city,country,directory_status,claim_status,verification_status,data_review_status) values ('c0000000-0000-0000-0000-0000000000f7','c7','C7 Claim Co','Pune','India','draft','claim_submitted','not_verified','pending');
-insert into company_claims(id,company_id,claimant_id,statement,status) values ('a1a00000-0000-0000-0000-000000000007','c0000000-0000-0000-0000-0000000000f7','00000000-0000-0000-0000-0000000000b1','claim seven','claim_submitted');
+insert into companies(id,slug,name,city,country,directory_status,claim_status,verification_status,data_review_status) values
+ ('c0000000-0000-0000-0000-0000000000f7','c7','C7 Claim Co','Pune','India','draft','claim_submitted','not_verified','pending'),
+ ('c0000000-0000-0000-0000-0000000000f8','c8','C8 Claim Co','Pune','India','draft','claim_submitted','not_verified','pending');
+insert into company_claims(id,company_id,claimant_id,statement,status) values
+ ('a1a00000-0000-0000-0000-000000000007','c0000000-0000-0000-0000-0000000000f7','00000000-0000-0000-0000-0000000000b1','claim seven','claim_submitted'),
+ ('a1a00000-0000-0000-0000-000000000008','c0000000-0000-0000-0000-0000000000f8','00000000-0000-0000-0000-0000000000b2','claim eight','claim_submitted');
 set app.uid='00000000-0000-0000-0000-0000000000b1';
-insert into company_claim_evidence(id,claim_id,storage_path,uploaded_by) values ('e7e00000-0000-0000-0000-000000000001','a1a00000-0000-0000-0000-000000000007','a1a00000-0000-0000-0000-000000000007/e.pdf','00000000-0000-0000-0000-0000000000b1');
-set app.uid='00000000-0000-0000-0000-0000000000a1'; select public.admin_assign_claim_reviewer('a1a00000-0000-0000-0000-000000000007','00000000-0000-0000-0000-0000000000a2'); reset app.uid;
+insert into company_claim_evidence(id,claim_id,storage_path,uploaded_by) values
+ ('e7e00000-0000-0000-0000-000000000001','a1a00000-0000-0000-0000-000000000007','a1a00000-0000-0000-0000-000000000007/e1.pdf','00000000-0000-0000-0000-0000000000b1'),
+ ('e7e00000-0000-0000-0000-000000000002','a1a00000-0000-0000-0000-000000000007','a1a00000-0000-0000-0000-000000000007/e2.pdf','00000000-0000-0000-0000-0000000000b1');
+set app.uid='00000000-0000-0000-0000-0000000000b2';
+insert into company_claim_evidence(id,claim_id,storage_path,uploaded_by) values ('e8e00000-0000-0000-0000-000000000001','a1a00000-0000-0000-0000-000000000008','a1a00000-0000-0000-0000-000000000008/e1.pdf','00000000-0000-0000-0000-0000000000b2');
+set app.uid='00000000-0000-0000-0000-0000000000a1';
+select public.admin_assign_claim_reviewer('a1a00000-0000-0000-0000-000000000007','00000000-0000-0000-0000-0000000000a2');
+select public.admin_assign_claim_reviewer('a1a00000-0000-0000-0000-000000000008','00000000-0000-0000-0000-0000000000a2');
+reset app.uid;
+select id as ev_claim1 from company_claim_evidence where claim_id='a1a00000-0000-0000-0000-000000000001' limit 1 \gset
+create or replace function pg_temp.req(ids uuid[], purpose text, ttl int default 120, claim uuid default 'a1a00000-0000-0000-0000-000000000007') returns text language sql as $$
+  select string_agg(outcome||':'||coalesce(storage_path,'-'), ',' order by storage_path) from public.staff_request_evidence_links(claim, ids, purpose, ttl) $$;
 set role authenticated; set app.uid='00000000-0000-0000-0000-0000000000a2';
-select pg_temp.denied('EL1 link issuance cannot be recorded without an active grant', $$select public.staff_record_evidence_links('a1a00000-0000-0000-0000-000000000007', array['e7e00000-0000-0000-0000-000000000001']::uuid[], 120)$$, 'grant');
-select pg_temp.ok('EL2 open (audited) then record issuance of 120 s links', (select count(*) from public.staff_open_claim_evidence('a1a00000-0000-0000-0000-000000000007','review identity document'))=1);
-select pg_temp.ok('EL3 issuance recorded for ttl 120', pg_temp.try($$select public.staff_record_evidence_links('a1a00000-0000-0000-0000-000000000007', array['e7e00000-0000-0000-0000-000000000001']::uuid[], 120)$$));
-select pg_temp.denied('EL4 ttl above 600 s refused', $$select public.staff_record_evidence_links('a1a00000-0000-0000-0000-000000000007', array['e7e00000-0000-0000-0000-000000000001']::uuid[], 601)$$, '600');
-select pg_temp.denied('EL5 ttl 0 refused', $$select public.staff_record_evidence_links('a1a00000-0000-0000-0000-000000000007', array['e7e00000-0000-0000-0000-000000000001']::uuid[], 0)$$, '600');
+select pg_temp.ok('EL1 purpose is required (invalid, no paths)', pg_temp.req(array['e7e00000-0000-0000-0000-000000000001']::uuid[],'')='invalid:-');
+select pg_temp.ok('EL2 valid request returns ok and BOTH paths', pg_temp.req(array['e7e00000-0000-0000-0000-000000000001','e7e00000-0000-0000-0000-000000000002']::uuid[],'review identity documents',120)='ok:a1a00000-0000-0000-0000-000000000007/e1.pdf,ok:a1a00000-0000-0000-0000-000000000007/e2.pdf');
+select pg_temp.ok('EL4a ttl 601 refused', pg_temp.req(array['e7e00000-0000-0000-0000-000000000001']::uuid[],'review documents',601)='invalid:-');
+select pg_temp.ok('EL4b ttl 0 refused', pg_temp.req(array['e7e00000-0000-0000-0000-000000000001']::uuid[],'review documents',0)='invalid:-');
+select pg_temp.ok('EL4c null ttl refused', pg_temp.req(array['e7e00000-0000-0000-0000-000000000001']::uuid[],'review documents',null)='invalid:-');
+select pg_temp.ok('EL4d ttl 600 accepted (maximum preserved)', pg_temp.req(array['e7e00000-0000-0000-0000-000000000001']::uuid[],'review documents',600) like 'ok:%');
+select pg_temp.ok('EL5a evidence id from ANOTHER claim refused, nothing leaked', pg_temp.req(array[:'ev_claim1']::uuid[],'cross claim probe')='denied:-');
+select pg_temp.ok('EL5b mixed-claim list (claim 7 + claim 8, same reviewer assigned to both) refused', pg_temp.req(array['e7e00000-0000-0000-0000-000000000001','e8e00000-0000-0000-0000-000000000001']::uuid[],'mixed claim probe')='denied:-');
+select pg_temp.ok('EL5c mixed list with one valid id and one foreign id refused entirely', pg_temp.req(array['e7e00000-0000-0000-0000-000000000001',:'ev_claim1']::uuid[],'mixed with foreign')='denied:-');
+select pg_temp.ok('EL5d claim 8 ids need claim 8 (claim 8 request with claim 7 id refused)', pg_temp.req(array['e7e00000-0000-0000-0000-000000000001']::uuid[],'wrong claim',120,'a1a00000-0000-0000-0000-000000000008')='denied:-');
+select pg_temp.ok('EL6a non-existent evidence id refused', pg_temp.req(array['deadbeef-0000-0000-0000-000000000000']::uuid[],'missing id probe')='denied:-');
+select pg_temp.ok('EL6b empty list invalid', pg_temp.req(array[]::uuid[],'empty list probe')='invalid:-');
+select pg_temp.ok('EL6c null list invalid', pg_temp.req(null,'null list probe')='invalid:-');
+select pg_temp.ok('EL6d duplicate ids invalid', pg_temp.req(array['e7e00000-0000-0000-0000-000000000001','e7e00000-0000-0000-0000-000000000001']::uuid[],'duplicate probe')='invalid:-');
+select pg_temp.ok('EL6e null element invalid', pg_temp.req(array['e7e00000-0000-0000-0000-000000000001',null]::uuid[],'null element probe')='invalid:-');
+select pg_temp.ok('EL6f more than 10 ids invalid', pg_temp.req((select array_agg(gen_random_uuid()) from generate_series(1,11)),'too many ids probe')='invalid:-');
+select pg_temp.ok('EL6g malformed uuid text cannot reach the function (type error)', not pg_temp.try($$select * from public.staff_request_evidence_links('a1a00000-0000-0000-0000-000000000007', array['not-a-uuid']::uuid[], 'malformed probe', 120)$$));
+select pg_temp.ok('EL6h unknown claim denied, no leak', pg_temp.req(array['e7e00000-0000-0000-0000-000000000001']::uuid[],'unknown claim probe',120,'12345678-0000-0000-0000-000000000000')='denied:-');
 reset role; reset app.uid;
-select pg_temp.ok('EL6 audit shows open + issuance rows with actor', (select count(*) from claim_evidence_access_log where claim_id='a1a00000-0000-0000-0000-000000000007' and actor_id='00000000-0000-0000-0000-0000000000a2')=2 and exists(select 1 from claim_evidence_access_log where purpose='signed links issued (ttl 120s)'));
+select pg_temp.ok('EL7 audit row has actor, claim, EXACT evidence ids, purpose, ttl, timestamp, outcome', exists(select 1 from claim_evidence_access_log where actor_id='00000000-0000-0000-0000-0000000000a2' and outcome='granted' and purpose='review identity documents' and ttl_seconds=120 and evidence_ids @> array['e7e00000-0000-0000-0000-000000000001','e7e00000-0000-0000-0000-000000000002']::uuid[] and cardinality(evidence_ids)=2 and at is not null));
+select pg_temp.ok('EL8 denied / invalid attempts are audited with reason, purpose and attempted ids', (select count(*) from claim_evidence_access_log where actor_id='00000000-0000-0000-0000-0000000000a2' and outcome='denied' and denial_reason is not null)>=6 and exists(select 1 from claim_evidence_access_log where outcome='denied' and denial_reason='evidence not on this claim' and evidence_ids @> array[:'ev_claim1']::uuid[] and purpose='cross claim probe') and exists(select 1 from claim_evidence_access_log where outcome='invalid' and denial_reason='bad lifetime' and purpose='review documents'));
+select pg_temp.denied('EL9 audit rows cannot be altered', $$update claim_evidence_access_log set evidence_ids='{}'$$);
+select pg_temp.denied('EL9b audit rows cannot be deleted', $$delete from claim_evidence_access_log$$);
+select pg_temp.denied('EL9c signed-URL lifetime above 600 cannot even be recorded', $$insert into claim_evidence_access_log(actor_id,claim_id,company_id,purpose,evidence_count,ttl_seconds) values (gen_random_uuid(),gen_random_uuid(),gen_random_uuid(),'long ttl record',1,601)$$);
+select pg_temp.ok('EL9d grant lifetime never exceeds 10 minutes', (select max(expires_at) <= now() + interval '10 minutes 5 seconds' from claim_evidence_grants));
+-- non-staff and unassigned staff
+set role authenticated; set app.uid='00000000-0000-0000-0000-0000000000b1';
+select pg_temp.denied('EL10 non-staff (buyer/claimant) cannot call the function at all', $$select * from public.staff_request_evidence_links('a1a00000-0000-0000-0000-000000000007', array['e7e00000-0000-0000-0000-000000000001']::uuid[], 'claimant probing', 120)$$, 'staff only');
+reset role; reset app.uid;
+select pg_temp.ok('EL10b non-staff denial writes no log row (no log flooding by arbitrary users)', (select count(*) from claim_evidence_access_log where actor_id='00000000-0000-0000-0000-0000000000b1')=0);
 set role authenticated; set app.uid='00000000-0000-0000-0000-0000000000a3';
-select pg_temp.denied('EL7 unassigned reviewer cannot record or open', $$select public.staff_record_evidence_links('a1a00000-0000-0000-0000-000000000007', array['e7e00000-0000-0000-0000-000000000001']::uuid[], 60)$$, 'grant');
+select pg_temp.ok('EL11 unassigned reviewer: denied, no paths, no grant', pg_temp.req(array['e7e00000-0000-0000-0000-000000000001']::uuid[],'unassigned probe')='denied:-' and (select count(*) from storage.objects where bucket_id='verification-docs')=0);
 reset role; reset app.uid;
+select pg_temp.ok('EL11b unassigned denial is audited and created no grant', exists(select 1 from claim_evidence_access_log where actor_id='00000000-0000-0000-0000-0000000000a3' and outcome='denied' and purpose='unassigned probe') and (select count(*) from claim_evidence_grants where staff_id='00000000-0000-0000-0000-0000000000a3' and claim_id='a1a00000-0000-0000-0000-000000000007')=0);
+-- probing limit: 25 further denials by a3 -> capped, further attempts rate_limited, log growth bounded
+set role authenticated; set app.uid='00000000-0000-0000-0000-0000000000a3';
+do $$ declare i int; begin for i in 1..25 loop perform pg_temp.req(array['e7e00000-0000-0000-0000-000000000001']::uuid[],'probe number '||i); end loop; end $$;
+select pg_temp.ok('EL12 repeated denied probing is rate limited', pg_temp.req(array['e7e00000-0000-0000-0000-000000000001']::uuid[],'one more probe')='rate_limited:-');
+reset role; reset app.uid;
+select pg_temp.ok('EL12b denied rows capped at 20/hour per user; rate_limited recorded but at most one per minute', (select count(*) from claim_evidence_access_log where actor_id='00000000-0000-0000-0000-0000000000a3' and outcome in ('denied','invalid'))=20 and (select count(*) from claim_evidence_access_log where actor_id='00000000-0000-0000-0000-0000000000a3' and outcome='rate_limited')=1);
+-- per user and claim granted-request limit
+set role authenticated; set app.uid='00000000-0000-0000-0000-0000000000a2';
+do $$ declare i int; begin for i in 1..12 loop perform pg_temp.req(array['e7e00000-0000-0000-0000-000000000001']::uuid[],'repeat request '||i); end loop; end $$;
+select pg_temp.ok('EL13 per user+claim limit (10 granted per hour) then rate_limited', pg_temp.req(array['e7e00000-0000-0000-0000-000000000001']::uuid[],'eleventh plus')='rate_limited:-');
+reset role; reset app.uid;
+select pg_temp.ok('EL13b exactly 10 granted rows for a2 on claim 7 within the hour; rate-limited attempt audited once', (select count(*) from claim_evidence_access_log where actor_id='00000000-0000-0000-0000-0000000000a2' and claim_id='a1a00000-0000-0000-0000-000000000007' and outcome='granted')=10 and (select count(*) from claim_evidence_access_log where actor_id='00000000-0000-0000-0000-0000000000a2' and outcome='rate_limited')=1);
+set role authenticated; set app.uid='00000000-0000-0000-0000-0000000000a2';
+select pg_temp.ok('EL14 limit is per claim: same reviewer still served on claim 8', pg_temp.req(array['e8e00000-0000-0000-0000-000000000001']::uuid[],'second claim review',120,'a1a00000-0000-0000-0000-000000000008')='ok:a1a00000-0000-0000-0000-000000000008/e1.pdf');
+reset role; reset app.uid;
+set role authenticated; set app.uid='00000000-0000-0000-0000-0000000000a1';
+select pg_temp.ok('EL14b limit is per user: admin unaffected by reviewer a2 being limited', pg_temp.req(array['e7e00000-0000-0000-0000-000000000001']::uuid[],'admin oversight check') like 'ok:%');
+reset role; reset app.uid;
+-- revoked before issuance / expired grants
+set role authenticated; set app.uid='00000000-0000-0000-0000-0000000000a1';
+select pg_temp.ok('EL15 admin unassigns a2 from claim 8', pg_temp.try($$select public.admin_unassign_claim_reviewer('a1a00000-0000-0000-0000-000000000008')$$));
+reset role; reset app.uid;
+set role authenticated; set app.uid='00000000-0000-0000-0000-0000000000a2';
+select pg_temp.ok('EL15b revoked reviewer: unexpired grant useless (storage 0) and new request denied', (select count(*) from storage.objects where bucket_id='verification-docs' and name like 'a1a00000-0000-0000-0000-000000000008/%')=0 and pg_temp.req(array['e8e00000-0000-0000-0000-000000000001']::uuid[],'after revocation',120,'a1a00000-0000-0000-0000-000000000008')='denied:-' and not public.evidence_grant_active('a1a00000-0000-0000-0000-000000000008'));
+reset role; reset app.uid;
+update claim_evidence_grants set expires_at = now() - interval '1 second' where claim_id='a1a00000-0000-0000-0000-000000000007' and staff_id='00000000-0000-0000-0000-0000000000a2';
+set role authenticated; set app.uid='00000000-0000-0000-0000-0000000000a2';
+select pg_temp.ok('EL16 expired grant: evidence_grant_active false and storage read denied', not public.evidence_grant_active('a1a00000-0000-0000-0000-000000000007') and (select count(*) from storage.objects where bucket_id='verification-docs' and name like 'a1a00000-0000-0000-0000-000000000007/%')=0);
+reset role; reset app.uid;
+\endif
+
+-- ===== ROUND 6: the 12 formerly-stubbed functions, now running their REAL staging bodies (read-only catalogue copy) =====
+\if :post
+insert into auth.users(id,email,email_confirmed_at) values ('00000000-0000-0000-0000-0000000000d1','d1@t.example',now()),('00000000-0000-0000-0000-0000000000d2','d2@t.example',null);
+insert into company_members(id,company_id,invite_email,role,status,expires_at) values
+ ('b1b00000-0000-0000-0000-000000000001','c0000000-0000-0000-0000-000000000001','d1@t.example','sales','invited',now()+interval '3 days'),
+ ('b1b00000-0000-0000-0000-000000000002','c0000000-0000-0000-0000-000000000001','d2@t.example','sales','invited',now()+interval '3 days'),
+ ('b1b00000-0000-0000-0000-000000000003','c0000000-0000-0000-0000-000000000001','x3@t.example','sales','invited',now()-interval '1 day'),
+ ('b1b00000-0000-0000-0000-000000000004','c0000000-0000-0000-0000-000000000003','d1@t.example','sales','invited',now()+interval '3 days'),
+ ('b1b00000-0000-0000-0000-000000000005','c0000000-0000-0000-0000-000000000002','d1@t.example','viewer','invited',null);
+set role authenticated; set app.uid='00000000-0000-0000-0000-0000000000d1';
+select pg_temp.ok('SF1 my_invitations lists only live invitations for the caller (approved company, not expired, own email)', (select count(*) from public.my_invitations())=1);
+reset role; set role authenticated; set app.uid='00000000-0000-0000-0000-0000000000b2';
+select pg_temp.ok('SF1b another user sees none', (select count(*) from public.my_invitations())=0);
+select pg_temp.denied('SF2 invitation meant for someone else: same message as a non-existent one', $$select public.accept_invitation('b1b00000-0000-0000-0000-000000000001')$$, 'invitation not found');
+select pg_temp.denied('SF2b non-existent invitation: identical message (no enumeration)', $$select public.accept_invitation(gen_random_uuid())$$, 'invitation not found');
+select pg_temp.denied('SF2c decline of someone else''s invitation refused', $$select public.decline_invitation('b1b00000-0000-0000-0000-000000000001')$$, 'invitation not found');
+reset role; set role authenticated; set app.uid='00000000-0000-0000-0000-0000000000d2';
+select pg_temp.denied('SF3 unconfirmed e-mail cannot accept', $$select public.accept_invitation('b1b00000-0000-0000-0000-000000000002')$$, 'confirmed email');
+reset role; set role authenticated; set app.uid='00000000-0000-0000-0000-0000000000d1';
+select pg_temp.denied('SF4 unclaimed company workspace refuses acceptance', $$select public.accept_invitation('b1b00000-0000-0000-0000-000000000004')$$, 'not active');
+select pg_temp.ok('SF5 valid acceptance', pg_temp.try($$select public.accept_invitation('b1b00000-0000-0000-0000-000000000001')$$));
+select pg_temp.denied('SF5b second acceptance of the same invitation refused (no duplicate seat)', $$select public.accept_invitation('b1b00000-0000-0000-0000-000000000001')$$, 'invitation not found');
+reset role; reset app.uid;
+select pg_temp.ok('SF5c member active with the invited role; profile becomes seller; no duplicate member rows', (select count(*) from company_members where company_id='c0000000-0000-0000-0000-000000000001' and user_id='00000000-0000-0000-0000-0000000000d1' and status='active' and role='sales')=1 and (select app_role::text from profiles where id='00000000-0000-0000-0000-0000000000d1')='seller');
+update company_members set expires_at=now()-interval '1 day' where id='b1b00000-0000-0000-0000-000000000003';
+insert into auth.users(id,email,email_confirmed_at) values ('00000000-0000-0000-0000-0000000000d3','x3@t.example',now());
+set role authenticated; set app.uid='00000000-0000-0000-0000-0000000000d3';
+select pg_temp.denied('SF6 expired invitation refused', $$select public.accept_invitation('b1b00000-0000-0000-0000-000000000003')$$, 'expired');
+reset role; reset app.uid;
+insert into auth.users(id,email,email_confirmed_at) values ('00000000-0000-0000-0000-0000000000d4','d1b@t.example',now());
+update company_members set invite_email='d1b@t.example' where id='b1b00000-0000-0000-0000-000000000005';
+set role authenticated; set app.uid='00000000-0000-0000-0000-0000000000d4';
+select pg_temp.ok('SF7 FINDING: an invitation with NULL expires_at never expires (accepted)', pg_temp.try($$select public.accept_invitation('b1b00000-0000-0000-0000-000000000005')$$));
+reset role; reset app.uid;
+select pg_temp.ok('SF8 execute rights: anon none; authenticated yes; record_product_view service_role only', not has_function_privilege('anon','public.accept_invitation(uuid)','execute') and not has_function_privilege('anon','public.create_order(uuid)','execute') and not has_function_privilege('anon','public.import_apply(uuid)','execute') and has_function_privilege('authenticated','public.accept_invitation(uuid)','execute') and not has_function_privilege('authenticated','public.record_product_view(uuid,text)','execute') and has_function_privilege('service_role','public.record_product_view(uuid,text)','execute'));
+
+-- create_company_request
+set role authenticated; set app.uid='00000000-0000-0000-0000-0000000000b2';
+select pg_temp.denied('SF9 name required', $$select public.create_company_request('  ','Manufacturer','Delhi','mine')$$, 'name required');
+select pg_temp.ok('SF9b create_company_request returns an id', pg_temp.try($$select public.create_company_request('New Rugs Co','Manufacturer','Delhi','I own it')$$));
+select pg_temp.ok('SF9b2 creator sees exactly that claim_submitted company', (select count(*) from public.companies where created_by='00000000-0000-0000-0000-0000000000b2' and claim_status='claim_submitted')=1);
+select pg_temp.ok('SF9c FINDING: the same name can be created twice (no duplicate detection)', pg_temp.try($$select public.create_company_request('New Rugs Co','Manufacturer','Delhi','again')$$));
+select pg_temp.ok('SF9d third allowed, fourth refused (3 per day)', pg_temp.try($$select public.create_company_request('Third Co','x','y','z')$$) and not pg_temp.try($$select public.create_company_request('Fourth Co','x','y','z')$$));
+reset role; reset app.uid;
+select pg_temp.ok('SF9e rows: 3 companies unpublished, 3 direct_submission sources, 3 Creator claims, none with evidence', (select count(*) from companies where created_by='00000000-0000-0000-0000-0000000000b2' and directory_status<>'published')=3 and (select count(*) from company_sources where source_type='direct_submission' and recorded_by='00000000-0000-0000-0000-0000000000b2')=3 and (select count(*) from company_claims where claimant_id='00000000-0000-0000-0000-0000000000b2' and claimant_role_title='Creator')=3);
+set role authenticated; set app.uid='00000000-0000-0000-0000-0000000000b1';
+select pg_temp.ok('SF9f unrelated user cannot see the new companies', (select count(*) from public.companies where created_by='00000000-0000-0000-0000-0000000000b2')=0);
+reset role; set role authenticated; set app.uid='00000000-0000-0000-0000-0000000000a3';
+select pg_temp.ok('SF9g unassigned reviewer cannot see them either (assignment-scoped)', (select count(*) from public.companies where created_by='00000000-0000-0000-0000-0000000000b2')=0);
+reset role; set role authenticated; set app.uid='00000000-0000-0000-0000-0000000000a1';
+select pg_temp.denied('SF9h admin cannot approve a self-created claim without evidence', format($$select public.review_claim(%L,'approved','looks fine')$$, (select id from public.company_claims where claimant_id='00000000-0000-0000-0000-0000000000b2' and claimant_role_title='Creator' limit 1)), 'evidence');
+reset role; reset app.uid;
+
+-- import_apply / import_rollback
+insert into company_import_batches(id,source_type,source_name,source_url,terms_checked,operator_id,status) values ('1b1b0000-0000-0000-0000-000000000001','official_website','Test Directory','https://dir.example',false,'00000000-0000-0000-0000-0000000000a1','validated');
+insert into company_import_rows(batch_id,row_no,raw,name,website,city,dedupe_key,status) values
+ ('1b1b0000-0000-0000-0000-000000000001',1,'{}','Imp One','https://imp1.example','Agra','imp-one','approved'),
+ ('1b1b0000-0000-0000-0000-000000000001',2,'{}','Imp Two','https://imp2.example','Agra','imp-two','approved'),
+ ('1b1b0000-0000-0000-0000-000000000001',3,'{}','Imp One Again','https://imp1.example','Agra','imp-one','approved');
+set role authenticated; set app.uid='00000000-0000-0000-0000-0000000000a2';
+select pg_temp.denied('SF10 reviewer cannot apply an import', $$select public.import_apply('1b1b0000-0000-0000-0000-000000000001')$$, 'admin only');
+select pg_temp.denied('SF10b reviewer cannot roll back', $$select public.import_rollback('1b1b0000-0000-0000-0000-000000000001','x')$$, 'admin only');
+reset role; set role authenticated; set app.uid='00000000-0000-0000-0000-0000000000a1';
+select pg_temp.denied('SF11 admin: terms must be confirmed first', $$select public.import_apply('1b1b0000-0000-0000-0000-000000000001')$$, 'terms');
+reset role; update company_import_batches set terms_checked=true where id='1b1b0000-0000-0000-0000-000000000001';
+set role authenticated; set app.uid='00000000-0000-0000-0000-0000000000a1';
+select pg_temp.ok('SF11b apply: 2 inserted, 1 duplicate flagged', (select (public.import_apply('1b1b0000-0000-0000-0000-000000000001')->>'inserted')::int)=2);
+select pg_temp.ok('SF11c re-apply is idempotent (nothing new)', (select (public.import_apply('1b1b0000-0000-0000-0000-000000000001')->>'inserted')::int)=0);
+reset role; reset app.uid;
+select pg_temp.ok('SF11d imported companies are unclaimed-type drafts with sources and NO contacts/private data, not public', (select count(*) from companies where import_batch_id='1b1b0000-0000-0000-0000-000000000001' and directory_status<>'published')=2 and (select count(*) from company_sources where import_batch_id='1b1b0000-0000-0000-0000-000000000001')>=4 and (select count(*) from company_contacts where company_id in (select id from companies where import_batch_id='1b1b0000-0000-0000-0000-000000000001'))=0 and (select count(*) from public_companies where name like 'Imp %')=0);
+select pg_temp.ok('SF11e duplicate row flagged for review', (select count(*) from company_import_rows where batch_id='1b1b0000-0000-0000-0000-000000000001' and status='duplicate_review')=1);
+select pg_temp.ok('SF11f FINDING: apply records no operator audit row (only batch.applied_at); no audit_log entry', (select count(*) from audit_log where action ilike '%import%')=0);
+select pg_temp.ok('SF12a FINDING: requirement_matches.company_id is ON DELETE CASCADE, so a rollback silently deletes matches of imported companies', exists(select 1 from pg_constraint where conname='requirement_matches_company_id_fkey' and confdeltype='c'));
+update companies set directory_status='published', data_review_status='approved' where import_batch_id='1b1b0000-0000-0000-0000-000000000001' and name='Imp Two';
+set role authenticated; set app.uid='00000000-0000-0000-0000-0000000000a1';
+select pg_temp.denied('SF12 rollback refused while a batch company is published', $$select public.import_rollback('1b1b0000-0000-0000-0000-000000000001','blocked')$$, 'cannot roll back');
+reset role; update companies set directory_status='draft' where import_batch_id='1b1b0000-0000-0000-0000-000000000001';
+set role authenticated; set app.uid='00000000-0000-0000-0000-0000000000a1';
+select pg_temp.ok('SF12b rollback deletes the 2 unpublished, unreferenced imported companies', public.import_rollback('1b1b0000-0000-0000-0000-000000000001','ROLLBACK-1')=2);
+reset role; reset app.uid;
+select pg_temp.ok('SF12c batch marked rolled_back with reference; rows back to approved', (select status::text from company_import_batches where id='1b1b0000-0000-0000-0000-000000000001')='rolled_back' and (select rollback_ref from company_import_batches where id='1b1b0000-0000-0000-0000-000000000001')='ROLLBACK-1');
+
+-- quotations and orders
+insert into quotations(id,enquiry_id,company_id,amount,currency,valid_until,status) values
+ ('90900000-0000-0000-0000-000000000001',:'r1','c0000000-0000-0000-0000-000000000001',1000,'INR',current_date+5,'sent'),
+ ('90900000-0000-0000-0000-000000000002',:'r1','c0000000-0000-0000-0000-000000000001',2000,'INR',current_date-1,'sent'),
+ ('90900000-0000-0000-0000-000000000003',:'r1','c0000000-0000-0000-0000-000000000001',3000,'INR',current_date+5,'sent'),
+ ('90900000-0000-0000-0000-000000000004',:'r1','c0000000-0000-0000-0000-000000000001',4000,'INR',current_date+5,'sent');
+set role authenticated; set app.uid='00000000-0000-0000-0000-0000000000b2';
+select pg_temp.denied('SF13 another buyer cannot respond to the quotation', $$select public.respond_quotation('90900000-0000-0000-0000-000000000001',true)$$, 'not your quotation');
+select pg_temp.denied('SF13b another buyer cannot create an order', $$select public.create_order('90900000-0000-0000-0000-000000000001')$$, 'not your quotation');
+reset role; set role authenticated; set app.uid='00000000-0000-0000-0000-0000000000b1';
+select pg_temp.denied('SF14 order from a quotation that is not accepted refused', $$select public.create_order('90900000-0000-0000-0000-000000000001')$$, 'accepted first');
+select pg_temp.ok('SF14b buyer accepts; second response refused', pg_temp.try($$select public.respond_quotation('90900000-0000-0000-0000-000000000001',true)$$) and not pg_temp.try($$select public.respond_quotation('90900000-0000-0000-0000-000000000001',false)$$));
+select pg_temp.denied('SF14c expired quotation refused', $$select public.respond_quotation('90900000-0000-0000-0000-000000000002',true)$$, 'expired');
+reset role; reset app.uid;
+select pg_temp.ok('SF14d FINDING: the expired status is rolled back with the exception (quotation stays "sent")', (select status::text from quotations where id='90900000-0000-0000-0000-000000000002')='sent');
+set role authenticated; set app.uid='00000000-0000-0000-0000-0000000000b1';
+select pg_temp.ok('SF15a buyer creates the order', pg_temp.try($$select public.create_order('90900000-0000-0000-0000-000000000001')$$));
+select pg_temp.ok('SF15 total/currency/supplier come from the quotation, not the caller', (select count(*) from public.orders where quotation_id='90900000-0000-0000-0000-000000000001' and total=1000 and currency='INR' and buyer_id='00000000-0000-0000-0000-0000000000b1' and company_id='c0000000-0000-0000-0000-000000000001' and status='placed')=1);
+select pg_temp.denied('SF15b duplicate order for the same quotation refused (unique)', $$select public.create_order('90900000-0000-0000-0000-000000000001')$$);
+reset role; reset app.uid;
+select id as ord1 from orders where quotation_id='90900000-0000-0000-0000-000000000001' \gset
+set role authenticated; set app.uid='00000000-0000-0000-0000-0000000000a2';
+select pg_temp.denied('SF16 reviewer cannot advance an order', format($$select public.advance_order(%L,'confirmed')$$, :'ord1'), 'not authorised');
+select pg_temp.ok('SF16b unassigned reviewer sees no orders', (select count(*) from public.orders)=0);
+reset role; set role authenticated; set app.uid='00000000-0000-0000-0000-0000000000a1';
+select pg_temp.denied('SF16c admin has no generic supplier-side order authority either', format($$select public.advance_order(%L,'confirmed')$$, :'ord1'), 'not authorised');
+reset role; set role authenticated; set app.uid='00000000-0000-0000-0000-0000000000b1';
+select pg_temp.denied('SF16d buyer cannot advance', format($$select public.advance_order(%L,'confirmed')$$, :'ord1'), 'not authorised');
+reset role; set role authenticated; set app.uid='00000000-0000-0000-0000-0000000000c2';
+select pg_temp.denied('SF16e another supplier cannot advance', format($$select public.advance_order(%L,'confirmed')$$, :'ord1'), 'not authorised');
+reset role; set role authenticated; set app.uid='00000000-0000-0000-0000-0000000000c1';
+select pg_temp.denied('SF17 illegal transition placed -> shipped refused', format($$select public.advance_order(%L,'shipped')$$, :'ord1'), 'illegal transition');
+select pg_temp.ok('SF17b supplier owner walks the state machine to delivered', pg_temp.try(format($$select public.advance_order(%L,'confirmed')$$, :'ord1')) and pg_temp.try(format($$select public.advance_order(%L,'in_production')$$, :'ord1')) and pg_temp.try(format($$select public.advance_order(%L,'shipped')$$, :'ord1')) and pg_temp.try(format($$select public.advance_order(%L,'delivered')$$, :'ord1')));
+select pg_temp.denied('SF17c nothing after delivered', format($$select public.advance_order(%L,'cancelled')$$, :'ord1'), 'illegal transition');
+reset role; reset app.uid;
+select pg_temp.ok('SF17d order status changes ARE audited by trigger trg_audit_orders (actor recorded): >= 4 transitions for the order', (select count(*) from audit_log where entity='orders' and entity_id=:'ord1'::text and actor_id is not null)>=4);
+set role authenticated; set app.uid='00000000-0000-0000-0000-0000000000b1';
+select pg_temp.ok('SF18 accept + order for quotation 3', pg_temp.try($$select public.respond_quotation('90900000-0000-0000-0000-000000000003',true)$$) and pg_temp.try($$select public.create_order('90900000-0000-0000-0000-000000000003')$$));
+reset role; reset app.uid;
+select id as ord3 from orders where quotation_id='90900000-0000-0000-0000-000000000003' \gset
+set role authenticated; set app.uid='00000000-0000-0000-0000-0000000000b2';
+select pg_temp.denied('SF18b other buyer cannot cancel', format($$select public.cancel_order(%L)$$, :'ord3'), 'order not found');
+reset role; set role authenticated; set app.uid='00000000-0000-0000-0000-0000000000c1';
+select pg_temp.ok('SF18c supplier confirms order 3', pg_temp.try(format($$select public.advance_order(%L,'confirmed')$$, :'ord3')));
+reset role; set role authenticated; set app.uid='00000000-0000-0000-0000-0000000000b1';
+select pg_temp.denied('SF18d buyer cannot cancel once confirmed', format($$select public.cancel_order(%L)$$, :'ord3'), 'only placed');
+select pg_temp.ok('SF18e buyer accepts and orders quotation 4', pg_temp.try($$select public.respond_quotation('90900000-0000-0000-0000-000000000004',true)$$) and pg_temp.try($$select public.create_order('90900000-0000-0000-0000-000000000004')$$));
+select id as ord4 from public.orders where quotation_id='90900000-0000-0000-0000-000000000004' \gset
+select pg_temp.ok('SF18f buyer cancels the placed order', pg_temp.try(format($$select public.cancel_order(%L)$$, :'ord4')));
+reset role; reset app.uid;
+-- null auth.uid() (service_role caller) on ownership checks
+insert into quotations(id,enquiry_id,company_id,amount,currency,valid_until,status) values ('90900000-0000-0000-0000-000000000005',:'r1','c0000000-0000-0000-0000-000000000001',5000,'INR',current_date+5,'sent');
+set role service_role;
+select pg_temp.ok('SF19 FINDING: with auth.uid() NULL (service-role key) respond_quotation passes the buyer check (NULL comparison); only service_role/authenticated can execute it', pg_temp.try($$select public.respond_quotation('90900000-0000-0000-0000-000000000005',true)$$));
+reset role;
+
+-- report_correction / record_product_view
+set role authenticated; set app.uid='00000000-0000-0000-0000-0000000000b2';
+select pg_temp.ok('SF20 correction on a live company accepted', pg_temp.try($$select public.report_correction('c0000000-0000-0000-0000-000000000001',null,'phone','+91 1','javascript:alert(1)','note')$$));
+select pg_temp.ok('SF20a attacker-controlled URL is stored verbatim as inert text (UI must only link http/https)', (select count(*) from public.company_data_corrections where evidence_url='javascript:alert(1)')=1);
+select pg_temp.ok('SF20b FINDING: a product of ANOTHER company can be attached to the correction (product_id not tied to company_id)', pg_temp.try($$select public.report_correction('c0000000-0000-0000-0000-000000000001','d0000000-0000-0000-0000-000000000002','price','1','https://x.example','n')$$));
+select pg_temp.denied('SF20c suspended / non-live company refused', $$select public.report_correction('c0000000-0000-0000-0000-000000000006',null,'phone','1','https://x.example','n')$$, 'not available');
+reset role; reset app.uid;
+set role anon; select pg_temp.denied('SF20d anonymous cannot call report_correction', $$select public.report_correction('c0000000-0000-0000-0000-000000000001',null,'phone','1','u','n')$$); reset role;
+set role authenticated; set app.uid='00000000-0000-0000-0000-0000000000b2';
+select pg_temp.denied('SF21 authenticated users cannot record product views (service role only)', $$select public.record_product_view('d0000000-0000-0000-0000-000000000001','0123456789abcdef0123')$$);
+reset role; reset app.uid;
+set role service_role;
+select pg_temp.ok('SF21b service role: valid hash recorded once per hour; short hash and unpublished product ignored', pg_temp.try($$select public.record_product_view('d0000000-0000-0000-0000-000000000001','0123456789abcdef0123')$$) and pg_temp.try($$select public.record_product_view('d0000000-0000-0000-0000-000000000001','0123456789abcdef0123')$$) and pg_temp.try($$select public.record_product_view('d0000000-0000-0000-0000-000000000001','short')$$));
+reset role;
+select pg_temp.ok('SF21c exactly one view row, no viewer PII columns', (select count(*) from product_view_events where product_id='d0000000-0000-0000-0000-000000000001')=1);
 \endif
 
 -- ===== ROUND 4: buyer contact access (purpose-required, audited, expiring, assignment re-checked) =====
