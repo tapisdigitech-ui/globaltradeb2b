@@ -11,9 +11,10 @@ insert into categories(id,slug,name) values (1,'rugs','Rugs');
 insert into companies(id,slug,name,city,country,directory_status,claim_status,verification_status,data_review_status) values ('c0000000-0000-0000-0000-000000000001','c1','C1','Bhadohi','India','draft','approved','verified','pending');
 insert into company_members(company_id,user_id,role,status) values ('c0000000-0000-0000-0000-000000000001','00000000-0000-0000-0000-0000000000c1','owner','active');
 insert into enquiries(id,kind,buyer_id,company_id,subject,delivery) values ('e0000000-0000-0000-0000-000000000001','product','00000000-0000-0000-0000-0000000000b1','c0000000-0000-0000-0000-000000000001','Rugs','visible_to_seller');
+set app.uid='00000000-0000-0000-0000-0000000000b2';   -- b2 <-> C1 thread: b2 has NO enquiry with C1, so no enquiry-based staff route can reach it
+insert into direct_threads(id,buyer_id,company_id,subject) values ('e1e00000-0000-0000-0000-000000000001','00000000-0000-0000-0000-0000000000b2','c0000000-0000-0000-0000-000000000001','Thread without any enquiry link');
+insert into direct_messages(thread_id,sender_id,body) values ('e1e00000-0000-0000-0000-000000000001','00000000-0000-0000-0000-0000000000b2','private terms');
 set app.uid='00000000-0000-0000-0000-0000000000b1';
-insert into direct_threads(id,buyer_id,company_id,subject) values ('e1e00000-0000-0000-0000-000000000001','00000000-0000-0000-0000-0000000000b1','c0000000-0000-0000-0000-000000000001','Thread without any enquiry link');
-insert into direct_messages(thread_id,sender_id,body) values ('e1e00000-0000-0000-0000-000000000001','00000000-0000-0000-0000-0000000000b1','private terms');
 insert into enquiry_replies(enquiry_id,sender_id,sender_side,body) values ('e0000000-0000-0000-0000-000000000001','00000000-0000-0000-0000-0000000000b1','buyer','private reply');
 reset app.uid;
 insert into quotations(id,enquiry_id,company_id,amount,currency,status) values ('90900000-0000-0000-0000-000000000001','e0000000-0000-0000-0000-000000000001','c0000000-0000-0000-0000-000000000001',100,'INR','sent');
@@ -42,7 +43,7 @@ select pg_temp.denied('AP8 reviewer (staff, not admin) cannot call admin_open_co
 select pg_temp.ok('AP8b reviewer without the existing assigned-enquiry grant reads no content', pg_temp.msgs()=0);
 reset role; set role authenticated; set app.uid='00000000-0000-0000-0000-0000000000b1';
 select pg_temp.denied('AP9 buyer cannot call admin_open_comms', $$select public.admin_open_comms('enquiry','e0000000-0000-0000-0000-000000000001','trying my luck here')$$, 'admin only');
-select pg_temp.ok('AP9b buyer still reads own thread, message, reply, quote', pg_temp.msgs()=4);
+select pg_temp.ok('AP9b buyer b1 still reads own reply and quote (not b2''s thread)', pg_temp.msgs()=2);
 reset role; set role authenticated; set app.uid='00000000-0000-0000-0000-0000000000c1';
 select pg_temp.denied('AP10 seller cannot call admin_open_comms', $$select public.admin_open_comms('enquiry','e0000000-0000-0000-0000-000000000001','trying my luck here')$$, 'admin only');
 select pg_temp.ok('AP10b seller (company owner) still reads thread, message, quote (the reply is hidden by the unchanged seller_can_reply visibility rule, same as before the proposal)', pg_temp.msgs()=3);
@@ -57,6 +58,13 @@ set role authenticated; set app.uid='00000000-0000-0000-0000-0000000000a1';
 select pg_temp.ok('AP13 refusal flood: after 20 refused attempts/hour the next is rate_limited and logged', (select count(*) from (select public.admin_open_comms('enquiry',gen_random_uuid(),'dispute investigation 1') r from generate_series(1,25)) x where r='rate_limited')>=1);
 reset role; reset app.uid;
 select pg_temp.ok('AP13b rate_limited attempts are logged', (select count(*) from admin_comms_access_log where outcome='rate_limited')>=1);
+-- Round 8 review finding: an admin can ALREADY open enquiry-scoped comms through the existing staff path (staff_can_see_enquiry() is true for admins)
+set role authenticated; set app.uid='00000000-0000-0000-0000-0000000000a1';
+select pg_temp.ok('AP16 REVIEW: admin can open the existing staff route with a 5-character purpose', pg_temp.try($$select public.staff_open_enquiry_comms('e0000000-0000-0000-0000-000000000001','abcde')$$));
+select pg_temp.ok('AP16a REVIEW: ...and then reads the enquiry replies and quotes - a second, weaker audited route remains', (select count(*) from public.enquiry_replies)=1 and (select count(*) from public.quotations)=1);
+select pg_temp.ok('AP16b REVIEW: that route does NOT open unlinked direct threads', (select count(*) from public.direct_threads)=0);
+reset role; reset app.uid;
+select pg_temp.ok('AP16c REVIEW: it is recorded in the pre-existing staff_comms_access_log', (select count(*) from staff_comms_access_log where actor_id='00000000-0000-0000-0000-0000000000a1')=1);
 -- existing staff-grant path unaffected
 select pg_temp.ok('AP14 existing staff comms path still present (staff_open_enquiry_comms)', to_regprocedure('public.staff_open_enquiry_comms(uuid,text)') is not null);
 select pg_temp.ok('AP15 policies: none of the 4 message policies mentions is_admin() directly', (select count(*) from pg_policy p join pg_class c on c.oid=p.polrelid where p.polname in ('dt_read','dm_read','replies_read','quotes_read') and pg_get_expr(p.polqual,p.polrelid) ~ 'is_admin\(\)' and pg_get_expr(p.polqual,p.polrelid) !~ 'admin_comms_grant_active')=0);

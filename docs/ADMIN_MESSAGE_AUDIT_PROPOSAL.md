@@ -36,3 +36,20 @@ Call `admin_open_comms` with a purpose of at least 10 characters (dispute id, ab
 
 ## Tests (local PG 16.15, proposal only)
 Control (current behaviour, 0007 only): 2/2 pass — admin reads everything with no grant and no log. Proposal applied: 26/26 pass (no-grant read blocked; invalid/refused logged; enquiry and thread grants scoped; expiry; immutability; reviewer/buyer/seller/anonymous/service-role refused and still reading only their own data; refusal-flood throttle). Rollback: 0-line diff.
+
+## Round 8 review (confirmation against the current chain; still unapplied)
+| Item | Confirmed? | Evidence |
+|---|---|---|
+| Four policy changes (`dt_read`, `dm_read`, `replies_read`, `quotes_read`) | Yes | policy text on baseline+0001–0007; AP15 asserts none of the four mentions `is_admin()` directly after the proposal |
+| Audited admin workflow | Yes | `admin_open_comms` → grant + immutable log; tests AP3–AP7 |
+| Ten-minute grant | Yes | grant `expires_at = now() + 10 minutes`; AP7 (expiry) uses a forced-expired row, not a 10-minute wait; re-open extends |
+| Denied-access logging gap | Yes, two forms | (a) non-admin callers raise before any insert, so there is no log (AP8–AP12); (b) the pre-existing staff routes (`staff_open_enquiry_comms`, `reveal_buyer_contact`, evidence) also log only successes except the evidence gate |
+| Admin-console UI changes | Required, console not built | the demo `index.html` contains no Supabase calls; a real console must call `admin_open_comms` before listing threads/replies/quotes and handle the empty result |
+| Rollback | Yes | `…_DOWN.sql`; schema diff 0 lines |
+| Test coverage | Control 2/2; proposal 30/30 | `tests/run_proposal_admin_audit.sh control|proposal|rollback` |
+
+### New review findings
+1. **A second, weaker admin route already exists.** `staff_can_see_enquiry()` is true for admins, so after the proposal an admin can still call `staff_open_enquiry_comms(enquiry, purpose≥5 chars)` and read enquiry-scoped replies/quotes (tests AP16–AP16c: logged in `staff_comms_access_log`, but with a 5-character purpose, a 200/day limit and no refusal logging). The proposal's *thread* scope is genuinely new (that route cannot open a thread with no enquiry between the parties, AP16b). Decision needed: keep both routes, or make admins use only `admin_open_comms` by excluding admins from `staff_can_see_enquiry` in comms functions.
+2. **Other admin shortcuts remain outside the four message policies**, by design of the proposal: `orders_read`, `profiles_self_read` (admins read every profile incl. `phone`), `product_view_events`, `seller_feedback`, `suppression_list`, `moderation_actions`, `media_assets`. Of these, `profiles.phone` is the personal-data item worth a decision.
+3. The vault itself has **no** admin shortcut: `company_private` (owner/manager), `enquiry_private` (buyer or active grant), `company_claim_evidence` (claimant only) — staff/admin reach them only through audited functions.
+4. The grant row is not revoked on logout; it simply expires. Row-level reads during a grant are not logged.

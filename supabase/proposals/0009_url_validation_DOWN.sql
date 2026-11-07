@@ -1,0 +1,11 @@
+begin;
+alter table public.companies drop constraint companies_website_safe;
+alter table public.products drop constraint products_source_url_safe;
+alter table public.company_sources drop constraint company_sources_url_safe;
+alter table public.company_contacts drop constraint company_contacts_url_safe;
+alter table public.company_images drop constraint company_images_url_safe;
+alter table public.product_images drop constraint product_images_url_safe;
+alter table public.company_import_batches drop constraint import_batches_url_safe;
+alter table public.company_import_rows drop constraint import_rows_website_safe;
+drop function public.is_website_value(text); drop function public.is_http_url(text);
+commit;
