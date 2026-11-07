@@ -1501,6 +1501,39 @@ h1,h2,h3{letter-spacing:-.01em}
 @media (max-width:1000px){.shell,.shell.nr{grid-template-columns:minmax(0,1fr)}.kpis{grid-template-columns:repeat(3,minmax(0,1fr))}.main,.rail{padding-left:18px;padding-right:18px}.hd{gap:10px}}
 @media (max-width:700px){.kpis{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.kpi{grid-template-columns:32px minmax(0,1fr);padding:10px 10px;column-gap:9px}.kpi .r1 svg{width:32px;height:32px;padding:7px}.kpi .n{font-size:17px}.kpi .l{font-size:11.5px}.top-row h1{font-size:19px}.qa button{flex:1 1 calc(50% - 8px);justify-content:center}.main{padding:14px 14px 24px}.tabs button{padding:10px 10px 8px}}
 @media (max-width:380px){.kpis{grid-template-columns:minmax(0,1fr)}}
+/* seller chat */
+.kpis{grid-template-columns:repeat(4,minmax(0,1fr))}
+#tbody tr{cursor:pointer}
+.msg-g.chat{grid-template-columns:minmax(0,360px) minmax(0,1fr);align-items:stretch;height:calc(100vh - 230px);min-height:560px}
+.msg-g.chat .msg-l,.msg-g.chat .msg-r{min-height:0;overflow:hidden;flex-direction:column;padding:12px}
+@media (min-width:801px){.msg-g.chat .msg-l,.msg-g.chat .msg-r{display:flex}}
+.msg-g.chat .msg-l #msgList{overflow-y:auto;flex:1;min-height:0;margin-right:-4px;padding-right:4px}
+.msg-s{margin:0 0 8px}.msg-s input{width:100%;border:1px solid var(--line);background:var(--surface);color:var(--fg);border-radius:8px;padding:9px 12px}
+.msg-g.chat .mt{display:flex;gap:10px;align-items:flex-start}
+.av{flex:none;width:38px;height:38px;border-radius:50%;background:var(--blue);color:#fff;display:inline-flex;align-items:center;justify-content:center;font-weight:700}
+.av.big{width:44px;height:44px;font-size:18px}
+.mt-b{min-width:0;flex:1}.mt-b b{justify-content:space-between}.mt-b time{font:400 11px var(--font-body,inherit);color:var(--muted);white-space:nowrap;margin-left:auto}
+.mt-p .pill{font-style:normal;padding:1px 7px;font-size:11px}
+.mr-who{display:flex;gap:10px;align-items:center;min-width:0}.mr-who h3{margin:0}
+.mr-act{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.mr-st{display:flex;gap:6px;align-items:center;font-size:13px;color:var(--muted)}.mr-st select{border:1px solid var(--line);background:var(--surface);color:var(--fg);border-radius:8px;padding:6px 8px}
+.mr-i{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin:0 0 8px;padding:10px 12px;background:var(--surface-2,#f1f4f7);border:1px solid var(--line);border-radius:8px}
+.mr-i dt{font-size:11px;color:var(--muted)}.mr-i dd{margin:0;font-size:13px;font-weight:600;overflow-wrap:anywhere}.mr-i .flag{display:inline-block;width:16px;height:11px;border-radius:2px;margin-right:5px;vertical-align:-1px}
+.mr-msgs{flex:1;min-height:120px;overflow-y:auto;padding:4px 2px}
+.mr-f{margin-top:8px;border-top:1px solid var(--line);padding-top:10px}
+.mr-bar{display:flex;gap:8px;justify-content:space-between;align-items:center}
+.mr-bar .btn-ol{display:inline-flex;gap:6px;align-items:center;width:auto}.mr-bar .btn-ol svg{width:16px;height:16px}
+.qr{display:flex;gap:6px;flex-wrap:wrap}.qr button{border:1px solid var(--line);background:var(--surface);color:var(--fg);border-radius:999px;padding:4px 10px;font-size:12px}
+.att{display:flex;flex-direction:column;gap:6px;margin-top:6px}
+.att-c{display:flex;gap:8px;align-items:center;background:var(--surface);color:var(--fg);border:1px solid var(--line);border-radius:8px;padding:6px 8px}
+.att-c img{width:44px;height:33px;object-fit:cover;border-radius:4px;flex:none}.att-c b{display:block;font-size:13px}.att-c small{display:block;opacity:1;color:var(--muted);margin:0}
+.att-p{border:1px solid var(--line);border-radius:8px;background:var(--surface);padding:8px;max-height:210px;overflow-y:auto}
+.att-t{display:flex;justify-content:space-between;gap:8px;margin-bottom:6px;font-size:13px;flex-wrap:wrap}.att-t span{display:flex;gap:10px}
+.att-o{display:flex;gap:8px;align-items:center;padding:5px 2px;cursor:pointer}.att-o img{width:44px;height:33px;object-fit:cover;border-radius:4px}.att-o b{display:block;font-size:13px}.att-o small{display:block;color:var(--muted);font-size:12px}
+.att-sel{display:flex;gap:6px;flex-wrap:wrap}.att-sel .att{flex-direction:row;flex-wrap:wrap;margin:0}
+@media (max-width:1000px){.mr-i{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:800px){.msg-g.chat{grid-template-columns:minmax(0,1fr);height:auto;min-height:0}.msg-g.chat.open .msg-r{display:flex;height:calc(100vh - 150px);min-height:460px}.msg-g.chat .msg-r{display:none}.msg-g.chat.open .msg-l{display:none}.msg-g.chat .msg-l{display:flex;max-height:none}}
+.mr-f textarea{height:58px;min-height:58px;resize:none}
+@media (max-width:700px){.kpis{grid-template-columns:repeat(2,minmax(0,1fr))}}
 </style><div class="sroot">
 
 <header class="hd">
@@ -1579,9 +1612,9 @@ h1,h2,h3{letter-spacing:-.01em}
  </div>
 </main>
 <main class="main" id="vMsgs" hidden>
- <div class="top-row"><div><h1>Messages</h1><p>Buyer enquiries sent to your company appear here as conversations. Your replies are shown to the buyer under My Enquiries. Demonstration data, saved in this browser.</p></div></div>
- <div class="msg-g" id="msgG">
-  <section class="msg-l cd"><div class="fchips" id="msgTabs"></div><div id="msgList"></div></section>
+ <div class="top-row"><div><h1>Messages</h1><p>Chat with each client who sent you an enquiry. Pick a client on the left to see their details and conversation. Demonstration data, saved in this browser.</p></div></div>
+ <div class="msg-g chat" id="msgG">
+  <section class="msg-l cd"><div class="msg-s"><input id="msgQ" type="search" placeholder="Search client or product" aria-label="Search clients"></div><div class="fchips" id="msgTabs"></div><div id="msgList"></div></section>
   <section class="msg-r cd" id="msgR"></section>
  </div>
 </main>
@@ -3397,7 +3430,7 @@ $('scrim').addEventListener('click',closeSide);
 /* sidebar */
 var view='dash';
 function mine(){return PRODUCTS.filter(function(p){return p.mine})}
-var NAV=[['home','Dashboard',{}],['lead','Lead Manager',{cnt:24}],['mail','Buy Leads',{cnt:48,go:1}],['box','Products',{sub:[['Add a Product','add'],['Manage Products','manage'],['Product Groups','groups'],['My Catalogue','catalogue']],open:1}],['doc','Company Profile',{sv:'profile'}],['chart','Catalogue Views',{sv:'catviews'}],['doc','Orders & Quotations',{go:3}],['mega','Promote Products',{sv:'promote',nw:1}],['chart','Reports & Analytics',{sv:'reports'}],['users','Team Members',{sv:'team'}],['gear','Settings',{sv:'settings'}],['help','Help Centre',{sv:'help'}]];
+var NAV=[['home','Dashboard',{}],['lead','Lead Manager',{cnt:24}],['mail','Buy Leads',{cnt:48,go:1}],['box','Products',{sub:[['Add a Product','add'],['Manage Products','manage'],['Product Groups','groups'],['My Catalogue','catalogue']],open:1}],['doc','Company Profile',{sv:'profile'}],['chart','Catalogue Views',{sv:'catviews'}],['doc','Quotation Requests',{go:2}],['mega','Promote Products',{sv:'promote',nw:1}],['chart','Reports & Analytics',{sv:'reports'}],['users','Team Members',{sv:'team'}],['gear','Settings',{sv:'settings'}],['help','Help Centre',{sv:'help'}]];
 function renderNav(){
  var h='';
  NAV.forEach(function(n,i){var o=n[2],on=(i===0&&view==='dash')||(n[1]==='Products'&&['manage','add','groups','catalogue'].indexOf(view)>-1)||(o.sv&&o.sv===view);
@@ -3420,9 +3453,9 @@ $('nv').addEventListener('click',function(e){
 
 /* KPIs */
 var RANGE={7:[9,18,412,6,3],30:[24,48,1362,16,8],90:[61,131,3980,42,21]};
-var KP=[['a','mail','Enquiries Received',0],['b','users','Buy Leads',1],['c','eye','Product Views',null],['d','doc','Quotation Requests',2],['e','cart','Orders',3]];
-function renderKpis(){var d=RANGE[$('range').value].slice(),A=null;try{A=activity(+$('range').value);d=[A.E,A.L,A.V,A.Q,A.O]}catch(x){}$('kpis').innerHTML=KP.map(function(k,i){return '<button type="button" class="kpi '+k[0]+'" data-k="'+i+'"><span class="r1">'+ic(k[1])+'<span class="n">'+d[i].toLocaleString('en-IN')+'</span></span><span class="l">'+k[2]+'</span><span class="ar">'+ic('chev')+'</span></button>'}).join('');var kn=$('kpiNote');if(kn)kn.innerHTML='<span class="demo-tag">Calculated demonstration metrics</span> for '+$('range').options[$('range').selectedIndex].text+'. The same figures appear in the Lead Manager tabs, Catalogue Views and Reports.';syncCounts()}
-function syncCounts(){if(!TABS)return;var A;try{A=activity(+$('range').value)}catch(x){return}var c=[A.E,A.L,A.Q,A.O],i;for(i=0;i<4;i++)TABS[i].c=c[i];NAV[1][2].cnt=A.E;NAV[2][2].cnt=A.L;renderTabs();renderRows();try{renderNav()}catch(x){}}
+var KP=[['a','mail','Enquiries Received',0],['b','users','Buy Leads',1],['c','eye','Product Views',null],['d','doc','Quotation Requests',2]];
+function renderKpis(){var d=RANGE[$('range').value].slice(),A=null;try{A=activity(+$('range').value);d=[A.E,A.L,A.V,A.Q]}catch(x){}$('kpis').innerHTML=KP.map(function(k,i){return '<button type="button" class="kpi '+k[0]+'" data-k="'+i+'"><span class="r1">'+ic(k[1])+'<span class="n">'+d[i].toLocaleString('en-IN')+'</span></span><span class="l">'+k[2]+'</span><span class="ar">'+ic('chev')+'</span></button>'}).join('');var kn=$('kpiNote');if(kn)kn.innerHTML='<span class="demo-tag">Calculated demonstration metrics</span> for '+$('range').options[$('range').selectedIndex].text+'. The same figures appear in the Lead Manager tabs, Catalogue Views and Reports.';syncCounts()}
+function syncCounts(){if(!TABS)return;var A;try{A=activity(+$('range').value)}catch(x){return}var c=[A.E,A.L,A.Q],i;for(i=0;i<3;i++)TABS[i].c=c[i];NAV[1][2].cnt=A.E;NAV[2][2].cnt=A.L;renderTabs();renderRows();try{renderNav()}catch(x){}}
 $('range').addEventListener('change',renderKpis);
 $('kpis').addEventListener('click',function(e){var b=e.target.closest('[data-k]');if(!b)return;var t=KP[+b.getAttribute('data-k')][3];if(t===null){setView('catviews');return}setTab(t);$('tc').scrollIntoView({behavior:'smooth',block:'start'})});
 renderKpis();
@@ -3458,13 +3491,7 @@ var TABS=[
   R(1,'Hand Knotted Carpets','Hotel corridor runners','Al Noor Trading','Riyadh','Saudi Arabia','80 Pieces','Yesterday, 03:20 PM','Pending'),
   R(2,'Handloom Dhurries','Custom colours, 4 x 6 ft','Global Home Ltd.','London','UK','400 Pieces','02 Nov, 10:15 AM','Quoted'),
   R(3,'Jute Rugs','Braided round rugs','Green Interiors','Bengaluru','India','1,000 Pieces','01 Nov, 06:40 PM','Quoted'),
-  R(5,'Bath Mats','Logo printed mats','City Decor Co.','Mumbai','India','5,000 Pieces','31 Oct, 01:05 PM','Follow Up')]},
- {n:'Orders',c:0,date:'Order Date',btn:'View Order',rows:[
-  R(2,'Handloom Dhurries','Sample order S-018','Global Home Ltd.','London','UK','250 Pieces','02 Nov, 03:22 PM','Confirmed'),
-  R(0,'Hand Tufted Rugs','Sample order S-097','Majlis Interiors','Dubai','UAE','180 Pieces','29 Oct, 11:10 AM','Shipped'),
-  R(4,'Cushion Covers','Sample order S-081','City Decor Co.','Mumbai','India','2,500 Pieces','27 Oct, 04:25 PM','Shipped'),
-  R(3,'Jute Rugs','Sample order S-064','Green Interiors','Bengaluru','India','600 Pieces','24 Oct, 09:00 AM','Confirmed'),
-  R(1,'Hand Knotted Carpets','Sample order S-052','Al Noor Trading','Riyadh','Saudi Arabia','90 Pieces','21 Oct, 02:45 PM','Pending')]}
+  R(5,'Bath Mats','Logo printed mats','City Decor Co.','Mumbai','India','5,000 Pieces','31 Oct, 01:05 PM','Follow Up')]}
 ];
 var tab=0,term='';
 function cls(s){return 's-'+s.toLowerCase().split(' ')[0]}
@@ -3498,6 +3525,8 @@ $('tbody').addEventListener('click',function(e){
  var s=e.target.closest('[data-ms]');
  if(s){var mi=+s.parentNode.getAttribute('data-i'),v=s.getAttribute('data-ms');closeRow();if(v==='Archive'){var rw=TABS[tab].rows[mi];if(rw.eid){Store.enquiries.update(rw.eid,{status:'Closed'});storeSync();toast('Marked as Closed.');return}TABS[tab].rows.splice(mi,1);renderTabs();renderRows();toast('Removed from this list in this preview. Totals still count everything received.')}else{setStatus(mi,v);toast('Marked as '+v+'.')}return}
  var r=e.target.closest('[data-rp]');
+ if(!r&&!e.target.closest('.act')){var trr=e.target.closest('tr');if(trr)r=trr.querySelector('[data-rp]')}
+ if(r&&tab<3){var crow=TABS[tab].rows[+r.getAttribute('data-rp')];if(crow){openThread(crow.eid||('c-'+tab+'-'+rkey(crow)));setView('msgs');return}}
  if(r){var ri=+r.getAttribute('data-rp'),row=TABS[tab].rows[ri];cur=ri;$('rpT').textContent=TABS[tab].btn==='Send Quote'?'Send quotation':(TABS[tab].btn==='View Order'?'Order details':'Reply to enquiry');$('rpImg').src=(row.src||rowImg(row));$('rpProd').textContent=row.t+' ('+row.qty+')';$('rpBuyer').textContent=row.by+', '+row.city+', '+row.co;
   var qs=tab===2?['Thank you for your request. Please find our best price attached.','Prices are valid for 15 days. Samples are available on request.']:['Thank you for your enquiry. Please share your design and required quantity.','We can supply this in custom sizes and colours. Sample available on request.','Our best price and lead time are attached. Please confirm to proceed.'];
   $('rpQr').innerHTML=qs.map(function(q,k){return '<button type="button" data-qr="'+k+'">'+q.slice(0,34)+'...</button>'}).join('');$('rpQr').qs=qs;$('rpText').value='';$('rpSend').textContent=tab===2?'Send Quote':(tab===3?'Close':'Send Reply');openOv($('rpDlg'),'rpText')}
@@ -3715,37 +3744,121 @@ function refreshExt(){
  if(view==='msgs')renderMsgs();
  if(view==='notifs')renderNotifs();
 }
-/* --- messages --- */
+/* --- messages: one conversation per client enquiry (list on the left, chat on the right) --- */
+var CHK='gtb2b-chats',CH=Store.read(CHK,null);if(!CH||typeof CH!=='object'||Array.isArray(CH))CH={};if(!CH.m)CH.m={};if(!CH.read)CH.read={};if(!CH.att)CH.att={};
+function chSave(){Store.write(CHK,CH)}
+var BASE3=TABS[2].rows.slice(),CHSRC=[BASE[0],BASE[1],BASE3],CHKIND=['Enquiry','Buy lead','Quotation request'];
+function rkey(r){return (r.by+'|'+r.t+'|'+r.d).toLowerCase().replace(/[^a-z0-9|]+/g,'-')}
+function parseDt(s){
+ var d=new Date(),m=/(\d+):(\d+)\s*(AM|PM)/i.exec(s||'');
+ if(m){var h=+m[1]%12;if(/pm/i.test(m[3]))h+=12;d.setHours(h,+m[2],0,0)}
+ if(/^yesterday/i.test(s))d.setDate(d.getDate()-1);
+ else{var x=/^(\d+)\s+(\w{3})/.exec(s||'');if(x){var mo='Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec'.split(' ').indexOf(x[2]);if(mo>-1){d.setMonth(mo,+x[1]);if(d>new Date())d.setFullYear(d.getFullYear()-1)}}}
+ return d.getTime();
+}
+function sampleThreads(){
+ var out=[];
+ CHSRC.forEach(function(rows,ti){rows.forEach(function(r){
+  var id='c-'+ti+'-'+rkey(r),at=parseDt(r.dt),first={me:false,at:at,text:ti===1?'Hello, we are looking for '+r.t+'. '+r.d+'. Quantity needed: '+r.qty+'. Please share your best price, lead time and catalogue.'
+   :ti===2?'Hello, please send us a quotation for '+r.t+' ('+r.d+'). Quantity: '+r.qty+'. Kindly include price, minimum order and delivery time.'
+   :'Hello, we are interested in '+r.t+' ('+r.d+'). Quantity: '+r.qty+'. Please send us your catalogue and best price.'};
+  var msgs=[first].concat((CH.m[id]||[]).map(function(x){return x})),l=msgs[msgs.length-1];
+  var rd=CH.read[id];if(rd===undefined)rd=r.st==='New'||r.st==='Open'||r.st==='Pending'?0:l.at;
+  out.push({id:id,kind:'chat',ti:ti,row:r,who:r.by,title:r.t,msgs:msgs,last:l.at,unread:!l.me&&l.at>rd})});});
+ return out;
+}
+if(!Store.inbox._chat){
+ var oT=Store.inbox.threads,oU=Store.inbox.unread,oR=Store.inbox.markRead,oN=Store.inbox.markUnread,oS=Store.inbox.send;
+ Store._chatThreads=sampleThreads;
+ Store.inbox.threads=function(){return oT().concat(Store._chatThreads()).sort(function(a,b){return b.last-a.last})};
+ Store.inbox.unread=function(){return Store.inbox.threads().filter(function(t){return t.unread}).length};
+ Store.inbox.markRead=function(id){if(id.indexOf('c-')===0){CH.read[id]=Date.now();chSave()}else oR(id)};
+ Store.inbox.markUnread=function(id){if(id.indexOf('c-')===0){CH.read[id]=0;chSave()}else oN(id)};
+ Store.inbox.send=function(id,text){if(id.indexOf('c-')===0){(CH.m[id]=CH.m[id]||[]).push({me:true,text:text,at:Date.now()});CH.read[id]=Date.now();chSave();return true}return oS(id,text)};
+ Store.inbox._chat=1;
+}else Store._chatThreads=sampleThreads;
+var msgQ='',attOpen=false,attSel={};
+function threadStatus(t){return t.enq?t.enq.status:(t.row?t.row.st:'')}
+function setThreadStatus(t,s){if(t.enq){Store.enquiries.update(t.id,{status:s});storeSync()}else if(t.row){t.row.st=s;renderRows()}}
+function flagFor(co){return FL[co]?'<i class="flag" style="background:'+FL[co]+'"></i>':''}
+function initial(s){return esc((s||'?').trim().charAt(0).toUpperCase())}
+function attCards(a){
+ if(!a||!a.length)return '';
+ return '<div class="att">'+a.map(function(x){
+  if(x.k==='pdf')return '<div class="att-c pdf"><span class="br-i">PDF</span><div><b>'+esc(x.n)+'</b><small>Company brochure</small></div></div>';
+  var p=getP(x.id);if(!p)return '<div class="att-c"><div><b>'+esc(x.n)+'</b><small>Product no longer listed</small></div></div>';
+  return '<div class="att-c"><img alt="" src="'+pimg(p)+'"><div><b>'+esc(p.name)+'</b><small>'+priceTxt(p)+' &middot; Min. '+fmtNum(p.moq)+' '+esc(p.unit)+'</small></div></div>'}).join('')+'</div>';
+}
+function attPanel(){
+ var br=Store.seller.brochure.get(),ps=mine().filter(function(p){return !p.paused}),h='';
+ if(br)h+='<label class="att-o"><input type="checkbox" data-ap="__pdf"'+(attSel.__pdf?' checked':'')+'><span class="br-i">PDF</span><span><b>'+esc(br.name)+'</b><small>Company brochure</small></span></label>';
+ h+=ps.map(function(p){return '<label class="att-o"><input type="checkbox" data-ap="'+esc(p.id)+'"'+(attSel[p.id]?' checked':'')+'><img alt="" src="'+pimg(p)+'"><span><b>'+esc(p.name)+'</b><small>'+priceTxt(p)+'</small></span></label>'}).join('');
+ if(!h)h='<p class="mr-empty">No live products or brochure yet. Add products or upload a brochure under My Catalogue first.</p>';
+ else h='<div class="att-t"><b>Choose what to send</b><span><button type="button" class="lnk" data-aall>Select all products</button><button type="button" class="lnk" data-anone>Clear</button></span></div>'+h;
+ return h;
+}
+function attChosen(){
+ var a=[],br=Store.seller.brochure.get();
+ if(attSel.__pdf&&br)a.push({k:'pdf',n:br.name});
+ mine().forEach(function(p){if(attSel[p.id]&&!p.paused)a.push({k:'p',id:p.id,n:p.name})});
+ return a;
+}
 function renderMsgs(){
- var all=Store.inbox.threads(),un=all.filter(function(t){return t.unread}).length;
+ var all=Store.inbox.threads(),un=all.filter(function(t){return t.unread}).length,q=msgQ.toLowerCase();
  $('msgTabs').innerHTML=[['all','All ('+all.length+')'],['unread','Unread ('+un+')']].map(function(t){return '<button type="button" data-mf2="'+t[0]+'" class="'+(msgF===t[0]?'on':'')+'">'+t[1]+'</button>'}).join('');
- var list=all.filter(function(t){return msgF==='all'||t.unread});
+ var list=all.filter(function(t){return (msgF==='all'||t.unread)&&(!q||(t.title+' '+t.who).toLowerCase().indexOf(q)>-1)});
  $('msgList').innerHTML=list.length?list.map(function(t){
-  var l=t.msgs[t.msgs.length-1];
-  return '<button type="button" class="mt'+(t.id===msgSel?' on':'')+(t.unread?' un':'')+'" data-mt="'+esc(t.id)+'"><b>'+(t.unread?'<span class="dot" aria-label="Unread"></span>':'')+esc(t.title)+'</b><small>'+esc(t.who)+'</small><small>'+(l.me?'You: ':'')+esc(l.text)+'</small><small>'+ago(t.last)+'</small></button>'}).join('')
-  :'<p class="mr-empty">'+(all.length?'No unread messages.':'No messages yet. Enquiries sent to your company will appear here.')+'</p>';
+  var l=t.msgs[t.msgs.length-1],st=threadStatus(t),tx=String(l.text).replace(/\n?\u{1F4CE} Attached:.*$/su,'')||'Attachment';
+  return '<button type="button" class="mt'+(t.id===msgSel?' on':'')+(t.unread?' un':'')+'" data-mt="'+esc(t.id)+'"><span class="av">'+initial(t.who)+'</span><span class="mt-b"><b>'+(t.unread?'<span class="dot" aria-label="Unread"></span>':'')+esc(t.who)+'<time>'+ago(t.last)+'</time></b><small class="mt-p">'+esc(t.title)+(st?' &middot; <i class="pill '+cls(st)+'">'+esc(st)+'</i>':'')+'</small><small>'+(l.me?'You: ':'')+esc(tx)+'</small></span></button>'}).join('')
+  :'<p class="mr-empty">'+(all.length?'No conversations match.':'No messages yet. Enquiries sent to your company will appear here.')+'</p>';
  var t=all.filter(function(x){return x.id===msgSel})[0];
  $('msgG').classList.toggle('open',!!t);
- if(!t){$('msgR').innerHTML='<p class="mr-empty">Select a conversation to read and reply.</p>';return}
- var e=t.enq;
- $('msgR').innerHTML='<div class="mr-h"><div><button type="button" class="btn-ol mr-back" data-mback>&larr; All messages</button><h3>'+esc(t.title)+'</h3><small>'+esc(t.who)+(t.kind==='demo'?' (demonstration thread)':'')+'</small>'
-  +(e?'<small>Ref '+esc(e.id)+' &middot; Quantity '+esc((e.qty||'-')+' '+(e.unit||''))+(e.city?' &middot; '+esc(e.city):'')+' &middot; Status '+esc(e.status)+'</small>':'')+'</div><button type="button" class="btn-ol" data-munread="'+esc(t.id)+'">Mark as unread</button></div>'
-  +t.msgs.map(function(m){return '<div class="bub'+(m.me?' me':'')+'">'+esc(m.text)+'<small>'+(m.me?'You':esc(t.who))+' &middot; '+ago(m.at)+'</small></div>'}).join('')
-  +'<form class="mr-f" id="mrForm" data-tid="'+esc(t.id)+'"><textarea id="mrText" rows="3" maxlength="1000" placeholder="Write a reply" aria-label="Reply"></textarea><em class="err" id="mrErr" role="alert"></em><button class="vr-btn big go" type="submit">Send reply</button>'
-  +'<small class="hint">'+(e?'The buyer sees this reply under My Enquiries (demonstration, same browser).':'Demonstration thread: nobody receives this message.')+'</small></form>';
+ if(!t){$('msgR').innerHTML='<p class="mr-empty">Select a client on the left to see the enquiry and chat with them.</p>';return}
+ var e=t.enq,r=t.row,st=threadStatus(t),kind=r?CHKIND[t.ti]:(e?(e.type==='requirement'?'Buy lead':'Enquiry'):'Conversation');
+ var info=r?'<dl class="mr-i"><div><dt>Product</dt><dd>'+esc(r.t)+'</dd></div><div><dt>Quantity</dt><dd>'+esc(r.qty)+'</dd></div><div><dt>Location</dt><dd>'+flagFor(r.co)+esc((r.city?r.city+', ':'')+r.co)+'</dd></div><div><dt>Requirement</dt><dd>'+esc(r.d)+'</dd></div></dl>'
+  :e?'<dl class="mr-i"><div><dt>Product</dt><dd>'+esc(e.product||'-')+'</dd></div><div><dt>Quantity</dt><dd>'+esc(((e.qty||'-')+' '+(e.unit||'')).trim())+'</dd></div><div><dt>Location</dt><dd>'+esc(e.city||'-')+'</dd></div><div><dt>Reference</dt><dd>'+esc(e.id)+'</dd></div></dl>':'';
+ var sts=['New','Responded','Quoted','Follow Up','Closed'];if(st&&sts.indexOf(st)<0)sts.unshift(st);
+ var qr=['Thank you for your enquiry. Please share your design and required quantity.','We can supply this in custom sizes and colours. Samples are available on request.','Our best price and lead time are in the attached catalogue. Please confirm to proceed.'];
+ $('msgR').innerHTML='<div class="mr-h"><div class="mr-who"><button type="button" class="btn-ol mr-back" data-mback>&larr; All clients</button><span class="av big">'+initial(t.who)+'</span><div><h3>'+esc(t.who)+'</h3><small>'+esc(kind)+(t.kind==='demo'?' (demonstration thread)':'')+' &middot; '+esc(t.title)+'</small></div></div>'
+  +'<div class="mr-act">'+(st?'<label class="mr-st">Status <select data-mst="'+esc(t.id)+'">'+sts.map(function(s){return '<option'+(s===st?' selected':'')+'>'+esc(s)+'</option>'}).join('')+'</select></label>':'')+'<button type="button" class="btn-ol" data-munread="'+esc(t.id)+'">Mark as unread</button></div></div>'
+  +info+'<div class="mr-msgs" id="mrMsgs">'+t.msgs.map(function(m){var a=(CH.att[t.id]||{})[m.at],tx=String(m.text).replace(/\n?\u{1F4CE} Attached:.*$/su,'');return '<div class="bub'+(m.me?' me':'')+'">'+(tx?esc(tx):'')+attCards(a)+'<small>'+(m.me?'You':esc(t.who))+' &middot; '+ago(m.at)+'</small></div>'}).join('')+'</div>'
+  +'<form class="mr-f" id="mrForm" data-tid="'+esc(t.id)+'"><div class="qr" id="mrQr">'+qr.map(function(x,k){return '<button type="button" data-mq="'+k+'">'+esc(x.slice(0,38))+'...</button>'}).join('')+'</div>'
+  +(attOpen?'<div class="att-p">'+attPanel()+'</div>':'')
+  +(Object.keys(attSel).filter(function(k){return attSel[k]}).length?'<div class="att-sel">'+attCards(attChosen())+'</div>':'')
+  +'<textarea id="mrText" rows="2" maxlength="1000" placeholder="Type a message to '+esc(t.who)+'" aria-label="Message"></textarea><em class="err" id="mrErr" role="alert"></em>'
+  +'<div class="mr-bar"><button type="button" class="btn-ol" data-attach aria-expanded="'+attOpen+'"><svg class="i" viewBox="0 0 24 24"><path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l8.57-8.57A4 4 0 1 1 18 8.84l-8.59 8.57a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg> Attach catalogue</button><button class="vr-btn big go" type="submit">Send</button></div>'
+  +'<small class="hint">'+(e?'The buyer sees your messages under My Enquiries (demonstration, same browser).':'Demonstration conversation: nobody receives these messages. Saved in this browser.')+'</small></form>';
+ var mm=$('mrMsgs');if(mm)mm.scrollTop=mm.scrollHeight;
 }
-function openThread(id){msgSel=id;Store.inbox.markRead(id);refreshBadges();renderMsgs()}
+function openThread(id){msgSel=id;attOpen=false;attSel={};Store.inbox.markRead(id);refreshBadges();renderMsgs()}
 $('msgList').addEventListener('click',function(e){var b=e.target.closest('[data-mt]');if(b)openThread(b.getAttribute('data-mt'))});
 $('msgTabs').addEventListener('click',function(e){var b=e.target.closest('[data-mf2]');if(b){msgF=b.getAttribute('data-mf2');renderMsgs()}});
+$('msgQ').addEventListener('input',function(){msgQ=this.value.trim();renderMsgs()});
 $('msgR').addEventListener('click',function(e){
  if(e.target.closest('[data-mback]')){msgSel=null;renderMsgs();return}
- var u=e.target.closest('[data-munread]');if(u){Store.inbox.markUnread(u.getAttribute('data-munread'));msgSel=null;refreshBadges();renderMsgs();toast('Marked as unread.')}
+ var u=e.target.closest('[data-munread]');if(u){Store.inbox.markUnread(u.getAttribute('data-munread'));msgSel=null;refreshBadges();renderMsgs();toast('Marked as unread.');return}
+ var q=e.target.closest('[data-mq]');if(q){var ta=$('mrText');ta.value=['Thank you for your enquiry. Please share your design and required quantity.','We can supply this in custom sizes and colours. Samples are available on request.','Our best price and lead time are in the attached catalogue. Please confirm to proceed.'][+q.getAttribute('data-mq')];ta.focus();return}
+ if(e.target.closest('[data-attach]')){var v=$('mrText').value;attOpen=!attOpen;renderMsgs();$('mrText').value=v;return}
+ if(e.target.closest('[data-aall]')){mine().forEach(function(p){if(!p.paused)attSel[p.id]=true});var v2=$('mrText').value;renderMsgs();$('mrText').value=v2;return}
+ if(e.target.closest('[data-anone]')){attSel={};var v3=$('mrText').value;renderMsgs();$('mrText').value=v3;return}
+});
+$('msgR').addEventListener('change',function(e){
+ var c=e.target.closest('[data-ap]');if(c){attSel[c.getAttribute('data-ap')]=c.checked;var v=$('mrText').value;renderMsgs();$('mrText').value=v;return}
+ var s=e.target.closest('[data-mst]');if(s){var t=Store.inbox.threads().filter(function(x){return x.id===s.getAttribute('data-mst')})[0];if(t){setThreadStatus(t,s.value);renderMsgs();toast('Status changed to '+s.value+'.')}}
 });
 $('msgR').addEventListener('submit',function(e){
- e.preventDefault();var f=e.target,id=f.getAttribute('data-tid'),t=$('mrText').value.trim();
- if(t.length<2){$('mrErr').textContent='Write a reply before sending.';return}
+ e.preventDefault();var f=e.target,id=f.getAttribute('data-tid'),tx=$('mrText').value.trim(),a=attChosen();
+ if(!tx&&!a.length){$('mrErr').textContent='Write a message or attach a catalogue before sending.';return}
+ if(tx&&tx.length<2&&!a.length){$('mrErr').textContent='Write a little more before sending.';return}
  var sb=f.querySelector('.go');if(sb.disabled)return;sb.disabled=true;
- Store.inbox.send(id,t);storeSync();refreshBadges();renderMsgs();toast('Reply saved.');
+ var t=Store.inbox.threads().filter(function(x){return x.id===id})[0];
+ var body=tx||'Please find our catalogue attached.';
+ if(t&&t.enq&&a.length)body+='\n\u{1F4CE} Attached: '+a.map(function(x){return x.n}).join(', ');
+ Store.inbox.send(id,body);
+ var t2=Store.inbox.threads().filter(function(x){return x.id===id})[0],l=t2&&t2.msgs[t2.msgs.length-1];
+ if(a.length&&l){(CH.att[id]=CH.att[id]||{})[l.at]=a;chSave()}
+ if(t&&(threadStatus(t)==='New'||threadStatus(t)==='Open'||threadStatus(t)==='Pending'||threadStatus(t)==='Follow Up'))setThreadStatus(t,t.ti===2?'Quoted':'Responded');
+ attOpen=false;attSel={};storeSync();refreshBadges();renderMsgs();toast(a.length?'Message and catalogue sent.':'Message sent.');
 });
 /* --- notifications --- */
 var NTK={enquiry:'Enquiry',lead:'Buy lead',system:'System',tip:'Tip',profile:'Profile',product:'Product'};
