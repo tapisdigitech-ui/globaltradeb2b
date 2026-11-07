@@ -229,6 +229,11 @@ begin
     returning id, ref into eid, r;
   insert into enquiry_private(enquiry_id,buyer_name,buyer_phone,buyer_email,buyer_company,consent_at,notice_version)
     values (eid,left(trim(p_buyer_name),120),left(nullif(trim(p_phone),''),30),left(nullif(trim(p_email),''),160),left(p_buyer_company,160),now(),coalesce(p_notice_version,'v1'));
+  if p_kind='product' and d='awaiting_admin' then
+    -- C1: held product enquiries enter the Admin Lead Desk (assignment-scoped like requirement cases)
+    insert into lead_cases(enquiry_id,queue) values (eid,'product_enquiry_review') on conflict (enquiry_id) do nothing;
+    insert into lead_distribution_events(enquiry_id,company_id,event,reason) values (eid,cid,'routed_admin','product enquiry held: supplier not eligible for direct delivery') on conflict do nothing;
+  end if;
   return query select r, d, replace(n,'%REF%',r);
 end $$;
 
@@ -255,6 +260,51 @@ end $$;
 grant select on public.claim_reviewer_assignments, public.claim_evidence_access_log to authenticated;
 create policy cra_read on public.claim_reviewer_assignments for select to authenticated using (public.is_admin() or reviewer_id = auth.uid());
 create policy ceal_admin_read on public.claim_evidence_access_log for select to authenticated using (public.is_admin());
+
+-- ===== C1 product enquiries held for admin review: Admin Lead Desk queue + guarded release =====
+alter table public.lead_cases drop constraint lead_cases_queue_check;
+alter table public.lead_cases add constraint lead_cases_queue_check check (queue in ('unclaimed_matches','unverified_matches','capped_eligible','unmatched','product_enquiry_review'));
+-- Existing staff_mark_enquiry let any staff who can see an enquiry set delivery='visible_to_seller' for ANY supplier (buyer would be told the
+-- supplier can see it). Now: only for product enquiries whose supplier is currently eligible; requirements are delivered by matching only.
+-- Releasing creates the seller notification (in-app row only; no email/SMS exists in this schema) and closes the desk case.
+create or replace function public.staff_mark_enquiry(p_enquiry uuid, p_delivery enquiry_delivery, p_note text, p_provider_ref text default null) returns void
+language plpgsql security definer set search_path to 'public','pg_temp' as $$
+declare e enquiries;
+begin
+  if not public.is_staff() or not public.staff_can_see_enquiry(p_enquiry) then raise exception 'staff only' using errcode = '42501'; end if;
+  select * into e from public.enquiries where id = p_enquiry;
+  if not found then raise exception 'enquiry not found'; end if;
+  if p_delivery = 'sent_external' and coalesce(trim(p_provider_ref),'') = '' then raise exception 'sent_external requires a provider reference'; end if;
+  if p_delivery = 'visible_to_seller' then
+    if e.kind <> 'product' then raise exception 'requirement delivery is decided by supplier matching, not by manual marking' using errcode='42501'; end if;
+    if e.company_id is null or not public._company_lead_eligible(e.company_id, e.category_id) then
+      raise exception 'supplier is not eligible for direct delivery; enquiry stays with the admin desk' using errcode='42501'; end if;
+  end if;
+  update public.enquiries set delivery = p_delivery, delivery_note = left(coalesce(p_note,'') || case when p_provider_ref is not null then ' [ref ' || p_provider_ref || ']' else '' end, 500) where id = p_enquiry;
+  if p_delivery = 'visible_to_seller' and e.delivery is distinct from 'visible_to_seller' then
+    insert into public.notifications(user_id,company_id,kind,title,body,link)
+      select m.user_id,e.company_id,'enquiry','New enquiry: '||left(e.subject,80),'Open Messages to view and reply.','msgs'
+      from public.company_members m left join public.seller_settings s on s.user_id=m.user_id
+      where m.company_id=e.company_id and m.status='active' and m.role in ('owner','manager','sales') and coalesce(s.notify_enquiry,true);
+  end if;
+  if p_delivery in ('visible_to_seller','sent_external') then
+    update public.lead_cases set status='closed', closed_at=now() where enquiry_id=p_enquiry and queue='product_enquiry_review' and status<>'closed';
+  end if;
+end $$;
+
+-- ===== C4/C5 staff-wide read access to confidential commercial records (found in real policies; any reviewer could read ALL of these) =====
+-- direct_threads / direct_messages / orders: no lead-case link exists -> admin oversight only (buyer and seller-side access unchanged)
+-- enquiry_replies / quotations: staff only for enquiries assigned to them (staff_can_see_enquiry = admin OR assigned), like the enquiry itself
+drop policy dt_read on public.direct_threads;
+create policy dt_read on public.direct_threads for select using (buyer_id = auth.uid() or has_company_role(company_id, array['owner'::member_role,'manager'::member_role,'sales'::member_role]) or is_admin());
+drop policy dm_read on public.direct_messages;
+create policy dm_read on public.direct_messages for select using (thread_buyer(thread_id) = auth.uid() or has_company_role(thread_company(thread_id), array['owner'::member_role,'manager'::member_role,'sales'::member_role]) or is_admin());
+drop policy orders_read on public.orders;
+create policy orders_read on public.orders for select using (buyer_id = auth.uid() or has_company_role(company_id, array['owner'::member_role,'manager'::member_role,'sales'::member_role]) or is_admin());
+drop policy replies_read on public.enquiry_replies;
+create policy replies_read on public.enquiry_replies for select using (enquiry_buyer(enquiry_id) = auth.uid() or seller_can_reply(enquiry_id) or public.staff_can_see_enquiry(enquiry_id));
+drop policy quotes_read on public.quotations;
+create policy quotes_read on public.quotations for select using (has_company_role(company_id, array['owner'::member_role,'manager'::member_role,'sales'::member_role]) or public.staff_can_see_enquiry(enquiry_id) or ((enquiry_buyer(enquiry_id) = auth.uid()) and (status = any (array['sent'::quote_status,'accepted'::quote_status,'declined'::quote_status,'expired'::quote_status]) or (status = 'withdrawn'::quote_status and sent_at is not null))));
 
 revoke all on function public.admin_assign_claim_reviewer(uuid,uuid), public.evidence_grant_active(uuid), public.staff_open_claim_evidence(uuid,text), public.seller_product_enquiry_visible(uuid) from public, anon;
 grant execute on function public.admin_assign_claim_reviewer(uuid,uuid), public.evidence_grant_active(uuid), public.staff_open_claim_evidence(uuid,text), public.seller_product_enquiry_visible(uuid) to authenticated;

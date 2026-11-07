@@ -35,6 +35,10 @@ update companies set data_review_status='approved', directory_status='published'
 update companies set directory_status='suspended' where slug='c6';
 update companies set lead_delivery_blocked=true where slug='c5';
 insert into company_categories(company_id,category_id) select id,1 from companies;
+insert into products(id,company_id,category_id,name,directory_status,data_review_status) values
+ ('d0000000-0000-0000-0000-000000000001','c0000000-0000-0000-0000-000000000001',1,'Rug A','draft','pending'),
+ ('d0000000-0000-0000-0000-000000000002','c0000000-0000-0000-0000-000000000002',1,'Rug B','draft','pending');
+update products set data_review_status='approved', directory_status='published';
 insert into company_members(company_id,user_id,role,status) values
  ('c0000000-0000-0000-0000-000000000001','00000000-0000-0000-0000-0000000000c1','owner','active'),
  ('c0000000-0000-0000-0000-000000000002','00000000-0000-0000-0000-0000000000c2','owner','active'),
@@ -191,4 +195,144 @@ select pg_temp.ok('claimant still reads own evidence', (select count(*) from pub
 select pg_temp.ok('other claimant cannot read claim 1 evidence', (select count(*) from public.company_claim_evidence where claim_id='a1a00000-0000-0000-0000-000000000002')=0);
 reset role; reset app.uid;
 \endif
+
+-- ===== seller notification rules (post; in-app rows only, nothing is sent) =====
+\if :post
+select pg_temp.ok('N1 eligible verified seller C1 has exactly one notification for requirement r1', (select count(*) from notifications where user_id='00000000-0000-0000-0000-0000000000c1' and kind='lead' and body='Hand Tufted Rugs')=1);
+select pg_temp.ok('N2 claimed-but-unverified seller C2 has zero seller notifications', (select count(*) from notifications where user_id='00000000-0000-0000-0000-0000000000c2' and kind in ('lead','enquiry'))=0);
+select pg_temp.ok('N3 restricted seller C5 has zero seller notifications', (select count(*) from notifications where user_id='00000000-0000-0000-0000-0000000000c5' and kind in ('lead','enquiry'))=0);
+select pg_temp.ok('N4 unclaimed C3 has no members, so no notification target', (select count(*) from company_members where company_id='c0000000-0000-0000-0000-000000000003')=0);
+select pg_temp.ok('N5 every lead notification matches a delivered_direct event', not exists(select 1 from notifications n where n.kind='lead' and not exists(select 1 from lead_distribution_events e where e.event='delivered_direct' and e.company_id=n.company_id)));
+select pg_temp.ok('N6 notification count equals actual direct deliveries (r1:1 + r2:5 events, one per member)', (select count(*) from notifications where kind='lead')= (select count(*) from lead_distribution_events e join company_members m on m.company_id=e.company_id and m.role='owner' and m.status='active' where e.event='delivered_direct'));
+\endif
+
+-- ===== staff assignment isolation (real schema) =====
+\if :post
+select case_id1 from (select id as case_id1 from lead_cases where enquiry_id=:'r1') q \gset
+set role authenticated; set app.uid='00000000-0000-0000-0000-0000000000a1';
+select pg_temp.ok('admin assigns r1 case to reviewer a2', pg_temp.try(format($$select public.admin_assign_lead(%L,'00000000-0000-0000-0000-0000000000a2')$$, :'case_id1')));
+reset role; reset app.uid;
+set role authenticated; set app.uid='00000000-0000-0000-0000-0000000000a2';
+select pg_temp.ok('a2 sees exactly its assigned case and enquiry', (select count(*) from public.lead_cases)=1 and (select count(*) from public.enquiries where id=:'r1')=1);
+reset role; reset app.uid;
+set role authenticated; set app.uid='00000000-0000-0000-0000-0000000000a3';
+select pg_temp.ok('a3 sees no leads, no enquiries, no buyer-private rows of a2''s lead', (select count(*) from public.lead_cases)=0 and (select count(*) from public.enquiries)=0 and (select count(*) from public.enquiry_private)=0);
+select pg_temp.denied('a3 cannot update a2''s case', format($$select public.staff_update_lead(%L,'contacted','x',null)$$, :'case_id1'));
+select pg_temp.denied('a3 cannot mark a2''s enquiry', format($$select public.staff_mark_enquiry(%L,'awaiting_admin','x')$$, :'r1'));
+reset role; reset app.uid;
+\endif
+
+-- ===== delivered seller vs others: buyer contact privacy (real schema) =====
+\if :post
+set role authenticated; set app.uid='00000000-0000-0000-0000-0000000000c1';
+select pg_temp.ok('V1 verified seller C1 responds to its delivered lead', pg_temp.try(format($$select public.respond_to_lead(%L,'c0000000-0000-0000-0000-000000000001')$$, :'r1')));
+select pg_temp.ok('V2 and then reveals buyer contact (audited)', (select count(*) from public.reveal_buyer_contact(:'r1','c0000000-0000-0000-0000-000000000001'))=1);
+reset role; reset app.uid;
+select pg_temp.ok('V3 reveal wrote an access-log row', (select count(*) from enquiry_contact_access where enquiry_id=:'r1' and accessor_id='00000000-0000-0000-0000-0000000000c1')>=1);
+set role authenticated; set app.uid='00000000-0000-0000-0000-0000000000c2';
+select pg_temp.denied('V4 unverified seller C2 denied reveal for its own company', format($$select * from public.reveal_buyer_contact(%L,'c0000000-0000-0000-0000-000000000002')$$, :'r1'));
+select pg_temp.denied('V5 seller C2 cannot reveal as C1 (another seller''s contacts)', format($$select * from public.reveal_buyer_contact(%L,'c0000000-0000-0000-0000-000000000001')$$, :'r1'));
+select pg_temp.denied('V6 seller C2 cannot respond as C1', format($$select public.respond_to_lead(%L,'c0000000-0000-0000-0000-000000000001')$$, :'r1'));
+select pg_temp.ok('V7 seller C2 sees zero enquiries, zero buyer-private rows', (select count(*) from public.enquiries)=0 and (select count(*) from public.enquiry_private)=0);
+reset role; reset app.uid;
+-- r2 (cap run): C1 is member only of C1 + K companies; C5 user is restricted
+set role authenticated; set app.uid='00000000-0000-0000-0000-0000000000c5';
+select pg_temp.denied('V8 restricted seller C5 cannot reveal buyer contact', format($$select * from public.reveal_buyer_contact(%L,'c0000000-0000-0000-0000-000000000005')$$, :'r2'));
+reset role; reset app.uid;
+\endif
+
+-- ===== product enquiries -> Admin Lead Desk workflow (post) =====
+\if :post
+set role authenticated; set app.uid='00000000-0000-0000-0000-0000000000b2';
+select pg_temp.ok('P1 enquiry to claimed-unverified C2 is held for admin (not delivered)', (select delivery::text from public.submit_enquiry('product','d0000000-0000-0000-0000-000000000002',null,null,'Rug B price',10,'Piece','price?','Agra','Buyer Two','+91 90000 22222','b2@example.com','BuyCo2',true,'v1'))='awaiting_admin');
+select pg_temp.ok('P2 enquiry to verified-eligible C1 is visible to seller', (select delivery::text from public.submit_enquiry('product','d0000000-0000-0000-0000-000000000001',null,null,'Rug A price',10,'Piece','price?','Agra','Buyer Two','+91 90000 22222','b2@example.com','BuyCo2',true,'v1'))='visible_to_seller');
+reset role; reset app.uid;
+select id as pe1 from enquiries where subject='Rug B price' \gset
+select pg_temp.ok('P3 held enquiry has an Admin Lead Desk case (product_enquiry_review)', (select count(*) from lead_cases where enquiry_id=:'pe1' and queue='product_enquiry_review')=1);
+select pg_temp.ok('P4 delivered enquiry has no desk case', (select count(*) from lead_cases lc join enquiries e on e.id=lc.enquiry_id where e.subject='Rug A price')=0);
+select pg_temp.ok('P5 C1 seller notified of delivered enquiry only; C2 seller got nothing', (select count(*) from notifications where user_id='00000000-0000-0000-0000-0000000000c1' and kind='enquiry')=1 and (select count(*) from notifications where user_id='00000000-0000-0000-0000-0000000000c2' and kind='enquiry')=0);
+select pg_temp.ok('P6 admins (not sellers) got the internal hold alert', (select count(*) from notifications where kind='admin' and user_id='00000000-0000-0000-0000-0000000000a1')>=1 and (select count(*) from notifications where kind='admin' and user_id in (select id from profiles where app_role='seller'))=0);
+set role authenticated; set app.uid='00000000-0000-0000-0000-0000000000c2';
+select pg_temp.ok('P7 C2 seller cannot see the held enquiry', (select count(*) from public.enquiries where id=:'pe1')=0);
+reset role; reset app.uid;
+select id as pc1 from lead_cases where enquiry_id=:'pe1' \gset
+set role authenticated; set app.uid='00000000-0000-0000-0000-0000000000a1';
+select pg_temp.ok('P8 admin assigns the held enquiry to reviewer a3', pg_temp.try(format($$select public.admin_assign_lead(%L,'00000000-0000-0000-0000-0000000000a3')$$, :'pc1')));
+reset role; reset app.uid;
+set role authenticated; set app.uid='00000000-0000-0000-0000-0000000000a2';
+select pg_temp.ok('P9 other staff (a2) cannot see a3''s held enquiry', (select count(*) from public.enquiries where id=:'pe1')=0);
+reset role; reset app.uid;
+set role authenticated; set app.uid='00000000-0000-0000-0000-0000000000a3';
+select pg_temp.ok('P10 assigned staff a3 sees the held enquiry', (select count(*) from public.enquiries where id=:'pe1')=1);
+select pg_temp.denied('P11 release refused while supplier ineligible (cannot fake delivery)', format($$select public.staff_mark_enquiry(%L,'visible_to_seller','try')$$, :'pe1'), 'not eligible');
+reset role; reset app.uid;
+set role authenticated; set app.uid='00000000-0000-0000-0000-0000000000a1';
+select pg_temp.denied('P12 even admin cannot mark a requirement visible_to_seller manually', format($$select public.staff_mark_enquiry(%L,'visible_to_seller','try')$$, :'r1'), 'supplier matching');
+reset role; reset app.uid;
+select pg_temp.ok('P13 buyer-facing state still honest after refused release', (select delivery::text from enquiries where id=:'pe1')='awaiting_admin');
+-- supplier completes verification later (simulated by superuser) then staff releases
+update companies set verification_status='verified' where slug='c2';
+set role authenticated; set app.uid='00000000-0000-0000-0000-0000000000a3';
+select pg_temp.ok('P14 after supplier becomes eligible, assigned staff releases', pg_temp.try(format($$select public.staff_mark_enquiry(%L,'visible_to_seller','released after verification')$$, :'pe1')));
+reset role; reset app.uid;
+select pg_temp.ok('P15 release notifies the seller once and closes the desk case', (select count(*) from notifications where user_id='00000000-0000-0000-0000-0000000000c2' and kind='enquiry')=1 and (select status::text from lead_cases where enquiry_id=:'pe1')='closed');
+set role authenticated; set app.uid='00000000-0000-0000-0000-0000000000c2';
+select pg_temp.ok('P16 C2 seller can now see the released enquiry but not buyer-private', (select count(*) from public.enquiries where id=:'pe1')=1 and (select count(*) from public.enquiry_private)=0);
+reset role; reset app.uid;
+update companies set verification_status='not_verified' where slug='c2';
+\endif
+\if :post
+\else
+set role authenticated; set app.uid='00000000-0000-0000-0000-0000000000b2';
+select pg_temp.gap('P0 product enquiry to unverified seller C2 is delivered visible_to_seller', (select delivery::text from public.submit_enquiry('product','d0000000-0000-0000-0000-000000000002',null,null,'Rug B price',10,'Piece','price?','Agra','Buyer Two','+91 90000 22222','b2@example.com','BuyCo2',true,'v1'))='visible_to_seller');
+reset role; reset app.uid;
+\endif
+
+-- ===== competing open claims block approval (real schema, both phases) =====
+insert into claim_verifications(claim_id,channel,target,code_hash,expires_at,verified_at) values
+ ('a1a00000-0000-0000-0000-000000000001','email','b1@example.com','\x00'::bytea,now()+interval '1 day',now()),
+ ('a1a00000-0000-0000-0000-000000000002','email','b2@example.com','\x00'::bytea,now()+interval '1 day',now());
+set role authenticated; set app.uid='00000000-0000-0000-0000-0000000000a1';
+select pg_temp.denied('CC1 competing open claim blocks approval even with verified email', $$select public.review_claim('a1a00000-0000-0000-0000-000000000001','approved','try')$$, 'conflicting open claim');
+reset role; reset app.uid;
+select pg_temp.ok('CC2 company still not claimed after blocked approval', (select claim_status::text from companies where slug='cx')<>'approved');
+update company_claims set status='rejected' where id='a1a00000-0000-0000-0000-000000000002';
+set role authenticated; set app.uid='00000000-0000-0000-0000-0000000000a1';
+select pg_temp.ok('CC3 approval succeeds once the competing claim is resolved', pg_temp.try($$select public.review_claim('a1a00000-0000-0000-0000-000000000001','approved','ok')$$));
+reset role; reset app.uid;
+select pg_temp.ok('CC4 approving a claim does NOT verify the business', (select claim_status::text='approved' and verification_status::text<>'verified' from companies where slug='cx'));
+
+
+-- ===== direct messages / orders / quotations / enquiry replies: staff scope (real schema) =====
+set app.uid='00000000-0000-0000-0000-0000000000b1';
+insert into direct_threads(id,buyer_id,company_id,subject) values ('e1e00000-0000-0000-0000-000000000001','00000000-0000-0000-0000-0000000000b1','c0000000-0000-0000-0000-000000000001','DM subject');
+insert into direct_messages(thread_id,sender_id,body) values ('e1e00000-0000-0000-0000-000000000001','00000000-0000-0000-0000-0000000000b1','private commercial terms');
+insert into enquiry_replies(enquiry_id,sender_id,sender_side,body) values (:'r1','00000000-0000-0000-0000-0000000000b1','buyer','private buyer reply');
+reset app.uid;
+insert into quotations(id,enquiry_id,company_id,amount,currency,status,sent_at,created_by) values ('e2e00000-0000-0000-0000-000000000001',:'r1','c0000000-0000-0000-0000-000000000001',1000,'USD','accepted',now(),'00000000-0000-0000-0000-0000000000c1');
+insert into orders(quotation_id,buyer_id,company_id,total,currency) values ('e2e00000-0000-0000-0000-000000000001','00000000-0000-0000-0000-0000000000b1','c0000000-0000-0000-0000-000000000001',1000,'USD');
+create or replace function pg_temp.conf() returns bigint language sql as $$ select (select count(*) from public.direct_threads)+(select count(*) from public.direct_messages)+(select count(*) from public.orders) $$;
+create or replace function pg_temp.enqscoped() returns bigint language sql as $$ select (select count(*) from public.quotations)+(select count(*) from public.enquiry_replies) $$;
+set role authenticated; set app.uid='00000000-0000-0000-0000-0000000000b1';
+select pg_temp.ok('MO1 buyer still reads own thread, message, order, quotation, reply', pg_temp.conf()=3 and pg_temp.enqscoped()=2);
+reset role; reset app.uid;
+set role authenticated; set app.uid='00000000-0000-0000-0000-0000000000c1';
+select pg_temp.ok('MO2 delivered seller C1 still reads thread, message, order, quotation (reply needs eligibility)', pg_temp.conf()=3 and (select count(*) from public.quotations)=1);
+reset role; reset app.uid;
+set role authenticated; set app.uid='00000000-0000-0000-0000-0000000000a1';
+select pg_temp.ok('MO3 admin keeps oversight of all of them', pg_temp.conf()=3 and pg_temp.enqscoped()=2);
+reset role; reset app.uid;
+set role authenticated; set app.uid='00000000-0000-0000-0000-0000000000a3';
+select pg_temp.gap('MO4 unassigned reviewer reads direct messages/threads/orders', pg_temp.conf()>0);
+select pg_temp.gap('MO5 unassigned reviewer reads quotations/replies of a lead not assigned to them', pg_temp.enqscoped()>0);
+reset role; reset app.uid;
+\if :post
+set role authenticated; set app.uid='00000000-0000-0000-0000-0000000000a2';
+select pg_temp.ok('MO6 assigned reviewer a2 reads quotation+reply of its lead but not threads/messages/orders', pg_temp.enqscoped()=2 and pg_temp.conf()=0);
+reset role; reset app.uid;
+set role authenticated; set app.uid='00000000-0000-0000-0000-0000000000c2';
+select pg_temp.ok('MO7 non-delivered seller C2 reads none of them', pg_temp.conf()=0 and pg_temp.enqscoped()=0);
+reset role; reset app.uid;
+\endif
+
 \echo ALL REAL-SCHEMA TESTS COMPLETED (phase=:phase) ON LOCAL REPLICA

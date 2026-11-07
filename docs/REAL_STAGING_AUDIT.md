@@ -74,3 +74,60 @@ Covered on the replica: routing outcomes (verified→direct; claimed-unverified,
 * Product enquiries held `awaiting_admin` lack a lead-case/desk path.
 * Sixteen unrelated RPCs were stubbed in the replica.
 * Owner approvals pending: breaking changes above; permission to apply to a non-production branch.
+
+
+---
+# Revision 2 (review round): refined 0006, notification rules, product-enquiry desk, DM/orders audit, isolated dry-run
+Status unchanged: **nothing applied to original staging or production; the Lead Desk UI stays demo-only.**
+
+## R2-1. Exact security changes in 0006 (cumulative)
+1. `respond_to_lead`, `reveal_buyer_contact`, `seller_can_reply` re-check, at access time, that the seller is a delivered, currently eligible recipient (`seller_match_visible`/`_company_lead_eligible`). Reveal still needs a prior response and writes `enquiry_contact_access`.
+2. `guard_company_columns` protects `lead_delivery_blocked` and `is_demo`; owners/managers cannot clear a restriction. (Suspension is `directory_status`, already guarded.)
+3. `claim_reviewer_assignments` + `staff_can_review_claim`: reviewers read/decide only assigned open claims; admin assigns (`admin_assign_claim_reviewer`) and keeps full oversight.
+4. Evidence: claimant-only direct table/storage access; staff via `staff_open_claim_evidence` (purpose, assignment, immutable log, 10-minute grant).
+5. `company_private`: owner/manager only. Staff reach supplier contacts only through the 0003 audited vault functions (`staff_get_contacts`, purpose + assignment + log).
+6. `profiles_self_read`: no staff-wide read of buyer profiles.
+7. NEW: `staff_mark_enquiry` can no longer mark `visible_to_seller` for requirements or for ineligible suppliers (previously any staff could, making the buyer-facing status false).
+8. NEW: staff-wide reads removed from `direct_threads`, `direct_messages`, `orders` (admin only) and scoped to assigned enquiries for `quotations`, `enquiry_replies`.
+9. FORCE RLS on all new tables and the 11 earlier migration tables; explicit revoke/grant on every new object.
+
+## R2-2. Seller notification rules (in-app `notifications` rows only; the schema has no email/SMS sender and none is called)
+* A requirement notification is created **inside `_match_requirement` only when a `delivered_direct` event is newly recorded**, i.e. one notification per active owner/manager/sales member of the delivered, eligible company. `notify_on_enquiry` no longer notifies sellers for requirements.
+* A product-enquiry notification is created only when delivery is `visible_to_seller` (at submit for an eligible supplier, or when staff release a held enquiry after the supplier became eligible).
+* Unclaimed, claimed-but-unverified, restricted and suspended suppliers: **no seller notification** (tests N2–N4, P5).
+* Admin/staff alerts (`kind='admin'`) go to admins only and are separate from seller notifications (test P6).
+* Tests N1–N6 prove every lead notification maps to an actual delivered event and counts match.
+
+## R2-3. Product-enquiry admin workflow
+Held product enquiries (supplier not eligible) now create a Lead Desk case in new queue `product_enquiry_review` with a `routed_admin` event and an admin alert. Admin assigns it (`admin_assign_lead`); only the assignee or admin sees the enquiry. The assignee can release it with `staff_mark_enquiry(..., 'visible_to_seller')` **only after** the supplier is eligible (otherwise refused, buyer status unchanged); release notifies the seller and closes the case. Other outcomes (`sent_external` with a provider reference) also close the case. Tests P1–P16.
+
+## R2-4. Direct messages / orders audit (real policies)
+| Table | Before | After 0006 |
+|---|---|---|
+| `direct_threads`, `direct_messages` | buyer, seller roles, **any staff** | buyer, seller roles, **admin** |
+| `orders` | buyer, seller roles, **any staff** | buyer, seller roles, **admin** |
+| `quotations` | seller roles, **any staff**, buyer (non-draft) | seller roles, **assigned staff/admin**, buyer |
+| `enquiry_replies` | buyer, seller (`seller_can_reply`), **any staff** | buyer, eligible seller, **assigned staff/admin** |
+Writes were already limited to buyer/company roles. Tests MO1–MO7. Reviewers keep their authorised work through assigned leads/claims and the audited RPCs. Breaking change: any reviewer screen that lists all messages/orders will go empty (needs product decision: admin-only is the default).
+
+## R2-5. Stubbed functions
+See `STUBBED_FUNCTIONS_REPORT.md` (all 16, real bodies read-only from staging). Two open decisions: staff-wide `set_data_review`/`set_directory_status`.
+
+## R2-6. Isolated environment
+**No Supabase branch was created.** Branching runs under the original staging project, needs a cost confirmation and was not authorised, so the permitted fallback was used: a **local disposable PostgreSQL 16.15 cluster** (socket `/tmp/pgt`, port 5544, data dir `/tmp/pgt/data`, databases `dry_rb`, `dry_base`, `real_pre`, `real_post`) built from the staging schema extract. It is not Supabase, not PG17, not any hosted project; `tests/dry_run.sh` refuses to run unless the connection is a local `/tmp` socket. Not production, not TAPIS KASA, not the production-candidate project, not original staging. Staging was used only for read-only catalog SELECTs (schema extract, 16 function bodies).
+
+## R2-7. Results (every row = LOCAL replica or LOCAL reconstructed baseline; none on Supabase)
+| Suite | Environment | Result |
+|---|---|---|
+| Legacy 138 assertions | LOCAL reconstructed baseline | 138 pass |
+| `run_real.sh pre` | LOCAL clone of real schema + 0001–0005 | 42 pass; exposure controls EXPOSED: E1–E4, E6–E10, MO4, MO5, P0 |
+| `run_real.sh post` | LOCAL clone + 0001–0006 | 107 pass / 0 fail, all controls closed |
+| `dry_run.sh` apply 0006 | LOCAL clone | ok (424 changed dump lines) |
+| rollback 0006 only | LOCAL clone | schema+grants+policies+settings diff **0 lines**; re-apply ok |
+| rollback 0006..0001 | LOCAL clone | identical to an untouched clone except whitespace in the bodies of 3 restored functions (`seller_can_see_leads`, `lead_matches_my_company`, `staff_mark_enquiry`); identical after whitespace normalisation |
+Required-test mapping: verified seller delivered lead (N1, V1–V3), unverified zero leads (N2, V7), restricted cannot clear restriction (E4), cross-seller contacts (V4–V6, V8), staff isolation (a2/a3 tests, P9–P10), reviewer unassigned claim (E10), evidence needs audited grant (evidence tests), competing claims (CC1–CC4 on the real-schema clone), notifications (N1–N6), buyer privacy (V7, buyer-contact tests), product enquiry workflow (P1–P16), rollback (above).
+
+## R2-8. Blockers / limits
+* Supabase-hosted behaviour (Auth, Storage service, PG17, PostgREST grants) is untested; recommended next step is a real Supabase branch once you approve its cost.
+* Whole-schema `diff` ignores data; rollback with live data present is untested (the down script re-queues `product_enquiry_review` cases).
+* Open decisions: admin-only vs. scoped `set_data_review`/`set_directory_status`; reviewer access to messages/orders; storage upload paths for evidence by edge function.

@@ -31,6 +31,21 @@ alter table public.lead_routing_settings no force row level security;
 alter table public.lead_status_history no force row level security;
 alter table public.requirement_details no force row level security;
 alter table public.requirement_matches no force row level security;
+-- C1: product_enquiry_review cases are re-queued rather than deleted
+update public.lead_cases set queue='unverified_matches' where queue='product_enquiry_review';
+alter table public.lead_cases drop constraint lead_cases_queue_check;
+alter table public.lead_cases add constraint lead_cases_queue_check check (queue in ('unclaimed_matches','unverified_matches','capped_eligible','unmatched'));
+-- C4/C5: restore original staff-wide read policies
+drop policy dt_read on public.direct_threads;
+create policy dt_read on public.direct_threads for select using (((buyer_id = auth.uid()) OR has_company_role(company_id, ARRAY['owner'::member_role, 'manager'::member_role, 'sales'::member_role]) OR is_staff()));
+drop policy dm_read on public.direct_messages;
+create policy dm_read on public.direct_messages for select using (((thread_buyer(thread_id) = auth.uid()) OR has_company_role(thread_company(thread_id), ARRAY['owner'::member_role, 'manager'::member_role, 'sales'::member_role]) OR is_staff()));
+drop policy orders_read on public.orders;
+create policy orders_read on public.orders for select using (((buyer_id = auth.uid()) OR has_company_role(company_id, ARRAY['owner'::member_role, 'manager'::member_role, 'sales'::member_role]) OR is_staff()));
+drop policy replies_read on public.enquiry_replies;
+create policy replies_read on public.enquiry_replies for select using (((enquiry_buyer(enquiry_id) = auth.uid()) OR seller_can_reply(enquiry_id) OR is_staff()));
+drop policy quotes_read on public.quotations;
+create policy quotes_read on public.quotations for select using ((has_company_role(company_id, ARRAY['owner'::member_role, 'manager'::member_role, 'sales'::member_role]) OR is_staff() OR ((enquiry_buyer(enquiry_id) = auth.uid()) AND ((status = ANY (ARRAY['sent'::quote_status, 'accepted'::quote_status, 'declined'::quote_status, 'expired'::quote_status])) OR ((status = 'withdrawn'::quote_status) AND (sent_at IS NOT NULL))))));
 -- new objects
 drop function public.staff_open_claim_evidence(uuid,text); drop function public.evidence_grant_active(uuid); drop function public.admin_assign_claim_reviewer(uuid,uuid); drop function public.seller_product_enquiry_visible(uuid);
 drop table public.claim_evidence_grants; drop table public.claim_evidence_access_log; drop table public.claim_reviewer_assignments;
@@ -234,4 +249,18 @@ begin
   return query select r, d, replace(n,'%REF%',r);
 end $function$
 ;
+CREATE OR REPLACE FUNCTION public.staff_mark_enquiry(p_enquiry uuid, p_delivery enquiry_delivery, p_note text, p_provider_ref text DEFAULT NULL::text)
+ RETURNS void
+ LANGUAGE plpgsql
+ SECURITY DEFINER
+ SET search_path TO 'public', 'pg_temp'
+AS $function$
+begin
+  if not public.is_staff() or not public.staff_can_see_enquiry(p_enquiry) then raise exception 'staff only' using errcode = '42501'; end if;
+  if p_delivery = 'sent_external' and coalesce(trim(p_provider_ref),'') = '' then raise exception 'sent_external requires a provider reference'; end if;
+  update public.enquiries set delivery = p_delivery, delivery_note = left(coalesce(p_note,'') || case when p_provider_ref is not null then ' [ref ' || p_provider_ref || ']' else '' end, 500) where id = p_enquiry;
+  if not found then raise exception 'enquiry not found'; end if;
+end $function$
+;
+
 commit;
