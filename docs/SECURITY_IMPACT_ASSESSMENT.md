@@ -20,3 +20,12 @@
 * **F4 (info):** six SECURITY DEFINER public views flagged ERROR by the linter; intended, document in SECURITY_ARCHITECTURE.md and re-evaluate invoker views.
 * **F5 (info):** 42 authenticated-executable SECURITY DEFINER RPCs; every new RPC must start with an explicit auth/role check, `search_path=public,pg_temp`, `REVOKE ... FROM PUBLIC, anon`.
 * New objects follow existing patterns: RLS on, explicit grants, immutable logs via `block_mutation` trigger, RPC-only writes for status changes.
+
+## Remediation status of findings F1–F3 (2026-11-07)
+| Finding | Draft fix | Status |
+|---|---|---|
+| F1 lead eligibility ignores verification | `_company_lead_eligible()` + RLS read-time check (0002) | Implemented; locally tested (reconstructed baseline); **not staging verified** |
+| F2 staff access role-wide | assignment-scoped helpers, policy replacements, reviewer scope on claims/docs (0002, 0005) | same |
+| F3 contact reads not audited | purpose-required, assignment-scoped, immutable log with related case/claim; direct table access closed (0001, 0003) | same |
+| F4 six SECURITY DEFINER views | investigation script prepared; needs real definitions | **open (B1)** |
+| `cev_read` unscoped | not changed | **open (B3)** |

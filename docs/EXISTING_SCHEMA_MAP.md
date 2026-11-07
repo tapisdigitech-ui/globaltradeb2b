@@ -32,3 +32,6 @@ Buckets: `brochures` (private), `product-media-pending` (private), `product-medi
 * ERROR ×6 `security_definer_view`: all six `public_*` views have `security_invoker=false` (they intentionally run as owner to expose only approved columns to anon). Needs a documented decision; alternative is security_invoker views + narrowly scoped anon policies.
 * WARN ×42 `authenticated_security_definer_function_executable`: the intentional RPC surface; each function body must keep its own auth checks (spot-checked: `staff_mark_enquiry`, `submit_claim`, `is_staff`).
 * INFO ×1 `rate_events` RLS with no policy (intentional: system table, accessed only via `check_rate`).
+
+## Note (2026-11-07, later)
+After the owner's instruction "no staging SQL execution", no further queries were run on staging. The map above is from the single read-only catalog pass. Draft additions (not applied) are in `supabase/migrations_draft/` and described in `MIGRATION_IMPACT_REPORT.md`.
