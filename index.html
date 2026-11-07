@@ -671,6 +671,36 @@ input,select,textarea{font-size:16px}
 @media (max-width:820px){.search select,.search select.loc{width:100%}}
 ::placeholder{color:#5f6b7a;opacity:1;font-size:inherit}
 @media (max-width:700px){.hi-card img{width:76px;height:76px}.tc .lm{width:88px;height:88px}.tc .lm svg{width:48px;height:48px}.hi-card{font-size:14px}}
+
+/* banners: content fills the width, pictures are large and bleed to the edge */
+.hi-ban{display:grid!important;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr) auto;gap:32px;align-items:center;padding:36px 40px!important}
+.hi-ban h2{font-size:clamp(28px,3.4vw,46px)}
+.hi-ban p{font-size:18px;line-height:1.6;max-width:640px;margin-top:12px}
+.hi-stats{gap:40px;margin-top:24px}
+.hi-stats b{font-size:34px}.hi-stats span{font-size:15px}
+.hi-pics{display:flex;gap:14px;justify-content:center}
+.hi-pics img{width:clamp(96px,11vw,170px);aspect-ratio:3/4;object-fit:cover;border-radius:14px;border:3px solid rgba(255,255,255,.55);box-shadow:0 10px 26px rgba(0,0,0,.3)}
+.hi-pics img:nth-child(2){transform:translateY(-14px)}
+.hi-btn{padding:16px 30px;font-size:17px}
+@media (max-width:1000px){.hi-ban{grid-template-columns:1fr!important;gap:22px;padding:28px 22px!important}.hi-pics{justify-content:flex-start}.hi-btn{justify-self:start}.hi-ban p{font-size:16px}}
+.cta2 > div{position:relative;min-height:290px;padding:32px 0 32px 36px;gap:22px}
+.cta2 > div > div{max-width:58%;position:relative;z-index:1}
+.cta2 .ph{position:absolute;right:0;top:0;bottom:0;width:44%;height:100%;border-radius:0;-webkit-mask-image:linear-gradient(90deg,transparent,#000 38%);mask-image:linear-gradient(90deg,transparent,#000 38%)}
+.cta2 h2{font-size:28px}.cta2 ul{font-size:17px;gap:8px}.cta2 .btn{padding:13px 22px;font-size:16px;border-radius:6px}
+.cta2 .art{display:none}
+@media (max-width:900px){.cta2{grid-template-columns:1fr}}
+@media (max-width:640px){.cta2 > div{padding:24px 20px 0;min-height:0;flex-direction:column;align-items:flex-start}.cta2 > div > div{max-width:100%}.cta2 .ph{display:block!important;position:static;width:calc(100% + 40px);height:170px;margin:12px -20px 0;-webkit-mask-image:none;mask-image:none}}
+
+.req{min-height:230px}
+.req .l{padding:30px 36px}
+.req h2{font-size:30px}.req p{font-size:17px;max-width:420px}.req .go{padding:13px 22px;font-size:16px;border-radius:6px}
+.req .r{display:flex;flex-direction:column;justify-content:center;padding:24px 28% 24px 76px!important}
+.req .r h3{font-size:20px}
+.req .r .man{width:26%!important;-webkit-mask-image:linear-gradient(90deg,transparent,#000 30%);mask-image:linear-gradient(90deg,transparent,#000 30%)}
+.steps div{font-size:15px}.steps{flex-wrap:nowrap}.steps div small,.steps div span{white-space:nowrap}
+.intl .shipi{width:34%!important}.intl .flags{max-width:62%!important}
+@media (max-width:1000px){.req{grid-template-columns:1fr}.req .r{clip-path:none;padding:22px!important}.req .r .man{display:none!important}.steps{flex-wrap:wrap!important}}
+@media (max-width:1300px){.req .r{padding-right:34px!important}.req .r .man{display:none!important}.steps{flex-wrap:wrap}.intl .shipi{opacity:.22;width:50%!important}}
 </style>
 
 <header>
@@ -830,6 +860,7 @@ input,select,textarea{font-size:16px}
       <div><b>1 क्लिक</b><span data-hi="आवश्यकता पोस्ट करें" data-en="Post a requirement">आवश्यकता पोस्ट करें</span></div>
     </div>
   </div>
+  <div class="hi-pics" id="hiPics" aria-hidden="true"></div>
   <button class="hi-btn" id="langBtn" type="button">View in English</button>
 </section>
 <div class="tc-head"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0"/> <circle cx="12" cy="10" r="3"/></svg>Suppliers by city</div>
@@ -2508,6 +2539,7 @@ feats('whyGrid',[['shield','Profile ownership','Claim and manage your company pr
 tiles('resGrid',[['dash','Seller guide','Set up and manage your listings'],['book','Buyer guide','Source products and compare suppliers'],['send','Export guide','Documents, logistics and payments'],['tag','Listing tips','Write clear product listings'],['chart','Market notes','Trade trends and sector updates'],['help','FAQs','Answers to common questions']]);
 
 var HI=[['Carpets & Rugs','कालीन और गलीचे'],['Industrial Piping','औद्योगिक पाइपिंग'],['Fabrics & Textiles','कपड़े और वस्त्र'],['Corrugated Boxes','नालीदार डिब्बे'],['Wooden Furniture','लकड़ी का फर्नीचर'],['LED Lights','एलईडी लाइट्स'],['Spices & Seasonings','मसाले'],['Stainless Steel Pipes','स्टेनलेस स्टील पाइप']];
+$('hiPics').innerHTML=[0,2,6].map(function(i){return '<img alt="" loading="lazy" decoding="async" src="'+IMG['prod'+i]+'">'}).join('');
 $('hiCards').innerHTML=HI.map(function(a,i){return '<a class="hi-card" href="#products"><img alt="" loading="lazy" decoding="async" width="54" height="54" src="'+IMG['prod'+i]+'"><span data-hi="'+a[1]+'" data-en="'+a[0].replace('&','&amp;')+'">'+a[1]+'</span></a>'}).join('');
 var lang='hi';
 function setLang(l){lang=l;document.querySelectorAll('[data-hi]').forEach(function(e){e.textContent=e.getAttribute('data-'+l)});$('langBtn').textContent=l==='hi'?'View in English':'हिन्दी में देखें'}
