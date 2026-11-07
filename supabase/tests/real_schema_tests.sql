@@ -640,7 +640,7 @@ reset role; reset app.uid;
 select case_r1 from (select id as case_r1 from lead_cases where enquiry_id=:'r1') q \gset
 select id as case_r2 from lead_cases where enquiry_id=:'r2' \gset
 set role authenticated; set app.uid='00000000-0000-0000-0000-0000000000a2';
-select pg_temp.gap('BC0 assigned reviewer reads buyer-private row directly, no purpose or log', (select count(*) from public.enquiry_private where enquiry_id=:'r1')>0);
+select pg_temp.gap('BC0 [baseline 0001-0005 already has 0002 scoping] UNASSIGNED reviewer reads buyer-private row', (select count(*) from public.enquiry_private where enquiry_id=:'r1')>0);
 reset role; reset app.uid;
 \if :post
 set role authenticated; set app.uid='00000000-0000-0000-0000-0000000000a2';
@@ -704,4 +704,12 @@ select pg_temp.ok('BC20 anon cannot execute the contact functions', not has_func
 reset role;
 \endif
 
+\if :post
+\else
+set app.uid='00000000-0000-0000-0000-0000000000a1'; set role authenticated;
+select pg_temp.ok('BC0b admin assigns r1 case to a2 (pre control setup)', pg_temp.try(format($$select public.admin_assign_lead(%L,'00000000-0000-0000-0000-0000000000a2')$$, :'case_r1')));
+reset role; set role authenticated; set app.uid='00000000-0000-0000-0000-0000000000a2';
+select pg_temp.gap('BC0c ASSIGNED reviewer reads buyer-private row directly, no purpose, no log (baseline 0001-0005)', (select count(*) from public.enquiry_private where enquiry_id=:'r1')>0);
+reset role; reset app.uid;
+\endif
 \echo ALL REAL-SCHEMA TESTS COMPLETED (phase=:phase) ON LOCAL REPLICA

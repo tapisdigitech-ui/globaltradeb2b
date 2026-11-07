@@ -46,3 +46,6 @@ Pre-0006: 54 pass, 15 exposure controls. Post-0006: 157 pass / 0 fail / 0 expose
 
 ## Round 4 (local replica, not Supabase)
 Legacy 138 PASS; real-schema post 258 PASS/0 FAIL; pre 54 PASS, 40 exposed controls; Edge Function unit tests 9/9; rollback 0006 diff 0 lines.
+
+## Round 5
+Rollback 0006..0001: statement-level comparison after whitespace normalisation = identical (1302 statements, 0 only-in-either); the 25 raw diff lines were newline/indent differences in three function bodies. BC0 reproduced on original replica (`supabase/tests/bc0_original_policy_repro.sql`). Edge Function tests 13/13. Real-schema post 258 PASS/0 FAIL.

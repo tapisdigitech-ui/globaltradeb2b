@@ -24,3 +24,24 @@ Consequence of stubbing: the local tests say nothing about these functions' beha
 ## Open items from this review
 * #9 `approve_product_image` is still staff-wide (see row).
 * Replica caveat: since round 3 the replica uses the real bodies of #7/#8 (read from staging, SELECT only); the other 14 are still empty stubs locally.
+
+
+## Round 5 impact report: functions still stubbed on the replica
+Actual count: **12** (not 14). Of the original 16, `set_data_review`, `set_directory_status`, `approve_product_image` and `import_normalize` now run their real (or 0006 replacement) bodies locally. No front-end code in this repo calls any of the 12 (the only UI is the demo `index.html`), so "unused" cannot be proven from this repo; none is classed obsolete.
+
+| Function | Class | Depends on | Recommended next action |
+|---|---|---|---|
+| accept_invitation | Required for launch (supplier team seats); **security-sensitive** (creates active members that feed lead eligibility) | company_members, invitations, claim_status='approved', verified email, check_rate | Mirror real body, add tests: wrong email, expired, unclaimed company, enumeration, eligibility after accept |
+| decline_invitation | Required later | company_members | Mirror body; own-invite-only test |
+| my_invitations | Required later | profiles/email, approved claims | Mirror body; leakage test |
+| create_company_request | Required for launch (supplier self-signup); **security-sensitive** (creates a claim) | companies, company_claims, company_sources, 0004 claim gate, rate limit | Mirror body; test with 0004/0006 approval gate and evidence rule |
+| report_correction | Required later | company_data_corrections, rate limit | Mirror body; abuse/rate test |
+| record_product_view | Required later (analytics) | product_view_events, service role only | Verify EXECUTE is service_role only on hosted; low risk |
+| import_apply | Required for launch if the directory is seeded by import; **security-sensitive** (creates companies) | import batches/rows, suppression list, source terms | Mirror body; test admin-only, terms confirmed, suppression, no contact vault writes |
+| import_rollback | Same as import_apply; **security-sensitive** | import tables, published/enquiry/claim checks | Mirror body; test refusal paths |
+| create_order | Required later (orders phase); **security-sensitive** (commitment) | quotations, orders, rate limit | Mirror body; test accepted-quote-only, active supplier |
+| advance_order | Required later; **security-sensitive** | orders state machine, company roles | Mirror body; state-machine and role tests |
+| cancel_order | Required later | orders | Mirror body; buyer-own placed-only test |
+| respond_quotation | Required later; **security-sensitive** | quotations | Mirror body; buyer-own, open-quote-only test |
+
+If orders/quotations are out of launch scope, consider revoking EXECUTE from `authenticated` on the order functions until that phase (recommendation only; not applied). Next step for all 12: mirror real bodies by read-only catalogue SELECT (as done in round 3) before the hosted run; the hosted run then covers them natively.

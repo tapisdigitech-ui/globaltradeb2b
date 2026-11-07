@@ -4,10 +4,16 @@
 export const MAX_TTL = 600, DEFAULT_TTL = 120;
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const json = (status, body) => ({ status, body });
+export function decodeJwt(t) {
+  try { const p = String(t).split('.'); if (p.length !== 3) return null; return JSON.parse(Buffer.from(p[1].replace(/-/g,'+').replace(/_/g,'/'), 'base64').toString('utf8')); } catch { return null; }
+}
+const SAFE_NAME = /^[A-Za-z0-9._-]{1,120}$/;
 
 export async function handle(req, deps) {
   // 1. authentication: caller's own JWT is forwarded; the function never uses a service key to decide access
-  if (!req.jwt) return json(401, { error: 'authentication required' });
+  const claims = decodeJwt(req.jwt);   // shape/expiry/role sanity only; SIGNATURE is verified by the platform (verify_jwt=true) and by auth.uid() inside the RPCs
+  if (!claims || claims.role !== 'authenticated' || !claims.sub || (claims.exp && claims.exp * 1000 < (deps.now?.() ?? Date.now())))
+    return json(401, { error: 'authentication required' });   // also rejects the public anon-key JWT
   const { claimId, evidenceIds, purpose } = req.body || {};
   let ttl = req.body?.ttlSeconds ?? DEFAULT_TTL;
   // 2. input validation
@@ -20,7 +26,13 @@ export async function handle(req, deps) {
   let rows;
   try { rows = await deps.openEvidence(req.jwt, claimId, purpose.trim()); }
   catch (e) { return json(403, { error: 'not authorised for this claim' }); }   // no detail leaked
-  const allowed = new Map(rows.map(r => [r.evidence_id, r.storage_path]));
+  // storage path must be exactly <claimId>/<plain file name>: no traversal, no other claim's folder
+  const okPath = p => typeof p === 'string' && p.startsWith(claimId + '/') && SAFE_NAME.test(p.slice(claimId.length + 1)) && !p.includes('..');
+  const allowed = new Map(rows.filter(r => okPath(r.storage_path)).map(r => [r.evidence_id, r.storage_path]));
+  // link lifetime may never outlive the audited grant (signed URLs are NOT re-checked when used)
+  const grantLeft = Math.floor((Date.parse(rows[0]?.access_expires_at) - (deps.now?.() ?? Date.now())) / 1000);
+  if (Number.isFinite(grantLeft)) ttl = Math.min(ttl, grantLeft);
+  if (ttl < 1) return json(403, { error: 'grant expired' });
   const unknown = evidenceIds.filter(i => !allowed.has(i));
   if (unknown.length) return json(404, { error: 'evidence not found on this claim' });  // cross-claim ids rejected
   // 4. signed URLs generated with the CALLER's JWT so Storage RLS (grant + assignment re-check) is the enforcement point
