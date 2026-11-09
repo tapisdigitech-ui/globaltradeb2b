@@ -1,5 +1,8 @@
 import { z } from "zod";
 
+// zod's JIT probes `new Function`, which a strict CSP reports as a violation. Our schemas are tiny: disable it.
+z.config({ jitless: true });
+
 const phone = z
   .string()
   .trim()

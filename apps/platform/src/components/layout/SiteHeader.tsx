@@ -15,8 +15,8 @@ export function SiteHeader({ role = "anonymous" }: { role?: Role }) {
 
   return (
     <header className="border-b border-navy-800 bg-navy-900 text-white">
-      <div className="container-page flex items-center justify-between gap-3 py-3">
-        <Link href="/" className="text-lg font-extrabold tracking-tight text-white no-underline hover:text-white">
+      <div className="container-page flex flex-wrap items-center justify-between gap-3 py-3">
+        <Link href="/" className="min-w-0 text-lg font-extrabold tracking-tight text-white no-underline [overflow-wrap:anywhere] hover:text-white">
           GlobalTrade<span className="text-accent-100">B2B</span>
         </Link>
         <button

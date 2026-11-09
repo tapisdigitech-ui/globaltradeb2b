@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import type { ReactNode } from "react";
+import { connection } from "next/server";
 import "./globals.css";
 import { DemoBanner } from "@/components/layout/DemoBanner";
 import { SiteHeader } from "@/components/layout/SiteHeader";
@@ -12,7 +13,9 @@ export const metadata: Metadata = {
 };
 export const viewport: Viewport = { width: "device-width", initialScale: 1 };
 
-export default function RootLayout({ children }: { children: ReactNode }) {
+export default async function RootLayout({ children }: { children: ReactNode }) {
+  // Opt in to dynamic rendering so the per-request CSP nonce (src/proxy.ts) can be applied to framework scripts.
+  await connection();
   return (
     <html lang="en">
       <body>

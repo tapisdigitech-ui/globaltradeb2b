@@ -52,7 +52,7 @@
 
 @layer base {
   html { color-scheme: light; -webkit-text-size-adjust: 100%; }
-  body { @apply bg-canvas text-ink font-sans antialiased; font-size: var(--text-base); line-height: 1.5; }
+  body { @apply bg-canvas text-ink font-sans antialiased; overflow-wrap: anywhere; font-size: var(--text-base); line-height: 1.5; }
   h1, h2, h3 { @apply text-navy-900 font-bold tracking-tight; text-wrap: balance; }
   h1 { font-size: var(--text-2xl); line-height: 1.2; }
   h2 { font-size: var(--text-xl); line-height: 1.25; }

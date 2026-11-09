@@ -59,11 +59,14 @@ export default async function SupplierPage({ params }: { params: P }) {
             <p className="mt-2 text-sm">Contact details are not shown on public pages. Post a requirement and, where eligible, it is passed on through the platform.</p>
             <div className="mt-3"><ButtonLink href="/requirements/new" className="w-full">Post a requirement</ButtonLink></div>
           </Card>
-          {s.isVerified ? (
-            <Alert tone="info" title="Verified profile (sample)">In the live service, a requirement can become visible in this supplier&rsquo;s account. We cannot confirm that they have read it.</Alert>
-          ) : (
+          {s.isDemo ? (
+            <Alert tone="warning" title="Invented sample — no real verification">This company and its label are made up to show the layout. Nothing about it has been checked, and no requirement is passed to it.</Alert>
+          ) : null}
+          {!s.isVerified ? (
             <Alert tone="warning" title="Not verified">This company is not verified, so requirements are not passed to it directly. They are held by our team.</Alert>
-          )}
+          ) : !s.isDemo ? (
+            <Alert tone="info" title="Verified profile">A requirement can become visible in this supplier&rsquo;s account. We cannot confirm that they have read it.</Alert>
+          ) : null}
         </aside>
       </div>
     </div>

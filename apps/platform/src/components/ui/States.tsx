@@ -53,3 +53,9 @@ export function PageHeader({ title, lead, actions }: { title: string; lead?: str
     </div>
   );
 }
+
+/*
+ * Note: there is deliberately no root `app/loading.tsx`. A root loading boundary makes Next stream the shell with
+ * HTTP 200 before notFound() can run, so unknown suppliers would return 200 instead of 404.
+ * Add loading.tsx only to routes that fetch real data and cannot 404.
+ */

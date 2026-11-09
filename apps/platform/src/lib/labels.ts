@@ -1,6 +1,6 @@
 import type { DeliveryState, PublicSupplier, VerificationLabel } from "./domain";
 
-export type BadgeTone = "success" | "warning" | "neutral" | "info";
+export type BadgeTone = "success" | "warning" | "neutral" | "info" | "sample";
 
 export const LABEL_TONE: Record<VerificationLabel, BadgeTone> = {
   Verified: "success",
@@ -11,13 +11,14 @@ export const LABEL_TONE: Record<VerificationLabel, BadgeTone> = {
 };
 
 /**
- * The label shown to people. "Verified" is only ever produced when the record is
- * verified; every other state keeps its explicit "not verified / pending" wording.
- * Demo records always say so, even when a sample is shaped like a verified one.
+ * The label shown to people. "Verified" (green) is only ever produced for a REAL verified record.
+ * Demo records NEVER use a status tone: they always render as a dashed "sample" badge that starts with
+ * "Sample label:" so it cannot be mistaken for, or visually equal to, a genuine verification badge.
  */
 export function supplierBadge(s: Pick<PublicSupplier, "label" | "isVerified" | "isDemo">): { text: string; tone: BadgeTone } {
   const label: VerificationLabel = s.label === "Verified" && !s.isVerified ? "Unclaimed — Not Verified" : s.label;
-  return { text: s.isDemo ? `${label} · Demo sample` : label, tone: LABEL_TONE[label] };
+  if (s.isDemo) return { text: `Sample label: ${label} (illustrative, not a real status)`, tone: "sample" };
+  return { text: label, tone: LABEL_TONE[label] };
 }
 
 /**

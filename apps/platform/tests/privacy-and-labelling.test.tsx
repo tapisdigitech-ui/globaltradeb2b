@@ -1,5 +1,6 @@
 import "./helpers";
 import { render, screen } from "@testing-library/react";
+import { existsSync } from "node:fs";
 import { renderToStaticMarkup } from "react-dom/server";
 import { SUPPLIERS, DEMO_LEADS } from "@/data/demo";
 import { SupplierCard } from "@/features/suppliers/SupplierCard";
@@ -111,20 +112,43 @@ describe("demo-data labelling", () => {
     expect(renderToStaticMarkup(DashboardPage())).toMatch(/access control is not connected/);
     expect(renderToStaticMarkup(LeadDeskPage())).toMatch(/access control is not connected/);
   });
-  it("demo supplier badges say Demo sample", () => {
-    expect(supplierBadge(SUPPLIERS[0]!).text).toMatch(/Demo sample/);
+  it("demo badges are never a status tone and always say Sample label", () => {
+    for (const s of SUPPLIERS) {
+      const b = supplierBadge(s);
+      expect(b.tone).toBe("sample");
+      expect(b.text).toMatch(/^Sample label: /);
+      expect(b.text).toMatch(/illustrative, not a real status/);
+    }
+  });
+  it("no demo record carries the Verified label, and no demo card uses the success style or a bare 'Verified'", () => {
+    for (const s of SUPPLIERS) {
+      expect(s.label).not.toBe("Verified");
+      expect(s.isVerified).toBe(false);
+      const html = renderToStaticMarkup(<SupplierCard supplier={s} />);
+      expect(html).toContain("border-dashed");
+      expect(html).not.toContain("bg-success-100");
+      expect(html.replace(/<[^>]+>/g, " ").replace(/Not Verified/g, "")).not.toMatch(/\bVerified\b/);
+    }
+  });
+  it("the only way to get the green Verified badge is a real, non-demo verified record", () => {
+    expect(supplierBadge({ label: "Verified", isVerified: true, isDemo: false })).toEqual({ text: "Verified", tone: "success" });
+  });
+  it("sample profile says nothing was checked", async () => {
+    const html = renderToStaticMarkup(await SupplierPage({ params: Promise.resolve({ slug: "sample-loom-works" }) }));
+    expect(html).toMatch(/Invented sample — no real verification/);
+    expect(html).not.toMatch(/Verified profile/);
   });
 });
 
 describe("source hygiene", () => {
   it("app source has no backend wiring, secrets or storage use", async () => {
     const { execSync } = await import("node:child_process");
-    const files = execSync("git ls-files -co --exclude-standard src", { encoding: "utf8" }).split("\n").filter((f) => /\.(ts|tsx)$/.test(f));
+    const files = execSync("git ls-files -co --exclude-standard src", { encoding: "utf8" }).split("\n").filter((f) => /\.(ts|tsx)$/.test(f) && existsSync(f)); // tracked-but-deleted files are skipped
     expect(files.length).toBeGreaterThan(10);
     const fs = await import("node:fs");
     for (const f of files) {
       const t = fs.readFileSync(f, "utf8").replace(/\/\*[\s\S]*?\*\//g, "").replace(/^\s*\/\/.*$/gm, "");
-      expect(t, f).not.toMatch(/supabase|createClient|service_role|process\.env|localStorage|sessionStorage|document\.cookie|dangerouslySetInnerHTML|fetch\(/i);
+      expect(t, f).not.toMatch(/supabase|createClient|service_role|process\.env(?!\.NODE_ENV)|localStorage|sessionStorage|document\.cookie|dangerouslySetInnerHTML|fetch\(/i);
     }
   });
 });

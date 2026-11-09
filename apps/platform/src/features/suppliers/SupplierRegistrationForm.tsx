@@ -1,4 +1,6 @@
 "use client";
+import Link from "next/link";
+import { LEGAL_DRAFT_TAG } from "@/components/ui/LegalDraft";
 import { Alert } from "@/components/ui/States";
 import { Button } from "@/components/ui/Button";
 import { CheckboxField, SelectField, TextAreaField, TextField } from "@/components/ui/Field";
@@ -24,7 +26,7 @@ export function SupplierRegistrationForm() {
       <TextField label="Mobile number" name="contactPhone" required type="tel" inputMode="tel" autoComplete="tel" error={errors.contactPhone}
         hint="Used only to verify your claim. Never shown on public pages." />
       <div className="sm:col-span-2"><TextAreaField label="Your role and connection to the company" name="statement" required error={errors.statement} maxLength={600} /></div>
-      <div className="sm:col-span-2"><CheckboxField name="consent" error={errors.consent} label="I confirm I am authorised to act for this company and agree to the verification process (terms text to be supplied before launch)." /></div>
+      <div className="sm:col-span-2"><CheckboxField name="consent" error={errors.consent} label={<>I confirm I am authorised to act for this company and agree to the verification process in the <Link href="/legal/terms">terms</Link>.<span className="font-semibold text-accent-700"> {LEGAL_DRAFT_TAG}</span></>} /></div>
       <div className="sm:col-span-2"><Button type="submit">Preview registration</Button></div>
     </form>
   );

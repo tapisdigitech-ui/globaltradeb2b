@@ -1,0 +1,56 @@
+# CI for apps/platform only. Read-only, no secrets, no deployment, no hosted services.
+# NOTE: on private repositories GitHub Actions minutes may be billed; enable only after the owner approves.
+# Actions are pinned to full commit SHAs (verified against the upstream tags on 2026-11-09). Update deliberately.
+name: platform-ci
+
+# Manual only. Push and pull_request triggers are deliberately NOT enabled until the owner approves
+# (private-repository Actions minutes may be billed).
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: platform-ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    defaults:
+      run:
+        working-directory: apps/platform
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: apps/platform/package-lock.json
+      - name: Install (lockfile only, no lifecycle surprises)
+        run: npm ci
+      - name: Type check
+        run: npm run typecheck
+      - name: Lint
+        run: npm run lint
+      - name: Unit and component tests
+        run: npm test
+      - name: Build
+        run: npm run build
+      - name: Install browser for end-to-end tests
+        run: npx playwright install --with-deps chromium
+      - name: End-to-end, accessibility and responsive tests
+        run: npm run test:e2e
+      - name: Production dependency audit (fails on any vulnerability)
+        run: npm audit --omit=dev
+      - name: Upload failure artefacts
+        if: failure()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: playwright-results
+          path: apps/platform/test-results
+          retention-days: 7

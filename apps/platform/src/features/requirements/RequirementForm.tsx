@@ -1,4 +1,6 @@
 "use client";
+import Link from "next/link";
+import { LEGAL_DRAFT_TAG } from "@/components/ui/LegalDraft";
 import { Alert } from "@/components/ui/States";
 import { Button } from "@/components/ui/Button";
 import { CheckboxField, TextAreaField, TextField } from "@/components/ui/Field";
@@ -28,7 +30,7 @@ export function RequirementForm() {
       <div className="sm:col-span-2"><TextField label="Email (optional)" name="buyerEmail" type="email" autoComplete="email" error={errors.buyerEmail} /></div>
       <div className="sm:col-span-2">
         <CheckboxField name="consent" error={errors.consent}
-          label="I agree that my requirement and contact details may be used to find suppliers, as described in the privacy notice (notice text to be supplied before launch)." />
+          label={<>I agree that my requirement and contact details may be used to find suppliers, as described in the <Link href="/legal/privacy">privacy notice</Link>.<span className="font-semibold text-accent-700"> {LEGAL_DRAFT_TAG}</span></>} />
       </div>
       <div className="sm:col-span-2"><Button type="submit">Preview requirement</Button></div>
     </form>

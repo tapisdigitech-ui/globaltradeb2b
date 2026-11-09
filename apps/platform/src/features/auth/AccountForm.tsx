@@ -1,5 +1,6 @@
 "use client";
 import Link from "next/link";
+import { LEGAL_DRAFT_TAG } from "@/components/ui/LegalDraft";
 import { Alert } from "@/components/ui/States";
 import { Button } from "@/components/ui/Button";
 import { CheckboxField, TextField } from "@/components/ui/Field";
@@ -15,7 +16,7 @@ export function AccountForm() {
       <TextField label="Email" name="email" type="email" required autoComplete="email" error={errors.email} />
       <TextField label="Password" name="password" type="password" required autoComplete="new-password" error={errors.password} hint="At least 12 characters." />
       <TextField label="Confirm password" name="confirm" type="password" required autoComplete="new-password" error={errors.confirm} />
-      <CheckboxField name="consent" error={errors.consent} label="I accept the terms and privacy notice (texts to be supplied before launch)." />
+      <CheckboxField name="consent" error={errors.consent} label={<>I accept the <Link href="/legal/terms">terms</Link> and <Link href="/legal/privacy">privacy notice</Link>.<span className="font-semibold text-accent-700"> {LEGAL_DRAFT_TAG}</span></>} />
       <p className="text-xs text-muted">Every new account is a buyer account. Supplier, staff and admin access is granted only by the platform, never chosen here.</p>
       <Button type="submit">Create account</Button>
       <p className="text-sm text-muted">Already registered? <Link href="/login">Sign in</Link></p>

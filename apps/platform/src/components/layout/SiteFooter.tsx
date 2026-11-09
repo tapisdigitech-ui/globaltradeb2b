@@ -9,6 +9,8 @@ export function SiteFooter() {
           <li><Link href="/suppliers">Supplier directory</Link></li>
           <li><Link href="/requirements/new">Post a requirement</Link></li>
           <li><Link href="/register/supplier">List your company</Link></li>
+          <li><Link href="/legal/terms">Terms (draft)</Link></li>
+          <li><Link href="/legal/privacy">Privacy (draft)</Link></li>
         </ul>
       </div>
     </footer>

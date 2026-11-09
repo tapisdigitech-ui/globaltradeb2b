@@ -29,9 +29,9 @@ const p = (id: string, name: string, summary: string, moq: string) => ({ id, nam
 export const SUPPLIERS: PublicSupplier[] = [
   {
     id: "demo-1", slug: "sample-loom-works", name: "Sample Loom Works", businessType: "Manufacturer",
-    about: "Invented example of a hand-knotted rug manufacturer. Used only to show how a profile page is laid out.",
+    about: "Invented example of a hand-knotted rug manufacturer. Used only to show how a profile page is laid out. Someone has asked to claim this profile; nothing is confirmed.",
     city: "Sampletown", state: "Demo State", country: "India", categorySlugs: ["carpets-rugs-home-furnishing", "handicrafts-gifts"],
-    label: "Verified", isClaimed: true, isVerified: true, dataAsOf: DEMO_AS_OF, isDemo: true,
+    label: "Claim Requested", isClaimed: false, isVerified: false, dataAsOf: DEMO_AS_OF, isDemo: true,
     products: [p("demo-1-a", "Sample hand-knotted rug", "Illustrative product entry.", "50 pieces"), p("demo-1-b", "Sample flatweave runner", "Illustrative product entry.", "100 pieces")],
   },
   {
