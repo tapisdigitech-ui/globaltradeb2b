@@ -1,0 +1,46 @@
+{
+  "name": "@globaltradeb2b/platform",
+  "version": "0.1.0",
+  "private": true,
+  "description": "GlobalTradeB2B application foundation (frontend only, synthetic demo data, no backend connection).",
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:e2e": "playwright test",
+    "check": "npm run typecheck && npm run lint && npm run test"
+  },
+  "dependencies": {
+    "clsx": "2.1.1",
+    "next": "16.4.5",
+    "react": "19.3.1",
+    "react-dom": "19.3.1",
+    "zod": "4.6.7"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.63.0",
+    "@tailwindcss/postcss": "4.3.5",
+    "@testing-library/jest-dom": "7.0.1",
+    "@testing-library/react": "16.3.3",
+    "@testing-library/user-event": "14.6.8",
+    "@types/node": "24.19.2",
+    "@types/react": "19.3.0",
+    "@types/react-dom": "19.3.0",
+    "@vitejs/plugin-react": "6.3.0",
+    "axe-core": "4.14.0",
+    "eslint": "9.39.5",
+    "eslint-config-next": "16.4.5",
+    "jsdom": "31.0.0",
+    "postcss": "8.5.32",
+    "tailwindcss": "4.3.5",
+    "typescript": "6.0.3",
+    "vite": "8.3.7",
+    "vitest": "5.1.0"
+  }
+}

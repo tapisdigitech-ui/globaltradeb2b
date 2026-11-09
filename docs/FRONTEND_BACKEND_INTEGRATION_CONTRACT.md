@@ -156,3 +156,56 @@ Client rules: request links only when the reviewer opens a document; do not stor
 3. Retention periods and an erasure process (P1-5, P1-6).
 4. Whether sellers may see `buyer_id` (P1-10).
 5. Production treatment of `is_demo` rows (P1-3).
+
+## 10. Phase 1 application (`apps/platform`): how it maps to this contract
+
+Status: the Next.js foundation (see `docs/PHASE1_APPLICATION_FOUNDATION.md`) implements the **presentation** of this contract with synthetic data. No call in this document is wired yet. Rules below bind the future wiring.
+
+### 10.1 Page ↔ backend map
+| Page (route) | Reads / writes when wired | Notes |
+|---|---|---|
+| Directory `/suppliers`, profile `/suppliers/[slug]` | anon `GET public_companies`, `public_company_categories`, `public_products`, images (§5) | Server Components, no client-side secret; `public_label` rendered as is; empty list ≠ error; never fall back to demo data |
+| Requirement `/requirements/new` | `submit_enquiry(kind=requirement)` then `create_requirement` (§6.2) | requires a buyer session; show server `notice`; consent + notice version sent; no idempotency yet (F-J) so disable the button while pending |
+| Supplier registration `/register/supplier` | `create_company_request`, `submit_claim`, evidence upload, `start/confirm_claim_verification` (§6.3) | email verification provider undecided (P1-8): UI must say verification is unavailable until then |
+| Login / account `/login`, `/register` | Supabase Auth (email) | roles never chosen client-side; email confirmation must be ON (P0-2) |
+| Supplier dashboard `/dashboard` | own company rows under RLS; leads via §6.3 | only members of a claimed company; leads appear only if the server returns them |
+| Lead Desk `/admin/lead-desk` | `admin_*`, `staff_*` RPCs (§6.4–6.5) | admin/reviewer only; no contact values in lists |
+
+### 10.2 Authentication and session
+- Supabase Auth with PKCE; sessions in `HttpOnly`, `Secure`, `SameSite=Lax` cookies managed server-side (`@supabase/ssr`-style helper, version to be checked when added). Tokens are never placed in `localStorage` or URLs.
+- A single server-only helper `getSession()` returns `{ userId, appRole }` by validating the JWT with the Auth server (`getUser`), never by decoding client cookies alone. Pages call it; components do not.
+- The anon key is the only key in the browser bundle (`NEXT_PUBLIC_*`); the service-role key never exists in this app. `.env.example` lists names only.
+
+### 10.3 Role permissions (presentation vs enforcement)
+| UI role | Source of truth | UI may show | Enforcement |
+|---|---|---|---|
+| anonymous | no session | directory, profiles, forms | anon grants (3 tables + 6 views) |
+| buyer | `profiles.app_role='buyer'` | own requirements, replies | RLS on `enquiries`, `enquiry_private` |
+| seller | membership of a claimed company | dashboard, own listings, delivered leads | RLS + guard triggers |
+| reviewer | `app_role='reviewer'` + assignment | assigned cases only | assignment-scoped RPCs, purpose logging |
+| admin | `app_role='admin'` | Lead Desk, publishing | admin-only RPCs |
+`navigationFor(role)` only decides which links to draw. A missing link is not security; the server route guard and the database are.
+
+### 10.4 Route protection (required before any real data is bound)
+1. `/dashboard/*`: server-side `getSession()`; no session → redirect to `/login`; session without membership of a claimed company → 403 page.
+2. `/admin/*`: `appRole ∈ {reviewer, admin}` checked on the server for **every** request (layout and each server action/route handler); otherwise 404 (do not reveal existence).
+3. Server Actions and Route Handlers re-check the role; never trust hidden fields or client-provided role/company ids.
+4. Cache: authenticated pages use `dynamic = "force-dynamic"` / `Cache-Control: private, no-store`.
+
+### 10.5 Supplier verification
+Badges come only from `public_label` / `is_verified`. The UI never derives "Verified" from claim state, document uploads or a client flag. Registering, claiming, uploading evidence or confirming a contact never changes a badge; only an administrator's `set_verification`. Demo records always append "Demo sample".
+
+### 10.6 Buyer requirements
+Collect only the fields in `create_requirement`; phone/email go to `submit_enquiry` once and are not echoed back, cached or logged; hint text warns buyers not to type contacts into free text (heuristic `CONTACT_IN_TEXT`, advisory only). Validation in the UI mirrors but never replaces server validation (P2-8).
+
+### 10.7 Lead matching and delivery
+Matching runs on the server (`_match_requirement`, `_company_lead_eligible`). The UI displays `delivery` and `notice` verbatim from the server (§4) and the three allowed meanings in `src/lib/labels.ts`. **Forbidden UI claims** until the server says otherwise: "sent", "delivered", "received", "supplier has your requirement", "N suppliers contacted". `visible_to_seller` may only be described as visible in the supplier's account with read status unknown. Counts come from `buyer_requirement_status` (note §4 warning about its current wording).
+
+### 10.8 Admin and staff access
+Lists never include contact values. Contact reveal, evidence links and message access are separate, purpose-required, audited calls (§6.4); values live in component state only while the panel is open and are cleared on close/navigation. Evidence is opened only through the Edge Function (§7). Admin reads of private messages/orders remain unlogged until P1-9 is implemented.
+
+### 10.9 Environment and secrets
+Planned variables (names only, none set today): `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`. Local-stack values only until hosted use is approved. A test (`privacy-and-labelling.test.tsx`) fails if `supabase`, `process.env`, `fetch(` or storage APIs appear in `src/` — it must be updated deliberately in the PR that wires the backend.
+
+### 10.10 Wiring checklist (each item needs a test)
+anon read of directory against local stack · RLS denial shown as "not allowed" without reasons · session cookie flags · role guard on every admin route/action · no contact values in HTML/JSON of public routes · `delivery` wording snapshot · duplicate submit handled · error pages contain no PII · CSP with nonces · dependency audit in CI.
