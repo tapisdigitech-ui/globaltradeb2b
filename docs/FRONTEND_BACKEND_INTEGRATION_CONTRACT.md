@@ -181,7 +181,7 @@ Status: the Next.js foundation (see `docs/PHASE1_APPLICATION_FOUNDATION.md`) imp
 |---|---|---|---|
 | anonymous | no session | directory, profiles, forms | anon grants (3 tables + 6 views) |
 | buyer | `profiles.app_role='buyer'` | own requirements, replies | RLS on `enquiries`, `enquiry_private` |
-| seller | membership of a claimed company | dashboard, own listings, delivered leads | RLS + guard triggers |
+| seller | `profiles.app_role` `seller` **and** an active `company_members` row of a company with `claim_status = approved` (SQL `is_company_member`); the `app_role` alone grants nothing | dashboard, own listings, delivered leads | RLS + guard triggers |
 | reviewer | `app_role='reviewer'` + assignment | assigned cases only | assignment-scoped RPCs, purpose logging |
 | admin | `app_role='admin'` | Lead Desk, publishing | admin-only RPCs |
 `navigationFor(role)` only decides which links to draw. A missing link is not security; the server route guard and the database are.
