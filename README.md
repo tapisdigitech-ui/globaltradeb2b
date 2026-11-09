@@ -10,3 +10,7 @@ Static single-file prototype of a B2B marketplace. All companies, products, pric
 - Category, product and hero photographs are hotlinked from Unsplash (Unsplash licence, free to use). They illustrate product categories only and are not photographs of any listed supplier's products. The footer states this.
 - Icons: Lucide (ISC licence), inlined as SVG.
 - Typeface: Inter (Google Fonts), Noto Sans Devanagari for Hindi.
+
+
+## Status
+See `docs/NEXT_DEVELOPMENT_READINESS.md` for what is real vs demo, and `docs/PRIORITISED_LAUNCH_CHECKLIST.md` for ranked gaps. Frontend tests: `NODE_PATH=$(npm root -g) node --test tests/frontend/*.test.mjs`.
